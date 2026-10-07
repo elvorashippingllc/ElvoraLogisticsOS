@@ -1,0 +1,34 @@
+name: Build Oracle Image
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Download repository
+        uses: actions/checkout@v4
+
+      - name: Sign in to GitHub Container Registry
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          printf '%s' "$GH_TOKEN" | docker login ghcr.io \
+            -u "${{ github.actor }}" --password-stdin
+
+      - name: Build application image
+        run: |
+          docker build --platform linux/amd64 \
+            --label "org.opencontainers.image.source=https://github.com/${{ github.repository }}" \
+            -t ghcr.io/elvorashippingllc/elvoralogisticsos:latest .
+
+      - name: Upload application image
+        run: |
+          docker push ghcr.io/elvorashippingllc/elvoralogisticsos:latest
