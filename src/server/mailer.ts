@@ -2,6 +2,7 @@ import nodemailer from 'nodemailer'
 import { q } from './db'
 import { getSetting, loadSettings } from './settings'
 import { nowIso, safeJson } from './util'
+import { inDemo } from './db'
 import { http, logIntegration } from './integrations/log'
 
 export interface MailAttachment { filename: string; contentBase64: string; contentType?: string }
@@ -36,6 +37,7 @@ async function sendOne(r: any) {
     if (!res.ok) throw new Error(`Resend ${res.status}: ${res.data?.message ?? res.text.slice(0, 200)}`)
     return
   }
+  if (inDemo()) throw new Error('E-mail sending is disabled in the demo workspace')
   const s = loadSettings()
   const transport = nodemailer.createTransport({ host: s.smtp_host, port: Number(s.smtp_port) || 587, secure: !!s.smtp_secure, auth: s.smtp_user ? { user: s.smtp_user, pass: s.smtp_pass } : undefined })
   await transport.sendMail({ from: s.smtp_from, to: r.to_addr, cc: r.cc_addr || undefined, subject: r.subject, text: r.body, attachments: atts.map(a => ({ filename: a.filename, content: Buffer.from(a.contentBase64, 'base64'), contentType: a.contentType })) })

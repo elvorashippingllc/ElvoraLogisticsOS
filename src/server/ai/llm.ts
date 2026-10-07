@@ -1,5 +1,6 @@
 import { getSetting } from '../settings'
 import { http } from '../integrations/log'
+import { inDemo } from '../db'
 
 export interface Preset { key: string; label: string; base: string; model: string; keyRequired: boolean; free: string; notes: string }
 export const PRESETS: Preset[] = [
@@ -29,7 +30,7 @@ export function endpoints(modelOverride?: string): Endpoint[] {
   mk('', 'primary'); mk('f', 'fallback')
   return out
 }
-export const aiConfigured = () => !!getSetting('ai_enabled') && endpoints().length > 0
+export const aiConfigured = () => inDemo() || (!!getSetting('ai_enabled') && endpoints().length > 0)
 
 export interface ChatMsg { role: 'system' | 'user' | 'assistant' | 'tool'; content: string | null; tool_calls?: any[]; tool_call_id?: string; name?: string }
 export interface ToolDef { name: string; description: string; parameters: any }
@@ -64,7 +65,31 @@ async function callOne(e: Endpoint, messages: ChatMsg[], tools: ToolDef[] | unde
 }
 
 /** Try the primary provider, then the fallback (e.g. when a free tier is rate limited). */
+/** Demo workspace only: a scripted assistant that really calls the read tools and writes a briefing from their output. */
+function demoChat(messages: ChatMsg[], tools?: ToolDef[]): ChatResult {
+  const lastUser = [...messages].map((m, i) => ({ m, i })).filter(x => x.m.role === 'user').pop()?.i ?? 0
+  const results = messages.slice(lastUser).filter(m => m.role === 'tool')
+  const ask = String(messages[lastUser]?.content ?? '').toLowerCase()
+  if (!results.length && tools?.length) {
+    const want = ['business_snapshot', 'overdue_invoices', 'stalled_jobs', 'open_tickets', 'list_leads'].filter(n => tools.some(t => t.name === n))
+    if (want.length) return { content: '', tokens: 0, model: 'demo-assistant', tool_calls: want.map((n, i) => ({ id: 'demo' + i, name: n, args: {} })) }
+  }
+  const get = (n: string) => { const m = results.find(r => r.name === n); try { return JSON.parse(m?.content ?? 'null') } catch { return null } }
+  const snap = get('business_snapshot'), od = get('overdue_invoices') ?? [], st = get('stalled_jobs') ?? {}, tk = get('open_tickets') ?? [], ld = get('list_leads') ?? []
+  const lines = [`Here is where things stand (live data from this demo workspace).`]
+  if (snap) lines.push(`• ${snap.open_jobs} open jobs, revenue this month AED ${Math.round(snap.revenue_month_aed).toLocaleString('en-US')}, unbilled work AED ${Math.round(snap.unbilled_revenue_aed).toLocaleString('en-US')}.`, `• Receivables AED ${Math.round(snap.ar_outstanding_aed).toLocaleString('en-US')}, of which AED ${Math.round(snap.ar_overdue_aed).toLocaleString('en-US')} is overdue. Cash and bank AED ${Math.round(snap.cash_aed).toLocaleString('en-US')}.`)
+  if (od.length) lines.push(`• Chase first: ${od.slice(0, 3).map((o: any) => `${o.customer} (${o.invoice_no}, ${o.days_overdue} days, ${o.balance.toLocaleString('en-US')})`).join('; ')}.`)
+  const late = (st.eta_passed ?? []).length + (st.free_time_ending ?? []).length + (st.no_update_5d ?? []).length
+  if (late) lines.push(`• ${late} shipment alerts: ${[...(st.eta_passed ?? []).map((j: any) => j.job_no + ' ETA passed'), ...(st.free_time_ending ?? []).map((j: any) => j.container_no + ' free time ending')].slice(0, 3).join(', ')}.`)
+  if (tk.length) lines.push(`• ${tk.length} open tickets, oldest: “${tk[tk.length - 1].subject}”.`)
+  if (ld.length) lines.push(`• ${ld.length} recent leads; newest is ${ld[0].company}.`)
+  lines.push(`Suggested next actions: call the largest overdue customer today, chase carriers on late shipments, and follow up the newest lead.`, `(Demo mode: this assistant is scripted. In your production workspace Jarvis uses the AI model you connect under Integrations.)`)
+  void ask
+  return { content: lines.join('\n'), tool_calls: [], tokens: 0, model: 'demo-assistant' }
+}
+
 export async function chat(messages: ChatMsg[], tools?: ToolDef[], modelOverride?: string): Promise<ChatResult> {
+  if (inDemo()) return demoChat(messages, tools)
   const eps = endpoints(modelOverride)
   if (!eps.length) throw new Error('AI is not configured. Choose a provider under Integrations → AI.')
   let last: Error | null = null

@@ -2,6 +2,8 @@
 import { q } from '../db'
 import { createRecord, getDef, patchRecord, type Ctx, type Rec } from '../engine'
 import { loadUser } from '../auth'
+import { config } from '../config'
+import { seedExtras } from './demo-extra'
 import { addDays, todayStr } from '../util'
 import { postInvoice, postBill, postReceipt } from '../domain/finance'
 import { generateInvoicesFromJob, createBillFromJobCosts, addJobEvent, ensureTrackingToken } from '../domain/jobs'
@@ -10,9 +12,23 @@ import { convertQuoteToJob } from '../domain/sales'
 
 const idBy = (table: string, col: string, v: string) => q.val<number>(`SELECT id FROM ${table} WHERE ${col} = ? AND deleted_at IS NULL`, v)!
 
-export function seedDemo(base: Ctx): any {
-  const admin = loadUser(1)
-  const ctx: Ctx = { user: admin, system: true, ip: base.ip }
+const STAFF: [string, string, string, string][] = [
+  ['Layla Hassan', 'layla.hassan@demo.elvora', 'Sales', 'SAL'], ['Omar Farouk', 'omar.farouk@demo.elvora', 'Operations', 'OPS'], ['Priya Nair', 'priya.nair@demo.elvora', 'Accounts', 'ACC'],
+  ['Khalid Al Mazrouei', 'khalid.almazrouei@demo.elvora', 'Warehouse', 'WHS'], ['Sara Thomas', 'sara.thomas@demo.elvora', 'HR', 'HR'],
+]
+/** The demo presenter has full (Admin) access; the other staff are fictional colleagues so owners, assignees and approvers look real. */
+function createDemoUsers(): number {
+  const sys: Ctx = { user: null, system: true }
+  const role = (n: string) => q.val<number>(`SELECT id FROM roles WHERE name = ?`, n)!, dept = (c: string) => idBy('departments', 'code', c), dxb = idBy('branches', 'code', 'DXB')
+  const presenter = createRecord(getDef('users'), { name: 'Demo Presenter', email: config.demo.email, password: config.demo.password, role_id: role('Admin'), branch_id: dxb, department_id: dept('MGT'), designation: 'General Manager (demo)', active: true, must_change_password: false }, sys)
+  for (const [name, email, r, d] of STAFF) createRecord(getDef('users'), { name, email, password: 'Demo-' + Math.random().toString(36).slice(2) + 'Aa1!x', role_id: role(r), branch_id: dxb, department_id: dept(d), active: true, must_change_password: false }, sys)
+  return presenter.id
+}
+
+export async function seedDemoScenarios(): Promise<void> {
+  const presenter = createDemoUsers()
+  const admin = loadUser(presenter)
+  const ctx: Ctx = { user: admin, system: true }
   const mk = (e: string, p: Rec): Rec => createRecord(getDef(e), p, ctx)
   const today = todayStr(), d = (n: number) => addDays(today, n)
   const loc = (c: string) => idBy('locations', 'code', c), carrier = (n: string) => q.val<number>(`SELECT id FROM carriers WHERE name LIKE ? AND deleted_at IS NULL`, `${n}%`)!
@@ -124,5 +140,5 @@ export function seedDemo(base: Ctx): any {
   mk('tasks', { title: 'Send Q4 rate review to Gulf Textile', due_date: d(-1), assignee_id: owner, priority: 'High' })
   mk('contracts', { title: 'Annual freight services agreement', party_id: c1.id, type: 'Rate contract', status: 'Active', start_date: d(-300), end_date: d(40), credit_days: 30, owner_id: owner, value: 600000 })
   mk('announcements', { title: 'Peak season surcharge notice – Far East trade', category: 'Carrier notice', body: 'Several lines have announced a peak season surcharge from the 15th. Sales: please reflect in new quotations and inform key accounts.' })
-  return { ok: true, customers: 6, jobs: 8 }
+  await seedExtras(ctx)
 }

@@ -109,7 +109,7 @@ export default async function (app: FastifyInstance) {
     const size = fs.existsSync(dirs.db) ? fs.statSync(dirs.db).size : 0
     let upl = 0; const walk = (d: string) => { for (const f of fs.readdirSync(d, { withFileTypes: true })) { const p = path.join(d, f.name); if (f.isDirectory()) walk(p); else upl += fs.statSync(p).size } }
     if (fs.existsSync(dirs.uploads)) walk(dirs.uploads)
-    return { version: '1.0.0', node: process.version, env: config.env, timezone: config.timezone, db_bytes: size, upload_bytes: upl, smtp: smtpConfigured(), counts, uptime_s: Math.round(process.uptime()), demo_possible: !(counts.jobs > 0 || counts.parties > 0) }
+    return { version: '1.0.0', node: process.version, env: config.env, timezone: config.timezone, db_bytes: size, upload_bytes: upl, smtp: smtpConfigured(), counts, uptime_s: Math.round(process.uptime()) }
   })
   app.get('/api/admin/backups', async (req) => {
     need(req, 'admin', 'view')
@@ -131,12 +131,5 @@ export default async function (app: FastifyInstance) {
     return reply.send(fs.createReadStream(p))
   })
 
-  app.post('/api/admin/demo-data', async (req) => {
-    need(req, 'admin', 'create')
-    const n = (e: string) => q.val<number>(`SELECT COUNT(*) FROM ${e} WHERE deleted_at IS NULL`) ?? 0
-    if (n('jobs') > 0 || n('parties') > 0) throw bad('Demo data can only be loaded into an empty workspace (no customers or jobs yet).')
-    const { seedDemo } = await import('../seed/demo')
-    return seedDemo(req.ctx)
-  })
   void loadSettings
 }

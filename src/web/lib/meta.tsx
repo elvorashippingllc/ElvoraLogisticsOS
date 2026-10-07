@@ -4,7 +4,7 @@ import type { EntityDef, FieldDef, NavGroup, Action } from '@shared/types'
 import { get } from './api'
 
 export interface MetaEntity extends EntityDef { customFieldDefs: FieldDef[] }
-export interface Me { id: number; name: string; email: string; role: string; permissions: '*' | Record<string, string[]>; branch_id: number | null; party_id: number | null; totp: boolean; mustChangePassword: boolean; defaultPassword: boolean; lastLogin?: string }
+export interface Me { demo?: boolean; id: number; name: string; email: string; role: string; permissions: '*' | Record<string, string[]>; branch_id: number | null; party_id: number | null; totp: boolean; mustChangePassword: boolean; defaultPassword: boolean; lastLogin?: string }
 export interface Meta { entities: MetaEntity[]; nav: NavGroup[]; modules: { key: string; label: string }[]; perms: Record<string, string[]>; settings: Record<string, any> }
 interface Ctx { me: Me | null; meta: Meta | null; loading: boolean; def: (k: string) => MetaEntity; can: (module: string, a?: Action) => boolean; reload: () => Promise<void>; setMe: (m: Me | null) => void }
 const C = createContext<Ctx>(null as any)

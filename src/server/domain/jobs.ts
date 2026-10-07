@@ -1,5 +1,5 @@
 import crypto from 'node:crypto'
-import { q } from '../db'
+import { q, inDemo } from '../db'
 import type { Hooks } from '../hooks'
 import { bad, r2, toCents, fromCents, nowLocal, todayStr, addDays, daysBetween, nowIso } from '../util'
 import { createRecord, getDef, getRecord, insertRow, patchRecord, formatNumber, nextSeq, SYSTEM_CTX, type Ctx, type Rec } from '../engine'
@@ -298,7 +298,7 @@ export function duplicateJob(jobId: number, ctx: Ctx): Rec {
 export function ensureTrackingToken(jobId: number): string {
   const row = q.get(`SELECT token FROM job_tracking_tokens WHERE job_id = ?`, jobId)
   if (row) return row.token
-  const token = crypto.randomBytes(16).toString('hex')
+  const token = (inDemo() ? 'demo-' : '') + crypto.randomBytes(16).toString('hex')
   q.run(`INSERT INTO job_tracking_tokens(job_id, token, created_at) VALUES (?,?,?)`, jobId, token, nowIso())
   return token
 }

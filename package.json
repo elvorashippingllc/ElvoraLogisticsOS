@@ -2,7 +2,7 @@
   "name": "elvora-logistics-os",
   "version": "1.0.0",
   "private": true,
-  "description": "Elvora Logistics OS \u2014 freight forwarding, CRM, jobs, accounts, warehouse and transport ERP for Elvora Shipping LLC",
+  "description": "Elvora Logistics OS \u2013 freight forwarding & logistics ERP",
   "type": "module",
   "engines": {
     "node": ">=22.0.0"
@@ -18,7 +18,9 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "tsx --env-file-if-exists=.env tests/smoke.ts",
     "test:integrations": "tsx --env-file-if-exists=.env tests/phase2.ts",
-    "docs:build": "node tools/docs/build.mjs && node tools/docs/build-all.mjs && node tools/docs/readme.mjs"
+    "docs:build": "node tools/docs/build.mjs && node tools/docs/build-all.mjs && node tools/docs/readme.mjs",
+    "test:handover": "tsx --env-file-if-exists=.env tests/handover.ts",
+    "test:all": "bash tests/run-all.sh"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1147.0",

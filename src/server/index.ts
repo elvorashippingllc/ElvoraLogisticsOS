@@ -13,7 +13,7 @@ async function main() {
   syncSchema()
   seedReference()
   ;(await import('./ai/agents')).ensureAgents()
-  if (cfg.seedDemo) { const { seedDemo } = await import('./seed/demo'); const n = db.prepare(`SELECT COUNT(*) c FROM parties WHERE deleted_at IS NULL`).get() as any; if (!n.c) seedDemo({ user: null, system: true }) }
+  if (cfg.demo.enabled) { try { const t0 = Date.now(); await (await import('./demo/workspace')).rebuildDemoWorkspace(); console.log(`Demo workspace ready (${Date.now() - t0} ms)`) } catch (e) { console.error('Demo workspace could not be built – continuing without it', e) } }
   const app = await buildApp()
   await app.listen({ port: config.port, host: config.host })
   startScheduler()

@@ -1,13 +1,23 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LogIn, Eye, EyeOff } from 'lucide-react'
-import { post } from '../lib/api'
+import { get, post } from '../lib/api'
 import { useMeta } from '../lib/meta'
 
 export function Login() {
   const { reload } = useMeta(); const nav = useNavigate()
   const [email, setEmail] = useState(''); const [pw, setPw] = useState(''); const [totp, setTotp] = useState(''); const [needTotp, setNeedTotp] = useState(false)
   const [show, setShow] = useState(false); const [err, setErr] = useState(''); const [busy, setBusy] = useState(false)
+  const [demo, setDemo] = useState<{ enabled: boolean; email: string; password: string } | null>(null)
+  useEffect(() => { void get<any>('/api/demo/status').then(setDemo).catch(() => {}) }, [])
+  const login = async (em: string, pass: string) => {
+    setErr(''); setBusy(true)
+    try {
+      const r = await post<any>('/api/auth/login', { email: em, password: pass, totp: needTotp ? totp : undefined })
+      if (r.needsTotp) { setNeedTotp(true); return }
+      await reload(); nav('/', { replace: true })
+    } catch (e: any) { setErr(e.message) } finally { setBusy(false) }
+  }
   const submit = async (e: React.FormEvent) => {
     e.preventDefault(); setErr(''); setBusy(true)
     try {
@@ -41,6 +51,7 @@ export function Login() {
           <div className="relative mb-4"><input id="pw" className="input pr-11" style={{ minHeight: 44 }} type={show ? 'text' : 'password'} autoComplete="current-password" required value={pw} onChange={e => setPw(e.target.value)} /><button type="button" className="absolute right-1 top-1 btn ghost icon" onClick={() => setShow(s => !s)} aria-label={show ? 'Hide password' : 'Show password'}>{show ? <EyeOff /> : <Eye />}</button></div>
           {needTotp && <><label className="label" htmlFor="totp">Authenticator code</label><input id="totp" className="input mb-4 tracking-[.4em] text-center text-lg" style={{ minHeight: 44 }} inputMode="numeric" autoComplete="one-time-code" maxLength={6} autoFocus required value={totp} onChange={e => setTotp(e.target.value.replace(/\D/g, ''))} /></>}
           <button className="btn green w-full" style={{ minHeight: 46, fontSize: 15 }} disabled={busy}><LogIn /> {busy ? 'Signing in…' : needTotp ? 'Verify & sign in' : 'Sign in'}</button>
+          {demo?.enabled && <div className="mt-5 pt-5 border-t border-line"><button type="button" className="btn outline w-full" style={{ minHeight: 44 }} disabled={busy} onClick={() => void login(demo.email, demo.password)}>Explore the demo workspace</button><p className="text-xs text-muted mt-2 mb-0">A separate, fictional company with sample customers, shipments, invoices and AI activity. It never touches real data and resets every night.</p></div>}
           <p className="text-xs text-muted mt-6 leading-relaxed">Access is limited to authorised Elvora staff and customers. Activity is logged. After five failed attempts the account is locked for 15 minutes.</p>
         </form>
       </div>

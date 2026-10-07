@@ -1,5 +1,6 @@
 import { getDef, insertRow, SYSTEM_CTX } from '../engine'
 import { nowLocal } from '../util'
+import { inDemo } from '../db'
 
 export function logIntegration(provider: string, action: string, ok: boolean, summary: string, detail?: unknown, link?: { entity: string; id: number }) {
   try {
@@ -12,6 +13,7 @@ export function logIntegration(provider: string, action: string, ok: boolean, su
 
 /** fetch with a timeout and JSON/text handling. */
 export async function http(url: string, init: RequestInit & { timeoutMs?: number } = {}): Promise<{ ok: boolean; status: number; data: any; text: string }> {
+  if (inDemo()) throw new Error('External connections are disabled in the demo workspace')
   const ctl = new AbortController()
   const t = setTimeout(() => ctl.abort(), init.timeoutMs ?? 20000)
   try {
