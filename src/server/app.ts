@@ -20,7 +20,7 @@ declare module 'fastify' {
 
 export const COOKIE = 'elvora_sid'
 export const DEMO_PREFIX = 'demo.'
-const PUBLIC = [/^\/api\/demo\/status$/, /^\/api\/health$/, /^\/api\/auth\/login$/, /^\/api\/public\//, /^\/api\/auth\/branding$/]
+const PUBLIC = [/^\/api\/demo\/status$/, /^\/api\/health$/, /^\/api\/health\/db$/, /^\/api\/auth\/login$/, /^\/api\/public\//, /^\/api\/auth\/branding$/]
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({ logger: config.isProd ? { level: 'info' } : { level: 'warn' }, trustProxy: config.trustProxy, bodyLimit: 12 * 1024 * 1024 })
@@ -92,6 +92,14 @@ export async function buildApp(): Promise<FastifyInstance> {
   ])
   for (const m of mods) await app.register(m.default)
   app.get('/api/health', async () => ({ ok: true, time: new Date().toISOString() }))
+  // Database round-trip time. The app talks to PostgreSQL synchronously, so this is the number that decides whether the host is close enough to the database.
+  app.get('/api/health/db', async () => {
+    const { q, isPg } = await import('./db')
+    const t = process.hrtime.bigint(); const n = 10
+    for (let i = 0; i < n; i++) q.val('SELECT 1')
+    const ms = Number(process.hrtime.bigint() - t) / 1e6 / n
+    return { ok: true, driver: isPg ? 'postgresql' : 'sqlite', avg_query_ms: Math.round(ms * 100) / 100, verdict: !isPg ? 'local database' : ms < 10 ? 'excellent' : ms < 40 ? 'good' : ms < 100 ? 'slow - pages will feel sluggish' : 'too slow - move the app closer to the database' }
+  })
 
   // static web app
   const webDir = path.resolve('dist/web')

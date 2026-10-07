@@ -4,6 +4,11 @@ import fs from 'node:fs'
 const env = process.env
 const bool = (v: string | undefined, d: boolean) => (v === undefined || v === '' ? d : ['1', 'true', 'yes', 'on'].includes(v.toLowerCase()))
 
+if (process.env.REQUIRE_DATABASE_URL === 'true' && !process.env.DATABASE_URL) {
+  // Hosts with a disposable disk (e.g. Cloudflare Containers) set this so a missing secret can never silently create a throw-away SQLite database.
+  throw new Error('DATABASE_URL is required on this host but is not set. Refusing to start on a local database file.')
+}
+
 export const config = {
   env: env.NODE_ENV ?? 'development',
   isProd: (env.NODE_ENV ?? 'development') === 'production',
