@@ -52,7 +52,7 @@ export function Badge({ value, tone }: { value?: string | null; tone?: 'green' |
   return <span className={cls('badge', tone ?? statusTone(value))}>{value}</span>
 }
 export const Spinner = ({ size = 18 }: { size?: number }) => <Loader2 size={size} className="animate-spin text-muted" />
-export function Loading({ label = 'Loading…' }: { label?: string }) { return <div className="flex items-center gap-2 p-6 text-muted text-sm"><Spinner /> {label}</div> }
+export function Loading({ label = 'Loading…' }: { label?: string }) { return <div className="loading-state flex items-center gap-2 p-6 text-muted text-sm" role="status" aria-live="polite"><Spinner /> {label}</div> }
 export function Empty({ title, hint, action, icon }: { title: string; hint?: ReactNode; action?: ReactNode; icon?: ReactNode }) {
   return <div className="flex flex-col items-center text-center gap-2 py-12 px-4"><div className="text-muted">{icon ?? <Inbox size={34} strokeWidth={1.5} />}</div><div className="font-display font-bold text-ink">{title}</div>{hint && <div className="text-sm text-muted max-w-md">{hint}</div>}{action}</div>
 }
@@ -107,14 +107,15 @@ export function Tabs({ tabs, value, onChange, variant = 'bar' }: { tabs: { key: 
 }
 export function PageHeader({ title, subtitle, actions, back, icon }: { title: ReactNode; subtitle?: ReactNode; actions?: ReactNode; back?: ReactNode; icon?: ReactNode }) {
   return (
-    <div className="flex items-start gap-3 flex-wrap mb-4">
+    <div className="page-header flex items-start gap-3 flex-wrap mb-4">
       {back}
       {icon && <div className="w-10 h-10 rounded-xl bg-mint text-fold grid place-items-center flex-none">{icon}</div>}
-      <div className="min-w-0 flex-1"><h1 className="text-[22px] font-extrabold m-0 truncate">{title}</h1>{subtitle && <div className="text-sm text-muted mt-0.5">{subtitle}</div>}</div>
+      <div className="min-w-0 flex-1"><h1 className="text-[22px] font-extrabold m-0 break-words">{title}</h1>{subtitle && <div className="text-sm text-muted mt-0.5">{subtitle}</div>}</div>
       <div className="flex items-center gap-2 flex-wrap">{actions}</div>
     </div>
   )
 }
 export function Kpi({ label, value, hint, tone, onClick }: { label: string; value: ReactNode; hint?: ReactNode; tone?: 'red' | 'amber' | 'green'; onClick?: () => void }) {
-  return <div className={cls('card kpi', onClick && 'cursor-pointer hover:shadow-md transition-shadow')} onClick={onClick} style={tone ? { borderTop: `3px solid ${tone === 'red' ? '#c32135' : tone === 'amber' ? '#d9a21a' : '#007b52'}` } : undefined}><div className="l">{label}</div><div className="v">{value}</div>{hint && <div className="text-xs text-muted mt-0.5">{hint}</div>}</div>
+  return <div className={cls('card kpi', onClick && 'cursor-pointer hover:shadow-md transition-shadow')} role={onClick ? 'button' : undefined} tabIndex={onClick ? 0 : undefined} onKeyDown={e => { if (onClick && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onClick() } }} onClick={onClick} style={tone ? { borderTop: `3px solid ${tone === 'red' ? '#c32135' : tone === 'amber' ? '#d9a21a' : '#007b52'}` } : undefined}><div className="l">{label}</div><div className="v">{value}</div>{hint && <div className="text-xs text-muted mt-0.5">{hint}</div>}</div>
 }
+

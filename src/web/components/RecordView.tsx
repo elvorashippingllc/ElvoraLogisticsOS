@@ -1,3 +1,4 @@
+import { AccountCard } from './ui/account-card'
 import { useMemo } from 'react'
 import { useMeta, type MetaEntity } from '../lib/meta'
 import { CellValue } from './Fields'
@@ -9,6 +10,7 @@ export function RecordView({ def, rec }: { def: MetaEntity; rec: Record<string, 
   const custom = def.customFieldDefs ?? []
   return (
     <div>
+      {def.key === 'bank_accounts' && <div className="mb-6 max-w-xl"><AccountCard def={def} rec={rec} /></div>}
       {sections.map((s, i) => {
         const shown = s.fields.filter(f => rec[f.name] !== null && rec[f.name] !== undefined && rec[f.name] !== '' && rec[f.name] !== false)
         if (!shown.length) return null
@@ -28,3 +30,4 @@ export function RecordView({ def, rec }: { def: MetaEntity; rec: Record<string, 
   )
 }
 export { useMeta }
+

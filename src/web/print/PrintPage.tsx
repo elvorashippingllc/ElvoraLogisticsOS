@@ -1,3 +1,4 @@
+import { DocumentPrinter } from '../components/ui/document-printer'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
@@ -87,7 +88,7 @@ function DoDoc({ r }: { r: any }) {
   const j = job.data; const L = j?._labels ?? {}
   return (<>
     <Title sub={<div style={{ fontSize: 15, fontWeight: 800 }}>{r.do_no}</div>} watermark={r.status === 'Draft' ? 'DRAFT' : r.status === 'Cancelled' ? 'CANCELLED' : undefined}>DELIVERY ORDER</Title>
-    {!j ? <Loading /> : <><Grid cols={2}><Box label="Deliver / release to">{r._labels.issued_to_id}</Box><Kv items={[['DO date', fmtDate(r.do_date)], ['Valid until', fmtDate(r.valid_until)], ['Job no.', j.job_no], ['MBL / AWB', j.mbl_no], ['HBL / HAWB', j.hbl_no], ['Vessel / flight', [j.vessel_name, j.voyage_no].filter(Boolean).join(' ')], ['Port of discharge', L.pod_id], ['ETA / ATA', fmtDateTime(j.ata ?? j.eta)]]} /></Grid>
+    {!j ? <DocumentPrinter /> : <><Grid cols={2}><Box label="Deliver / release to">{r._labels.issued_to_id}</Box><Kv items={[['DO date', fmtDate(r.do_date)], ['Valid until', fmtDate(r.valid_until)], ['Job no.', j.job_no], ['MBL / AWB', j.mbl_no], ['HBL / HAWB', j.hbl_no], ['Vessel / flight', [j.vessel_name, j.voyage_no].filter(Boolean).join(' ')], ['Port of discharge', L.pod_id], ['ETA / ATA', fmtDateTime(j.ata ?? j.eta)]]} /></Grid>
       <Grid cols={1}><Box label="Description of goods">{[j.commodity, j.packages && `${j.packages} ${j.package_type ?? 'packages'}`, j.gross_weight && `Gross weight ${j.gross_weight} kg`, j.volume_cbm && `${j.volume_cbm} CBM`, j.marks_no && `Marks: ${j.marks_no}`].filter(Boolean).join(' · ')}</Box></Grid>
       {j.children.containers.length > 0 && <table><thead><tr><th>Container</th><th>Type</th><th>Seal</th><th style={{ textAlign: 'right' }}>Gross wt</th></tr></thead><tbody>{j.children.containers.map((c: any) => <tr key={c.id}><td>{c.container_no}</td><td>{c._labels.type_id}</td><td>{c.seal_no}</td><R>{fmtNum(c.gross_weight)}</R></tr>)}</tbody></table>}
       {r.release_note && <Box label="Release conditions" className="mt-2">{r.release_note}</Box>}</>}
@@ -155,7 +156,7 @@ function StatementDoc({ partyId }: { partyId: string }) {
   return (<>
     <div className="no-print" style={{ display: 'flex', gap: 8, marginBottom: 12 }}><input className="input" type="date" value={from} onChange={e => setFrom(e.target.value)} style={{ width: 160 }} /><input className="input" type="date" value={to} onChange={e => setTo(e.target.value)} style={{ width: 160 }} /></div>
     <Title sub={<div>{fmtDate(from)} – {fmtDate(to)}</div>}>STATEMENT OF ACCOUNT</Title>
-    {!s ? <Loading /> : <><Grid cols={2}><Box label="Account">{`${s.party.name}\n${s.party.code}${s.party.trn ? `\nTRN ${s.party.trn}` : ''}`}</Box><Kv items={[['Opening balance (AED)', fmtMoney(s.opening)], ['Closing balance (AED)', fmtMoney(s.closing)]]} /></Grid>
+    {!s ? <DocumentPrinter /> : <><Grid cols={2}><Box label="Account">{`${s.party.name}\n${s.party.code}${s.party.trn ? `\nTRN ${s.party.trn}` : ''}`}</Box><Kv items={[['Opening balance (AED)', fmtMoney(s.opening)], ['Closing balance (AED)', fmtMoney(s.closing)]]} /></Grid>
       <table><thead><tr><th>Date</th><th>Type</th><th>Document</th><th>Description</th><th style={{ textAlign: 'right' }}>Debit</th><th style={{ textAlign: 'right' }}>Credit</th><th style={{ textAlign: 'right' }}>Balance</th></tr></thead><tbody><tr><td colSpan={6}><i>Opening balance</i></td><R>{fmtMoney(s.opening)}</R></tr>{s.rows.map((r: any, i: number) => <tr key={i}><td>{fmtDate(r.date)}</td><td>{r.type}</td><td>{r.doc_no}</td><td>{r.description}</td><R>{r.debit ? fmtMoney(r.debit) : ''}</R><R>{r.credit ? fmtMoney(r.credit) : ''}</R><R>{fmtMoney(r.balance)}</R></tr>)}<tr style={{ fontWeight: 800, background: '#dcf1e6' }}><td colSpan={6}>Closing balance (AED) — positive = amount due to Elvora</td><R>{fmtMoney(s.closing)}</R></tr></tbody></table><Foot>Please notify us of any discrepancy within 7 days. {S().invoice_footer}</Foot></>}
   </>)
 }
@@ -168,12 +169,12 @@ export function PrintPage() {
   const doc = sp.get('doc')
   const doDoc = useQuery({ queryKey: ['print-do', id], enabled: entity === 'jobs' && doc === 'do', queryFn: () => get<{ rows: any[] }>('/api/e/delivery_orders', { filters: JSON.stringify([{ field: 'job_id', op: 'eq', value: Number(id) }]), pageSize: 1 }) })
   useEffect(() => { if (doDoc.data?.rows[0]) nav(`/print/delivery_orders/${doDoc.data.rows[0].id}`, { replace: true }) }, [doDoc.data])
-  if (!meta) return <Loading />
+  if (!meta) return <DocumentPrinter />
   const body = (() => {
     if (entity === 'statement' || entity === 'parties') return <StatementDoc partyId={id} />
-    if (entity === 'jobs' && doc === 'do') return doDoc.data && !doDoc.data.rows.length ? <p>No delivery order exists for this job yet. Create one from the job's Create menu.</p> : <Loading />
+    if (entity === 'jobs' && doc === 'do') return doDoc.data && !doDoc.data.rows.length ? <p>No delivery order exists for this job yet. Create one from the job's Create menu.</p> : <DocumentPrinter />
     if (q.error) return <ErrorBox error={q.error} />
-    if (!q.data) return <Loading />
+    if (!q.data) return <DocumentPrinter />
     const rs = q.data
     return rs.map((r, i) => {
       const e = <div key={i} style={{ pageBreakAfter: i < rs.length - 1 ? 'always' : 'auto' }}>{(() => { switch (entity) {
@@ -204,3 +205,4 @@ export function PrintPage() {
   )
 }
 void Link
+

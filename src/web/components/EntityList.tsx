@@ -1,3 +1,4 @@
+import { AccountCarousel } from './ui/account-card'
 import { useMemo, useState, useEffect, type ReactNode } from 'react'
 import { useNavigate, useSearchParams, Link } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -88,6 +89,7 @@ export function EntityList({ entity, preset, embedded, title, hideNew, createPre
           {canCreate && <button className="btn green" onClick={() => setEditing('new')}><Plus /> New {def.label}</button>}
         </>} />
       )}
+      {entity === 'bank_accounts' && !embedded && !query.error && <AccountCarousel def={def} rows={rows} />}
       <div className="card overflow-hidden">
         <div className="flex items-center gap-2 p-3 flex-wrap border-b border-line">
           <div className="relative flex-1 min-w-[200px] max-w-[420px]"><Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" /><input className="input pl-9" placeholder={`Search ${def.plural.toLowerCase()}…`} value={search} onChange={e => setSearch(e.target.value)} aria-label="Search" /></div>
@@ -210,3 +212,4 @@ function ImportModal({ def, onClose, onDone }: { def: MetaEntity; onClose: () =>
     </Modal>
   )
 }
+
