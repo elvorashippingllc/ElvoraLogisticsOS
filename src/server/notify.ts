@@ -4,7 +4,7 @@ import { nowIso } from './util'
 export function notify(userId: number | null | undefined, title: string, body = '', link = '', kind = 'info', dedupe?: string) {
   if (!userId) return
   try {
-    q.run(`INSERT OR IGNORE INTO notifications(user_id, kind, title, body, link, created_at, dedupe_key) VALUES (?,?,?,?,?,?,?)`, userId, kind, title, body, link, nowIso(), dedupe ?? null)
+    q.run(`INSERT INTO notifications(user_id, kind, title, body, link, created_at, dedupe_key) VALUES (?,?,?,?,?,?,?) ON CONFLICT DO NOTHING`, userId, kind, title, body, link, nowIso(), dedupe ?? null)
   } catch { /* never fail business logic for a notification */ }
 }
 export function notifyRole(permModule: string, title: string, body = '', link = '', kind = 'approval', dedupe?: string) {

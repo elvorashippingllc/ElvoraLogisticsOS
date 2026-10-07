@@ -17,9 +17,8 @@ const fromAddr = () => String(getSetting('resend_from') || getSetting('smtp_from
 export function queueEmail(m: MailInput): number {
   const status = smtpConfigured() ? 'Queued' : 'Not configured'
   const now = nowIso()
-  const r = q.run(`INSERT INTO email_outbox(to_addr, cc_addr, subject, body, status, link_entity, link_id, attachments, version, created_at, updated_at, created_by, updated_by) VALUES (?,?,?,?,?,?,?,?,1,?,?,?,?)`,
+  const id = q.insert(`INSERT INTO email_outbox(to_addr, cc_addr, subject, body, status, link_entity, link_id, attachments, version, created_at, updated_at, created_by, updated_by) VALUES (?,?,?,?,?,?,?,?,1,?,?,?,?)`,
     m.to, m.cc ?? null, m.subject, m.body, status, m.link_entity ?? null, m.link_id ?? null, m.attachments?.length ? JSON.stringify(m.attachments) : null, now, now, m.userId ?? null, m.userId ?? null)
-  const id = Number(r.lastInsertRowid)
   if (status === 'Queued') setImmediate(() => { void processOutbox() })
   return id
 }

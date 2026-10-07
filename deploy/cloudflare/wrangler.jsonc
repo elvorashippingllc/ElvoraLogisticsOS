@@ -1,0 +1,27 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "elvora-os",
+  "main": "src/index.ts",
+  // Set this to the date you deploy.
+  "compatibility_date": "2026-10-07",
+  "observability": { "enabled": true },
+
+  // Wakes the app every 5 minutes so its own scheduler keeps running (reminders, e-mail outbox, nightly backup).
+  "triggers": { "crons": ["*/5 * * * *"] },
+
+  "containers": [
+    {
+      "class_name": "ElvoraOS",
+      "image": "../../Dockerfile",
+      "image_build_context": "../..",
+      // 4 GiB: Node + the Chromium used for PDFs. Do not go below "basic" (1 GiB) and expect PDFs to work.
+      "instance_type": "standard-1",
+      // The app must run as exactly ONE instance (single database connection, single scheduler).
+      "max_instances": 1,
+      // Keep the app near the Supabase database (project region ap-southeast-1, Singapore).
+      "constraints": { "regions": ["APAC"] }
+    }
+  ],
+  "durable_objects": { "bindings": [{ "name": "ELVORA", "class_name": "ElvoraOS" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["ElvoraOS"] }]
+}

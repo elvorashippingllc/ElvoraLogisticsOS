@@ -4,12 +4,20 @@ import fs from 'node:fs'
 const env = process.env
 const bool = (v: string | undefined, d: boolean) => (v === undefined || v === '' ? d : ['1', 'true', 'yes', 'on'].includes(v.toLowerCase()))
 
+if (process.env.REQUIRE_DATABASE_URL === 'true' && !process.env.DATABASE_URL) {
+  // Hosts with a disposable disk (e.g. Cloudflare Containers) set this so a missing secret can never silently create a throw-away SQLite database.
+  throw new Error('DATABASE_URL is required on this host but is not set. Refusing to start on a local database file.')
+}
+
 export const config = {
   env: env.NODE_ENV ?? 'development',
   isProd: (env.NODE_ENV ?? 'development') === 'production',
   port: Number(env.PORT ?? 8080),
   host: env.HOST ?? '0.0.0.0',
   dataDir: path.resolve(env.DATA_DIR ?? 'data'),
+  /** When set, the app runs on PostgreSQL (e.g. Supabase) instead of the local SQLite file. */
+  databaseUrl: env.DATABASE_URL ?? '',
+  pgSchema: (env.PG_SCHEMA ?? 'elvora').replace(/[^a-z0-9_]/gi, '').toLowerCase() || 'elvora',
   baseUrl: env.PUBLIC_URL ?? '',
   timezone: env.APP_TIMEZONE ?? 'Asia/Dubai',
   baseCurrency: env.BASE_CURRENCY ?? 'AED',
@@ -47,3 +55,7 @@ export const dirs = {
 export function ensureDirs() {
   for (const d of [dirs.data, dirs.uploads, dirs.backups, dirs.demo]) fs.mkdirSync(d, { recursive: true })
 }
+
+/** Backup files: a copy of the SQLite file, or a gzip NDJSON snapshot when running on PostgreSQL. */
+export const BACKUP_EXT = config.databaseUrl ? '.json.gz' : '.db'
+export const isBackupFile = (f: string) => f.endsWith('.db') || f.endsWith('.json.gz')

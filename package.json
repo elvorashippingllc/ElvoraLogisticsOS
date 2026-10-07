@@ -2,7 +2,7 @@
   "name": "elvora-logistics-os",
   "version": "1.0.0",
   "private": true,
-  "description": "Elvora Logistics OS \u2013 freight forwarding & logistics ERP",
+  "description": "Elvora Logistics OS – freight forwarding & logistics ERP",
   "type": "module",
   "engines": {
     "node": ">=22.0.0"
@@ -19,6 +19,7 @@
     "test": "tsx --env-file-if-exists=.env tests/smoke.ts",
     "test:integrations": "tsx --env-file-if-exists=.env tests/phase2.ts",
     "docs:build": "node tools/docs/build.mjs && node tools/docs/build-all.mjs && node tools/docs/readme.mjs",
+    "test:compliance": "tsx --env-file-if-exists=.env tests/compliance.ts",
     "test:handover": "tsx --env-file-if-exists=.env tests/handover.ts",
     "test:all": "bash tests/run-all.sh"
   },
@@ -32,6 +33,7 @@
     "better-sqlite3": "^12.4.1",
     "fastify": "^5.6.1",
     "nodemailer": "^7.0.10",
+    "pg": "^8.23.1",
     "playwright-core": "^1.63.0",
     "ssh2-sftp-client": "^12.1.1",
     "zod": "^3.25.76"
@@ -43,6 +45,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^22.18.0",
     "@types/nodemailer": "^7.0.3",
+    "@types/pg": "^8.23.1",
     "@types/qrcode": "^1.5.5",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",

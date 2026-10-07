@@ -26,6 +26,7 @@ async function main() {
   r = await api('GET', '/api/auth/me'); ok('me returns full permissions for admin', r.data.permissions === '*' && r.data.defaultPassword === true, r.data)
   r = await api('GET', '/api/meta'); ok('meta lists entities and navigation', r.data.entities.length > 70 && r.data.nav.length >= 8, Object.keys(r.data))
   const meta = r.data
+  r = await api('PUT', '/api/admin/settings', { company_trn: '100123456700003' }); ok('company TRN saved (needed to post tax invoices)', r.status === 200 && r.data.company_trn === '100123456700003', r.data)
 
   sec('Master data seeded')
   r = await api('GET', '/api/e/countries?pageSize=1'); ok('countries seeded', r.data.total > 200, r.data.total)
@@ -186,7 +187,7 @@ async function main() {
   cookie = adminCookie
   r = await api('DELETE', `/api/e/parties/${cust}`); ok('cannot delete a customer that has records', r.status === 409, r.data)
   r = await api('PUT', '/api/e/users/1', { active: false }); ok('cannot deactivate yourself', r.status === 400, r.data)
-  r = await api('POST', '/api/admin/backups'); ok('database backup created', r.status === 200 && r.data.name?.endsWith('.db'), r.data)
+  r = await api('POST', '/api/admin/backups'); ok('database backup created', r.status === 200 && /\.(db|json\.gz)$/.test(r.data.name ?? ''), r.data)
 
   console.log(`\n${pass} passed, ${fail} failed`)
   if (fail) { console.log('Failures:\n - ' + failures.join('\n - ')); process.exit(1) }

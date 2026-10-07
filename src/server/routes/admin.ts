@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { z } from 'zod'
 import { db, q } from '../db'
-import { dirs, config } from '../config'
+import { dirs, config, BACKUP_EXT, isBackupFile } from '../config'
 import { loadSettings, publicSettings, setSettings, SETTING_DEFAULTS, SECRET_SETTINGS } from '../settings'
 import { audit, getDef, getRecord, SYSTEM_CTX, createRecord } from '../engine'
 import { bad, nowIso, safeJson, todayStr, notFound } from '../util'
@@ -20,8 +20,12 @@ export default async function (app: FastifyInstance) {
     const patch = { ...(req.body as Record<string, any>) }
     for (const k of SECRET_SETTINGS) if (patch[k] === '********') delete patch[k]
     delete patch.supabase_cursors; delete patch.seeded
-    const num = ['quote_validity_days', 'min_margin_pct', 'bill_approval_limit', 'payment_approval_limit', 'weight_divisor_air', 'weight_divisor_courier', 'free_days_default', 'smtp_port', 'edi_sftp_port']
+    const num = ['quote_validity_days', 'min_margin_pct', 'bill_approval_limit', 'payment_approval_limit', 'weight_divisor_air', 'weight_divisor_courier', 'sanctions_review_days', 'free_days_default', 'smtp_port', 'edi_sftp_port']
     for (const k of num) if (k in patch && patch[k] !== '') { const v = Number(patch[k]); if (!Number.isFinite(v) || v < 0) throw bad(`${k} must be a non-negative number`); patch[k] = v }
+    if ('company_trn' in patch && patch.company_trn && !/^\d{15}$/.test(String(patch.company_trn).replace(/\s/g, ''))) throw bad('A UAE TRN has 15 digits')
+    if ('company_trn' in patch) patch.company_trn = String(patch.company_trn ?? '').replace(/\s/g, '')
+    for (const [k, opts] of [['compliance_mode', ['enforce', 'advisory']], ['activity_scope_mode', ['off', 'warn', 'block']], ['vat_filing_frequency', ['Quarterly', 'Monthly']]] as const) if (k in patch && !(opts as readonly string[]).includes(patch[k])) throw bad(`${k} must be one of ${opts.join(', ')}`)
+    if ('financial_year_end' in patch && !/^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(patch.financial_year_end)) throw bad('Financial year end must be MM-DD, e.g. 12-31')
     if ('lock_date' in patch && patch.lock_date && !/^\d{4}-\d{2}-\d{2}$/.test(patch.lock_date)) throw bad('Lock date must be YYYY-MM-DD')
     const before = publicSettings()
     setSettings(patch)
@@ -113,11 +117,11 @@ export default async function (app: FastifyInstance) {
   })
   app.get('/api/admin/backups', async (req) => {
     need(req, 'admin', 'view')
-    return fs.readdirSync(dirs.backups).filter(f => f.endsWith('.db')).sort().reverse().map(f => ({ name: f, bytes: fs.statSync(path.join(dirs.backups, f)).size, at: fs.statSync(path.join(dirs.backups, f)).mtime.toISOString() }))
+    return fs.readdirSync(dirs.backups).filter(isBackupFile).sort().reverse().map(f => ({ name: f, bytes: fs.statSync(path.join(dirs.backups, f)).size, at: fs.statSync(path.join(dirs.backups, f)).mtime.toISOString() }))
   })
   app.post('/api/admin/backups', async (req) => {
     need(req, 'admin', 'edit')
-    const name = `elvora-${nowIso().replace(/[:.]/g, '-').slice(0, 19)}.db`
+    const name = `elvora-${nowIso().replace(/[:.]/g, '-').slice(0, 19)}${BACKUP_EXT}`
     await db.backup(path.join(dirs.backups, name))
     audit(req.ctx, getDef('branches'), 0, 'backup', { file: [null, name] }, name)
     return { name }
@@ -126,7 +130,7 @@ export default async function (app: FastifyInstance) {
     need(req, 'admin', 'export')
     const name = path.basename(String((req.params as any).name))
     const p = path.join(dirs.backups, name)
-    if (!name.endsWith('.db') || !fs.existsSync(p)) throw notFound('Backup not found')
+    if (!isBackupFile(name) || !fs.existsSync(p)) throw notFound('Backup not found')
     reply.header('content-type', 'application/octet-stream').header('content-disposition', `attachment; filename="${name}"`)
     return reply.send(fs.createReadStream(p))
   })

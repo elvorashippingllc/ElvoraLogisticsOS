@@ -4,6 +4,7 @@ import { jobHooks, shipmentHooks, customsHooks, customsLineHooks, transportHooks
 import { quoteHooks, partyHooks, leadHooks, opportunityHooks, contractHooks } from './domain/sales'
 import { invoiceHooks, billHooks, receiptHooks, paymentHooks, journalHooks, expenseHooks, bankTxnHooks } from './domain/finance'
 import { grnHooks, dispatchHooks, itemHooks } from './domain/warehouse'
+import { withCompliance, COMPLIANCE_KEYS } from './domain/compliance'
 import { userHooks, roleHooks, branchHooks, taskHooks, ticketHooks, leaveHooks, attendanceHooks, payslipHooks, poHooks, currencyHooks, activityHooks, apiKeyHooks, attachmentHooks } from './domain/misc'
 
 export interface HookArgs { def: EntityDef; rec: Rec; old: Rec | null; children: Record<string, Rec[]>; isNew: boolean; ctx: Ctx }
@@ -29,4 +30,11 @@ const registry: Record<string, () => Hooks> = {
   api_keys: () => apiKeyHooks, attachments: () => attachmentHooks,
 }
 const NONE: Hooks = {}
-export function hooksFor(key: string): Hooks { return registry[key]?.() ?? NONE }
+const wrapped = new Map<string, Hooks>()
+export function hooksFor(key: string): Hooks {
+  const base = registry[key]?.() ?? NONE
+  if (!COMPLIANCE_KEYS.has(key)) return base
+  let w = wrapped.get(key)
+  if (!w) { w = withCompliance(key, base); wrapped.set(key, w) }
+  return w
+}

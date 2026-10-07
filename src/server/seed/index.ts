@@ -3,12 +3,13 @@ import { config } from '../config'
 import { createRecord, getDef, SYSTEM_CTX } from '../engine'
 import { nowIso, todayStr } from '../util'
 import * as D from './data'
+import { seedCompliance } from './compliance'
 
 const done = (g: string) => !!q.val(`SELECT 1 FROM settings WHERE key = ?`, `seed:${g}`)
-const mark = (g: string) => q.run(`INSERT OR REPLACE INTO settings(key, value, updated_at) VALUES (?, '1', ?)`, `seed:${g}`, nowIso())
+const mark = (g: string) => q.run(`INSERT INTO settings(key, value, updated_at) VALUES (?, '1', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`, `seed:${g}`, nowIso())
 const idOf = (table: string, col: string, val: string) => q.val<number>(`SELECT id FROM ${table} WHERE ${col} = ? AND deleted_at IS NULL`, val)
 
-export function seedReference(opts: { users?: boolean } = {}) {
+export function seedReference(opts: { users?: boolean; demo?: boolean } = {}) {
   const withUsers = opts.users !== false
   const mk = (key: string, payload: Record<string, any>) => createRecord(getDef(key), payload, SYSTEM_CTX)
 
@@ -87,4 +88,5 @@ export function seedReference(opts: { users?: boolean } = {}) {
     mk('bank_accounts', { name: 'Petty cash', type: 'Petty cash', currency: 'AED', gl_account_id: idOf('accounts', 'code', '1010'), active: true })
     mark('banks')
   }
+  if (!done('compliance')) { seedCompliance({ demo: opts.demo }); mark('compliance') }
 }

@@ -43,14 +43,14 @@ export default async function (app: FastifyInstance) {
       data.lists.arrivals = q.all(`SELECT j.id, j.job_no, pr.name client, pol.code pol, pod.code pod, j.eta, j.department FROM jobs j LEFT JOIN parties pr ON pr.id = j.client_id LEFT JOIN locations pol ON pol.id = j.pol_id LEFT JOIN locations pod ON pod.id = j.pod_id WHERE j.deleted_at IS NULL AND j.ata IS NULL AND j.job_status NOT IN ('CLOSED','CANCELLED') AND substr(j.eta,1,10) BETWEEN ? AND ? ORDER BY j.eta LIMIT 10`, today, addDays(today, 7))
       data.charts.jobs_by_mode = q.all(`SELECT COALESCE(mode,'Other') name, COUNT(*) value FROM jobs WHERE deleted_at IS NULL AND job_status IN ('OPENED','IN PROGRESS','ON HOLD') GROUP BY mode`)
       data.charts.jobs_by_status = q.all(`SELECT job_status name, COUNT(*) value FROM jobs WHERE deleted_at IS NULL GROUP BY job_status`)
-      data.charts.top_customers = q.all(`SELECT pr.name, SUM(j.total_revenue) v FROM jobs j JOIN parties pr ON pr.id = j.client_id WHERE j.deleted_at IS NULL AND j.job_status <> 'CANCELLED' AND j.job_date >= ? GROUP BY j.client_id ORDER BY v DESC LIMIT 6`, addDays(today, -90)).map(r => ({ name: r.name, value: m(r.v) }))
+      data.charts.top_customers = q.all(`SELECT pr.name, SUM(j.total_revenue) v FROM jobs j JOIN parties pr ON pr.id = j.client_id WHERE j.deleted_at IS NULL AND j.job_status <> 'CANCELLED' AND j.job_date >= ? GROUP BY j.client_id, pr.name ORDER BY v DESC LIMIT 6`, addDays(today, -90)).map(r => ({ name: r.name, value: m(r.v) }))
       data.charts.revenue_trend = (() => {
-        const rows = q.all(`SELECT substr(job_date,1,7) month, SUM(total_revenue) rev, SUM(total_cost) cost, SUM(profit) profit FROM jobs WHERE deleted_at IS NULL AND job_status <> 'CANCELLED' AND job_date >= ? GROUP BY month ORDER BY month`, addDays(monthStart(), -150))
+        const rows = q.all(`SELECT substr(job_date,1,7) AS month, SUM(total_revenue) rev, SUM(total_cost) cost, SUM(profit) profit FROM jobs WHERE deleted_at IS NULL AND job_status <> 'CANCELLED' AND job_date >= ? GROUP BY month ORDER BY month`, addDays(monthStart(), -150))
         return rows.map(r => ({ month: r.month, revenue: m(r.rev), cost: m(r.cost), profit: m(r.profit) }))
       })()
       // "Sales (Branch)": invoiced vs unbilled work per branch for the current month
-      const inv = q.all(`SELECT COALESCE(b.name,'Unassigned') branch, SUM(${SIGN} * i.subtotal * i.ex_rate) v FROM invoices i LEFT JOIN branches b ON b.id = i.branch_id WHERE ${SALES} AND i.invoice_date >= ? GROUP BY i.branch_id`, mStart)
-      const unb = q.all(`SELECT COALESCE(b.name,'Unassigned') branch, SUM(c.base_amount) v FROM job_charges c JOIN jobs j ON j.id = c.job_id LEFT JOIN branches b ON b.id = j.branch_id WHERE c.kind='Revenue' AND c.status='Unbilled' AND c.deleted_at IS NULL AND j.deleted_at IS NULL AND j.job_status <> 'CANCELLED' GROUP BY j.branch_id`)
+      const inv = q.all(`SELECT COALESCE(b.name,'Unassigned') branch, SUM(${SIGN} * i.subtotal * i.ex_rate) v FROM invoices i LEFT JOIN branches b ON b.id = i.branch_id WHERE ${SALES} AND i.invoice_date >= ? GROUP BY i.branch_id, b.name`, mStart)
+      const unb = q.all(`SELECT COALESCE(b.name,'Unassigned') branch, SUM(c.base_amount) v FROM job_charges c JOIN jobs j ON j.id = c.job_id LEFT JOIN branches b ON b.id = j.branch_id WHERE c.kind='Revenue' AND c.status='Unbilled' AND c.deleted_at IS NULL AND j.deleted_at IS NULL AND j.job_status <> 'CANCELLED' GROUP BY j.branch_id, b.name`)
       const names = [...new Set([...inv.map(x => x.branch), ...unb.map(x => x.branch)])]
       data.charts.sales_branch = names.map(name => ({ branch: name, invoiced: m(Math.round(inv.find(x => x.branch === name)?.v ?? 0)), unbilled: m(Math.round(unb.find(x => x.branch === name)?.v ?? 0)) }))
     }

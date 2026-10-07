@@ -47,7 +47,7 @@
 ## Go-live checklist (production)
 1. Set `APP_SECRET`, `PUBLIC_URL`, `TRUST_PROXY`, `COOKIE_SECURE`, and (optionally) initial passwords in `.env`; run behind HTTPS.
 2. Sign in as Administrator, set your own password, enable 2-step verification.
-3. Company Settings: legal name, address, TRN, licence, bank details, document terms. Branches: confirm DXB details. Legal entities: edit the default entity.
+3. Company Settings (including the new *UAE compliance* tab): legal name, address, TRN, licence, bank details, document terms. Then follow the checklist in [UAE-COMPLIANCE.md](UAE-COMPLIANCE.md#4-go-live-checklist). Branches: confirm DXB details. Legal entities: edit the default entity.
 4. Create real users and roles. (Customer-portal users are tied to a customer.)
 5. Integrations: connect Resend, R2, Supabase, WhatsApp, AI provider as needed; press *Test connection* for each.
 6. Import customers/opening balances; set the accounting lock date after opening balances are checked.

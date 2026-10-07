@@ -78,7 +78,7 @@ export default async function (app: FastifyInstance) {
   app.post('/api/panel/:entity/:id/tags', async (req) => {
     const { def, id } = rec(req); assertCan(req.ctx, def.module, 'edit')
     const { tag } = z.object({ tag: z.string().min(1).max(40) }).parse(req.body)
-    q.run(`INSERT OR IGNORE INTO record_tags(entity, record_id, tag, created_by, created_at) VALUES (?,?,?,?,?)`, def.key, id, tag.trim().toLowerCase(), req.user!.id, nowIso())
+    q.run(`INSERT INTO record_tags(entity, record_id, tag, created_by, created_at) VALUES (?,?,?,?,?) ON CONFLICT DO NOTHING`, def.key, id, tag.trim().toLowerCase(), req.user!.id, nowIso())
     return { ok: true }
   })
   app.delete('/api/panel/:entity/:id/tags/:tag', async (req) => { const { def, id } = rec(req); assertCan(req.ctx, def.module, 'edit'); q.run(`DELETE FROM record_tags WHERE entity = ? AND record_id = ? AND tag = ?`, def.key, id, String((req.params as any).tag)); return { ok: true } })
@@ -96,7 +96,7 @@ export default async function (app: FastifyInstance) {
     const tdef = getDef(b.to_entity)
     getRecord(tdef, b.to_id, req.ctx, { children: false })
     if (tdef.key === def.key && b.to_id === id) throw bad('Cannot link a record to itself')
-    q.run(`INSERT OR IGNORE INTO record_links(entity, record_id, to_entity, to_id, note, created_by, created_at) VALUES (?,?,?,?,?,?,?)`, def.key, id, b.to_entity, b.to_id, b.note ?? null, req.user!.id, nowIso())
+    q.run(`INSERT INTO record_links(entity, record_id, to_entity, to_id, note, created_by, created_at) VALUES (?,?,?,?,?,?,?) ON CONFLICT DO NOTHING`, def.key, id, b.to_entity, b.to_id, b.note ?? null, req.user!.id, nowIso())
     return { ok: true }
   })
   app.delete('/api/panel/:entity/:id/links/:lid', async (req) => { const { def, id } = rec(req); assertCan(req.ctx, def.module, 'edit'); q.run(`DELETE FROM record_links WHERE id = ? AND entity = ? AND record_id = ?`, idOf((req.params as any).lid), def.key, id); return { ok: true } })

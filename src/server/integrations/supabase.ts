@@ -1,4 +1,4 @@
-import { q } from '../db'
+import { q, columnsOf } from '../db'
 import { ENTITY_LIST } from '../../shared/entities'
 import { getSetting, setSettings } from '../settings'
 import { http, logIntegration } from './log'
@@ -18,7 +18,7 @@ function plan() {
   const out: { table: string; cols: string[]; types: Record<string, string> }[] = []
   for (const def of ENTITY_LIST) {
     const secret = new Set(def.fields.filter(f => f.secret).map(f => f.name))
-    const info = q.all<{ name: string; type: string }>(`PRAGMA table_info("${def.key}")`).filter(c => !secret.has(c.name))
+    const info = columnsOf(def.key).filter(c => !secret.has(c.name))
     if (!info.length) continue
     out.push({ table: def.key, cols: info.map(c => c.name), types: Object.fromEntries(info.map(c => [c.name, pgType(c.type)])) })
   }

@@ -4,6 +4,7 @@ import { notify, notifyRole } from './notify'
 import { processOutbox } from './mailer'
 import { runReport } from './reports'
 import { getSetting } from './settings'
+import { complianceDaily } from './domain/compliance'
 import { nowLocal } from './util'
 
 /** Light-weight in-process scheduler: reminders, expiries and the e-mail outbox. */
@@ -30,8 +31,8 @@ async function periodic() {
   if (hhmm >= '10:00' && once('wa-overdue', day)) await safe('wa-overdue', async () => (await import('./integrations/whatsapp')).overdueReminders())
   if (hhmm >= '02:00' && hhmm < '05:00' && getSetting('r2_backup_nightly') && once('r2-backup', day)) await safe('r2-backup', async () => {
     const r = await import('./routes/integrations'); const name = await r.backupToR2(); const { logIntegration } = await import('./integrations/log'); logIntegration('backup', 'nightly', true, `Backup ${name} created${getSetting('r2_account_id') ? ' and uploaded to R2' : ''}`)
-    const fs = await import('node:fs'), path = await import('node:path'), { dirs } = await import('./config')
-    for (const f of fs.readdirSync(dirs.backups).filter(x => x.endsWith('.db')).sort().slice(0, -14)) fs.rmSync(path.join(dirs.backups, f), { force: true })
+    const fs = await import('node:fs'), path = await import('node:path'), { dirs, isBackupFile } = await import('./config')
+    for (const f of fs.readdirSync(dirs.backups).filter(isBackupFile).sort().slice(0, -14)) fs.rmSync(path.join(dirs.backups, f), { force: true })
   })
 }
 
@@ -57,6 +58,7 @@ export function daily() {
   // free-time risk
   const ft = q.all(`SELECT c.container_no, j.id job_id, j.job_no, j.operator_id, c.free_time_until FROM job_containers c JOIN jobs j ON j.id = c.job_id WHERE c.deleted_at IS NULL AND j.deleted_at IS NULL AND j.job_status NOT IN ('CLOSED','CANCELLED') AND c.status <> 'Empty returned' AND c.free_time_until IS NOT NULL AND c.free_time_until <= ?`, addDays(today, 2))
   for (const c of ft) notify(c.operator_id, `Free time ending: ${c.container_no}`, `Job ${c.job_no} – free time until ${c.free_time_until}`, `/jobs/${c.job_id}`, 'alert', `ft-${c.container_no}-${today}`)
+  try { complianceDaily() } catch (e) { console.error('compliance', e) }
   // housekeeping
   q.run(`DELETE FROM sessions WHERE expires_at < ?`, nowIso())
   q.run(`DELETE FROM notifications WHERE read_at IS NOT NULL AND read_at < ?`, new Date(Date.now() - 90 * 86400000).toISOString())

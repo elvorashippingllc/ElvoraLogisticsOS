@@ -1,4 +1,4 @@
-import { db, q, qi, tx, currentDb, type Row } from './db'
+import { isPg, db, q, qi, tx, currentDb, type Row } from './db'
 import { ENTITIES } from '../shared/entities'
 import { recordTitle, optValue, type EntityDef, type FieldDef, type Action } from '../shared/types'
 import { bad, conflict, forbidden, fromCents, nowIso, nowLocal, notFound, safeJson, todayStr, toCents, HttpError, clamp } from './util'
@@ -196,7 +196,7 @@ export function attachLabels(def: EntityDef, recs: Rec[]) {
 
 // ------------------------------------------------------------------ numbering
 export function nextSeq(key: string): number {
-  q.run(`INSERT INTO sequences(key, value) VALUES (?, 1) ON CONFLICT(key) DO UPDATE SET value = value + 1`, key)
+  q.run(`INSERT INTO sequences(key, value) VALUES (?, 1) ON CONFLICT(key) DO UPDATE SET value = sequences.value + 1`, key)
   return q.val<number>(`SELECT value FROM sequences WHERE key = ?`, key)!
 }
 export function formatNumber(key: string, pattern: string, tokens: Record<string, string>, date: string): string {
@@ -204,7 +204,8 @@ export function formatNumber(key: string, pattern: string, tokens: Record<string
   const base: Record<string, string> = { YYYY: d.slice(0, 4), YY: d.slice(2, 4), MM: d.slice(5, 7), DD: d.slice(8, 10), ...tokens }
   let pad = 4
   const withoutSeq = pattern.replace(/\{seq:(\d+)\}/, (_m, n) => { pad = Number(n); return '\u0000' }).replace(/\{(\w+)\}/g, (_m, t) => base[t] ?? '')
-  const seq = nextSeq(`${key}|${withoutSeq}`)
+  // The sequence key keeps its historical NUL marker on SQLite (changing it would restart numbering); PostgreSQL text cannot hold NUL.
+  const seq = nextSeq(`${key}|${isPg ? withoutSeq.replace('\u0000', '{seq}') : withoutSeq}`)
   return withoutSeq.replace('\u0000', String(seq).padStart(pad, '0'))
 }
 
@@ -388,8 +389,7 @@ function writeRow(def: EntityDef, rec: Rec, ctx: Ctx, id: number | null, customJ
   if (id === null) {
     const cols = [...wf.map(f => f.name), 'custom', 'version', 'created_at', 'updated_at', 'created_by', 'updated_by']
     const vals = [...wf.map(f => toDb(f, rec[f.name])), customJson, 1, now, now, uid, uid]
-    const res = db.prepare(`INSERT INTO ${qi(def.key)} (${cols.map(qi).join(',')}) VALUES (${cols.map(() => '?').join(',')})`).run(...vals)
-    return Number(res.lastInsertRowid)
+    return q.insert(`INSERT INTO ${qi(def.key)} (${cols.map(qi).join(',')}) VALUES (${cols.map(() => '?').join(',')})`, ...vals)
   }
   const sets = [...wf.map(f => `${qi(f.name)} = ?`), 'custom = ?', 'version = version + 1', 'updated_at = ?', 'updated_by = ?']
   const vals = [...wf.map(f => toDb(f, rec[f.name])), customJson, now, uid]

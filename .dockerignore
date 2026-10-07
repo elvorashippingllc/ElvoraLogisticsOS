@@ -1,5 +1,12 @@
 node_modules
+**/node_modules
 dist
 data
 .env
 .git
+.github
+deploy
+tests
+corporate-templates
+docs
+**/.wrangler
