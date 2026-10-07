@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode, type CSSProperties } from 'react'
 import { X, ChevronDown, Loader2, Inbox, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cls } from '../lib/format'
 import { statusTone } from '../lib/status'
@@ -97,7 +97,7 @@ export function Panel({ title, color = '#15526B', tools, children, className, bo
   const [open, setOpen] = useState(true)
   return (
     <section className={cls('panel', className)}>
-      <div className="panel-head" style={{ background: color }}><span>{title}</span><div className="tools">{tools}{collapsible && <button onClick={() => setOpen(o => !o)} aria-label={open ? 'Collapse' : 'Expand'} title={open ? 'Collapse' : 'Expand'}><ChevronDown size={16} style={{ transform: open ? '' : 'rotate(-90deg)', transition: 'transform .2s' }} /></button>}</div></div>
+      <div className="panel-head" style={{ '--panel-accent': color } as CSSProperties}><span>{title}</span><div className="tools">{tools}{collapsible && <button onClick={() => setOpen(o => !o)} aria-label={open ? 'Collapse' : 'Expand'} title={open ? 'Collapse' : 'Expand'}><ChevronDown size={16} style={{ transform: open ? '' : 'rotate(-90deg)', transition: 'transform .2s' }} /></button>}</div></div>
       {open && <div className={bodyClass}>{children}</div>}
     </section>
   )

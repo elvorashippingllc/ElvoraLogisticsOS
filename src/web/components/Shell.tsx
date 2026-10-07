@@ -51,7 +51,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   useEffect(() => { if (activeGroup) setOpen(o => ({ ...o, [activeGroup.label]: true })) }, [activeGroup?.label])
   return (
     <nav className="sidebar h-full" aria-label="Main navigation">
-      <NavLink to="/" end onClick={onNavigate} className={({ isActive }) => cls('group-btn no-underline', isActive && 'bg-white/10')} style={{ borderLeft: '3px solid transparent' }}><LayoutDashboard />{tr('Dashboard')}</NavLink>
+      <NavLink to="/" end onClick={onNavigate} className={({ isActive }) => cls('group-btn no-underline', isActive && 'bg-white/10')}><LayoutDashboard />{tr('Dashboard')}</NavLink>
       {groups.map(g => {
         const Icon = iconByName(g.icon); const isOpen = open[g.label]
         return (
@@ -84,10 +84,10 @@ export function Shell() {
   const logout = async () => { try { await post('/api/auth/logout') } catch { /* ignore */ } setMe(null); nav('/login') }
   const isPrint = loc.pathname.startsWith('/print')
   return (
-    <div className="h-full flex flex-col">
+    <div className="workspace-frame h-full flex flex-col">
       <header className="topbar no-print">
         <button className="tb lg:hidden" onClick={() => setMobile(true)} aria-label="Open menu"><Menu /></button>
-        <Link to="/" className="flex items-center gap-2 mr-2" aria-label="Elvora Logistics OS home"><img src="/brand/icon-reverse.png" alt="" width="32" height="27" className="h-7 w-auto" /><span className="font-display font-extrabold text-[17px] tracking-tight hidden sm:block">Elvora <span className="font-semibold opacity-90">Logistics OS</span></span></Link>
+        <Link to="/" className="flex items-center gap-2 mr-2" aria-label="Elvora Logistics OS home"><img src="/brand/icon-primary.png" alt="" width="32" height="27" className="h-7 w-auto" /><span className="font-display font-extrabold text-[17px] tracking-tight hidden sm:block">Elvora <span className="font-semibold opacity-90">Logistics OS</span></span></Link>
         <div className="flex-1" />
         <NotificationBell />
         <Link to="/e/announcements" className="tb hidden md:inline-flex"><BookOpen />{tr('Blog')}</Link>
@@ -100,11 +100,12 @@ export function Shell() {
         <button className="tb" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} title="English / العربية" aria-label="Language"><Languages /><span className="hidden lg:inline">{lang === 'ar' ? 'English' : 'العربية'}</span></button>
       </header>
       <div className="flex flex-1 min-h-0">
-        <aside className="hidden lg:block no-print flex-none" style={{ width: 252 }}><div className="h-full overflow-y-auto sidebar" style={{ width: 252 }}><Sidebar /></div></aside>
-        {mobile && <div className="fixed inset-0 z-[70] lg:hidden flex no-print"><div className="w-[min(300px,86vw)] h-full overflow-y-auto sidebar fade-in"><div className="flex justify-end p-2"><button className="tb text-white bg-transparent border-0" onClick={() => setMobile(false)} aria-label="Close menu"><X color="#fff" /></button></div><Sidebar onNavigate={() => setMobile(false)} /></div><div className="flex-1 bg-black/50" onClick={() => setMobile(false)} /></div>}
+        <aside className="hidden lg:block no-print flex-none" style={{ width: 218 }}><div className="h-full overflow-y-auto sidebar" style={{ width: 218 }}><Sidebar /></div></aside>
+        {mobile && <div className="fixed inset-0 z-[70] lg:hidden flex no-print"><div className="w-[min(300px,86vw)] h-full overflow-y-auto sidebar fade-in"><div className="flex justify-end p-2"><button className="tb text-ink bg-transparent border-0" onClick={() => setMobile(false)} aria-label="Close menu"><X /></button></div><Sidebar onNavigate={() => setMobile(false)} /></div><div className="flex-1 bg-black/50" onClick={() => setMobile(false)} /></div>}
         <div className="flex-1 min-w-0 flex flex-col">
           {me?.demo && !isPrint && <div className="no-print bg-[#1f3a8a] text-white px-4 py-2 text-sm font-semibold flex items-center gap-3 flex-wrap">DEMO WORKSPACE – fictional data, isolated from production, resets every night. External sending (e-mail, WhatsApp, integrations) is switched off. <button className="underline bg-transparent border-0 text-white cursor-pointer font-semibold" onClick={async () => { if (confirm('Restore the demo to its original state and sign out?')) { await post('/api/demo/reset'); window.location.href = '/login' } }}>Reset demo now</button></div>}
           {me?.defaultPassword && !me?.demo && !isPrint && <div className="no-print bg-gold text-[#6b4a00] px-4 py-2 text-sm font-semibold flex items-center gap-3 flex-wrap">⚠ You are signed in with the default password. <Link to="/profile" className="underline">Change it now</Link></div>}
+          {!isPrint && <nav className="workspace-modules no-print" aria-label="Modules"><NavLink to="/" end className={({ isActive }) => cls('module-pill', isActive && 'active')}><LayoutDashboard size={15} />{tr('Dashboard')}</NavLink>{meta?.nav.filter(g => g.items.length).map(g => { const Icon = iconByName(g.icon); const active = g.items.some(i => loc.pathname === i.to || loc.pathname.startsWith(i.to + '/') || (i.to === '/e/jobs' && loc.pathname.startsWith('/jobs'))); return <Link key={g.label} to={g.items[0].to} className={cls('module-pill', active && 'active')}><Icon size={15} />{g.label}</Link> })}</nav>}
           <main className="app-main flex-1 overflow-y-auto p-4 md:p-6" id="main"><Outlet /></main>
           <footer className="statusbar no-print"><span className="s1">User : {me?.email}</span><span className="s2"><Clock /></span><span className="s3 flex-1">Elvora Logistics OS · Elvora Shipping L.L.C.</span></footer>
         </div>
@@ -125,3 +126,4 @@ export function Shell() {
 }
 export type { ReactNode }
 void useRef
+
