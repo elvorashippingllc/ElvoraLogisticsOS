@@ -1,5 +1,5 @@
 /* Integration / AI / finance-extension tests against local mock providers.
-   Start the API with:  SEED_DEMO=true WA_GRAPH_URL=http://localhost:9099/graph RESEND_API_URL=http://localhost:9099/resend R2_ENDPOINT=http://localhost:9099/r2  (fresh data dir)
+   Start the API with:  WA_GRAPH_URL=http://localhost:9099/graph RESEND_API_URL=http://localhost:9099/resend R2_ENDPOINT=http://localhost:9099/r2  (fresh data dir)
    then: npx tsx tests/phase2.ts */
 import http from 'node:http'
 
@@ -57,6 +57,12 @@ async function main() {
   await new Promise<void>(r => server.listen(9099, r))
   let r = await api('POST', '/api/auth/login', { email: 'admin@elvorashipping.com', password: 'Elvora@Admin2026' }); ok('admin signs in', r.status === 200, r.data)
 
+  sec('Bootstrap (production workspace starts empty)')
+  r = await api('POST', '/api/e/parties', { name: 'Integration Test Customer LLC', is_customer: true, status: 'Active', trn: '100123456700003', email: 'billing@itc.example' }); const cust = r.data.id; ok('customer created', r.status === 201, r.data)
+  const branch = (await api('GET', '/api/e/branches')).data.rows[0], frt = (await api('GET', '/api/e/charge_codes?q=FRT-AIR')).data.rows[0], por = (await api('GET', '/api/e/locations?q=AEDXB')).data.rows[0], jnb = (await api('GET', '/api/e/locations?q=ZAJNB')).data.rows[0]
+  r = await api('POST', '/api/e/jobs', { client_id: cust, branch_id: branch.id, department: 'AIR EXPORT', trade: 'Export', job_date: new Date().toLocaleDateString('sv-SE'), mbl_no: '60754163572', pol_id: por.id, pod_id: jnb.id, packages: 1, gross_weight: 14, commodity: 'Spare parts', children: { charges: [{ kind: 'Revenue', charge_code_id: frt.id, qty: 14, rate: 12.5, currency: 'AED', party_id: cust }], containers: [] } }); const JOB = r.data; ok('job created', r.status === 201, r.data)
+  r = await api('POST', `/api/jobs/${JOB.id}/generate-invoices`, {}); await api('POST', `/api/finance/invoices/${r.data[0].id}/post`)
+
   sec('Settings & catalogue')
   r = await api('PUT', '/api/admin/settings', {
     mail_provider: 'resend', resend_api_key: 're_test', resend_from: 'Elvora <ops@elvora.test>',
@@ -72,7 +78,7 @@ async function main() {
 
   sec('Resend mail')
   calls.length = 0
-  r = await api('GET', '/api/e/parties?pageSize=1'); const party = r.data.rows[0]
+  const party = { id: cust, name: 'Integration Test Customer LLC' }
   r = await api('POST', '/api/e/email_outbox', {}); ok('outbox is read-only through the API', r.status >= 400)
   const mail = await import('../src/server/mailer').catch(() => null); void mail
 
@@ -81,7 +87,7 @@ async function main() {
   const jarvis = r.data.agents.find((a: any) => a.role_key === 'jarvis'); const collections = r.data.agents.find((a: any) => a.role_key === 'collections')
   // 1) every read tool executes without error
   const readTools = r.data.tools.filter((t: any) => t.risk === 'read').map((t: any) => t.name)
-  const args: Record<string, any> = { get_job: { job_no: 'DXB09260001' }, search_customers: { query: 'a' }, customer_statement: { customer: party.name } }
+  const args: Record<string, any> = { get_job: { job_no: JOB.job_no }, search_customers: { query: 'a' }, customer_statement: { customer: party.name } }
   llmScript = [reply(null, readTools.map((n: string) => ({ name: n, args: args[n] ?? {} }))), reply('Brief ready: 3 things matter.')]
   calls.length = 0
   r = await api('POST', `/api/ai/agents/${jarvis.id}/run`, {}); ok('Jarvis run succeeds', r.data.ok && /Brief ready/.test(r.data.output), r.data)
@@ -138,8 +144,8 @@ async function main() {
   sec('Live tracking webhook')
   r = await api('POST', '/api/integrations/webhook-secret/tracking'); const secUrl = new URL(r.data.url); ok('webhook secret generated', /\/api\/public\/tracking\/[0-9a-f]{40}$/.test(secUrl.pathname), r.data)
   r = await fetch(BASE + secUrl.pathname.replace(/[0-9a-f]{40}$/, 'wrong'), { method: 'POST', headers: { 'content-type': 'application/json' }, body: '{}' }); ok('wrong secret gets 404', r.status === 404)
-  r = await fetch(BASE + secUrl.pathname, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ job_no: 'DXB09260001', event: 'Vessel arrived', location: 'Lagos', at: '2026-10-06T10:00' }) }); ok('event accepted', (await r.json()).processed === 1)
-  r = await api('GET', '/api/jobs/2/events'); ok('milestone appears on the job timeline', JSON.stringify(r.data).includes('Vessel arrived'), r.status)
+  r = await fetch(BASE + secUrl.pathname, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ job_no: JOB.job_no, event: 'Vessel arrived', location: 'Lagos', at: '2026-10-06T10:00' }) }); ok('event accepted', (await r.json()).processed === 1)
+  r = await api('GET', `/api/jobs/${JOB.id}/events`); ok('milestone appears on the job timeline', JSON.stringify(r.data).includes('Vessel arrived'), r.status)
 
   sec('Bank statement import & feed')
   r = await api('GET', '/api/e/bank_accounts'); const bank = r.data.rows[0]; ok('bank account exists', !!bank)
@@ -159,11 +165,12 @@ async function main() {
   r = await api('POST', `/api/invoices/${posted.id}/einvoice/submit`); ok('e-invoice submitted to provider', r.status === 200 && r.data.reference === 'ASP-123', r.data)
   r = await api('GET', `/api/e/invoices/${posted.id}`); ok('invoice shows e-invoice status', r.data.einvoice_status === 'Submitted' && r.data.einvoice_ref === 'ASP-123', r.data.einvoice_status)
   calls.length = 0
-  r = await api('POST', '/api/jobs/1/edi/transmit', { format: 'json', via: 'http' }); ok('EDI transmitted over HTTP', r.status === 200 && calls.some(c => c.url === '/edi'), r.data)
-  r = await api('POST', '/api/jobs/1/edi/transmit', { format: 'json', via: 'email' }); ok('EDI e-mail queued with attachment', r.status === 200, r.data)
+  r = await api('POST', `/api/jobs/${JOB.id}/edi/transmit`, { format: 'json', via: 'http' }); ok('EDI transmitted over HTTP', r.status === 200 && calls.some(c => c.url === '/edi'), r.data)
+  r = await api('POST', `/api/jobs/${JOB.id}/edi/transmit`, { format: 'json', via: 'email' }); ok('EDI e-mail queued with attachment', r.status === 200, r.data)
 
   sec('Payroll – WPS')
   r = await api('POST', '/api/e/employees', { name: 'Test Worker', emp_no: '', basic_salary: 5000, housing_allowance: 1500, transport_allowance: 500, bank_iban: 'AE070331234567890123456', bank_routing_code: '987654321', mol_person_id: '12345678901234', status: 'Active', join_date: '2025-01-01' }); const emp = r.data.id; ok('employee with WPS details created', r.status === 201, r.data)
+  await api('POST', '/api/e/employees', { name: 'No Bank Details Employee', basic_salary: 3000, status: 'Active', join_date: '2025-01-01' })
   r = await api('POST', '/api/hr/payroll/generate', { period: '2026-09' }); ok('payroll generated', r.data.created >= 1, r.data)
   r = await api('GET', '/api/e/payslips?pageSize=100'); for (const p of r.data.rows) await api('PUT', `/api/e/payslips/${p.id}`, { status: 'Approved' })
   r = await api('GET', '/api/hr/wps/2026-09'); ok('WPS preview lists problems for employees without bank details', r.status === 200 && r.data.employee_problems.length > 0 && r.data.employee_problems.every((p: any) => p.problems.length), r.data)

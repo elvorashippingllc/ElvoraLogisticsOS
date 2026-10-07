@@ -1,4 +1,4 @@
-import { q } from '../db'
+import { q, inDemo } from '../db'
 import { getSetting } from '../settings'
 import { bad, nowLocal } from '../util'
 import { generateEdi, addJobEvent } from '../domain/jobs'
@@ -27,6 +27,7 @@ export async function transmitEdi(jobId: number, format: string, via?: EdiTransp
       message = `Queued ${edi.filename} for e-mail to ${to}`
     } else if (transport === 'sftp') {
       const host = String(getSetting('edi_sftp_host') || ''); if (!host) throw bad('SFTP host is not configured')
+      if (inDemo()) throw bad('SFTP is disabled in the demo workspace')
       const { default: SFTP } = await import('ssh2-sftp-client')
       const c = new SFTP()
       try {

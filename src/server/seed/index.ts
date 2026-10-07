@@ -8,7 +8,8 @@ const done = (g: string) => !!q.val(`SELECT 1 FROM settings WHERE key = ?`, `see
 const mark = (g: string) => q.run(`INSERT OR REPLACE INTO settings(key, value, updated_at) VALUES (?, '1', ?)`, `seed:${g}`, nowIso())
 const idOf = (table: string, col: string, val: string) => q.val<number>(`SELECT id FROM ${table} WHERE ${col} = ? AND deleted_at IS NULL`, val)
 
-export function seedReference() {
+export function seedReference(opts: { users?: boolean } = {}) {
+  const withUsers = opts.users !== false
   const mk = (key: string, payload: Record<string, any>) => createRecord(getDef(key), payload, SYSTEM_CTX)
 
   if (!done('roles')) {
@@ -29,11 +30,11 @@ export function seedReference() {
     for (const [code, name] of [['OPS', 'Operations'], ['SAL', 'Sales & Business Development'], ['ACC', 'Accounts & Finance'], ['DOC', 'Documentation & Customs'], ['WHS', 'Warehouse & Transport'], ['HR', 'Human Resources'], ['MGT', 'Management']]) mk('departments', { code, name })
     mark('departments')
   }
-  if (!done('users')) {
+  if (withUsers && !done('users')) {
     const a = config.accounts
     const dxb = idOf('branches', 'code', 'DXB')
     for (const [email, name, pw, role] of [[a.adminEmail, a.adminName, a.adminPassword, 'Admin'], [a.managerEmail, a.managerName, a.managerPassword, 'Manager']] as const) {
-      if (!idOf('users', 'lower(email)', email)) mk('users', { name, email, password: pw, role_id: idOf('roles', 'name', role), branch_id: dxb, department_id: idOf('departments', 'code', role === 'Admin' ? 'MGT' : 'OPS'), active: true, must_change_password: false })
+      if (!idOf('users', 'lower(email)', email)) mk('users', { name, email, password: pw, role_id: idOf('roles', 'name', role), branch_id: dxb, department_id: idOf('departments', 'code', role === 'Admin' ? 'MGT' : 'OPS'), active: true, must_change_password: true })
     }
     mark('users')
   }
@@ -85,9 +86,5 @@ export function seedReference() {
     mk('bank_accounts', { name: 'Cash in hand', type: 'Cash', currency: 'AED', gl_account_id: idOf('accounts', 'code', '1000'), active: true })
     mk('bank_accounts', { name: 'Petty cash', type: 'Petty cash', currency: 'AED', gl_account_id: idOf('accounts', 'code', '1010'), active: true })
     mark('banks')
-  }
-  if (!done('welcome')) {
-    mk('announcements', { title: 'Welcome to Elvora Logistics OS', category: 'Announcement', pinned: true, publish_date: todayStr(), body: 'Everything for Elvora Shipping now lives in one place: CRM, quotations, master jobs, shipments, customs, transport, warehouse, accounts, HR and reporting.\n\nGetting started:\n1. Company Settings – enter the legal name, TRN, address and bank details.\n2. Master Data – review charge codes, currencies (maintain exchange rates) and VAT codes.\n3. Create customers and vendors, then open your first Master Job.\n\nChange the default administrator and manager passwords after first sign-in.' })
-    mark('welcome')
   }
 }

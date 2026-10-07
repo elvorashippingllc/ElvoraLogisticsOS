@@ -9,6 +9,8 @@ import fstatic from '@fastify/static'
 import { config } from './config'
 import { HttpError } from './util'
 import { userFromToken, userFromApiKey } from './auth'
+import { enterDb } from './db'
+import { getDemoDb } from './demo/workspace'
 import type { Ctx, SessionUser } from './engine'
 import { ZodError } from 'zod'
 
@@ -17,7 +19,8 @@ declare module 'fastify' {
 }
 
 export const COOKIE = 'elvora_sid'
-const PUBLIC = [/^\/api\/health$/, /^\/api\/auth\/login$/, /^\/api\/public\//, /^\/api\/auth\/branding$/]
+export const DEMO_PREFIX = 'demo.'
+const PUBLIC = [/^\/api\/demo\/status$/, /^\/api\/health$/, /^\/api\/auth\/login$/, /^\/api\/public\//, /^\/api\/auth\/branding$/]
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({ logger: config.isProd ? { level: 'info' } : { level: 'warn' }, trustProxy: config.trustProxy, bodyLimit: 12 * 1024 * 1024 })
@@ -41,16 +44,24 @@ export async function buildApp(): Promise<FastifyInstance> {
   app.decorateRequest('user', null)
   app.decorateRequest('ctx', null as any)
 
-  app.addHook('onRequest', async (req: FastifyRequest) => {
-    req.user = null
-    const bearer = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.slice(7).trim() : undefined
-    if (bearer) {
-      req.user = userFromApiKey(bearer)
-    } else {
-      const found = userFromToken(req.cookies?.[COOKIE])
-      if (found) { req.user = found.user; req.sessionHash = found.hash }
-    }
-    req.ctx = { user: req.user, ip: req.ip }
+  // Demo sessions (cookie prefix "demo.") and demo tracking links run against the isolated demo database.
+  app.addHook('onRequest', (req: FastifyRequest, _reply, done) => {
+    const raw = req.cookies?.[COOKIE]
+    const demoRequest = (!!raw && raw.startsWith(DEMO_PREFIX)) || req.url.startsWith('/api/public/track/demo-')
+    enterDb(demoRequest ? getDemoDb() ?? undefined : undefined, () => {
+      try {
+        req.user = null
+        const bearer = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.slice(7).trim() : undefined
+        if (bearer) {
+          req.user = userFromApiKey(bearer)
+        } else {
+          const found = userFromToken(raw && raw.startsWith(DEMO_PREFIX) ? raw.slice(DEMO_PREFIX.length) : raw)
+          if (found) { req.user = found.user; req.sessionHash = found.hash }
+        }
+        req.ctx = { user: req.user, ip: req.ip }
+        done()
+      } catch (e: any) { done(e) }
+    })
   })
 
   app.addHook('preHandler', async (req) => {
@@ -77,7 +88,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   // routes
   const mods = await Promise.all([
     import('./routes/auth'), import('./routes/meta'), import('./routes/crud'), import('./routes/panel'), import('./routes/files'),
-    import('./routes/jobs'), import('./routes/sales'), import('./routes/finance'), import('./routes/warehouse'), import('./routes/insights'), import('./routes/admin'), import('./routes/integrations'),
+    import('./routes/jobs'), import('./routes/sales'), import('./routes/finance'), import('./routes/warehouse'), import('./routes/insights'), import('./routes/admin'), import('./routes/integrations'), import('./routes/demo'),
   ])
   for (const m of mods) await app.register(m.default)
   app.get('/api/health', async () => ({ ok: true, time: new Date().toISOString() }))

@@ -1,7 +1,9 @@
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { q } from '../db'
-import { COOKIE } from '../app'
+import { COOKIE, DEMO_PREFIX } from '../app'
+import { runInDb, inDemo } from '../db'
+import { getDemoDb } from '../demo/workspace'
 import { config } from '../config'
 import { attemptLogin, createSession, destroySession, destroyUserSessions, hashPassword, newTotpSecret, sessionHash, validatePasswordStrength, verifyPassword, verifyTotp } from '../auth'
 import { bad, HttpError, nowIso } from '../util'
@@ -19,18 +21,25 @@ export default async function (app: FastifyInstance) {
 
   app.post('/api/auth/login', { config: { rateLimit: { max: 12, timeWindow: '1 minute' } } }, async (req, reply) => {
     const b = z.object({ email: z.string().min(3).max(200), password: z.string().min(1).max(200), totp: z.string().max(10).optional() }).parse(req.body)
-    const r = attemptLogin(b.email, b.password, b.totp, req.ip, req.headers['user-agent'])
-    if ('needsTotp' in r && r.needsTotp) return { needsTotp: true }
-    const user = (r as any).user
-    const s = createSession(user.id, req.ip, req.headers['user-agent'])
-    setCookie(req, reply, s.token, s.expires)
-    const must = q.val<number>(`SELECT must_change_password FROM users WHERE id = ?`, user.id)
-    return { ok: true, user: { id: user.id, name: user.name, email: user.email, role: user.role_name }, mustChangePassword: !!must }
+    const isDemoLogin = config.demo.enabled && b.email.trim().toLowerCase() === config.demo.email
+    if (isDemoLogin && !getDemoDb()) throw new HttpError(503, 'The demo workspace is still being prepared. Try again in a minute.')
+    const work = () => {
+      const r = attemptLogin(b.email, b.password, b.totp, req.ip, req.headers['user-agent'])
+      if ('needsTotp' in r && r.needsTotp) return { needsTotp: true as const }
+      const user = (r as any).user
+      const s = createSession(user.id, req.ip, req.headers['user-agent'])
+      const must = q.val<number>(`SELECT must_change_password FROM users WHERE id = ?`, user.id)
+      return { user, s, must }
+    }
+    const out = isDemoLogin ? runInDb(getDemoDb()!, work) : work()
+    if ('needsTotp' in out) return { needsTotp: true }
+    setCookie(req, reply, (isDemoLogin ? DEMO_PREFIX : '') + out.s.token, out.s.expires)
+    return { ok: true, demo: isDemoLogin, user: { id: out.user.id, name: out.user.name, email: out.user.email, role: out.user.role_name }, mustChangePassword: !!out.must }
   })
 
   app.post('/api/auth/logout', async (req, reply) => {
     const t = req.cookies?.[COOKIE]
-    if (t) destroySession(t)
+    if (t) destroySession(t.startsWith(DEMO_PREFIX) ? t.slice(DEMO_PREFIX.length) : t)
     reply.clearCookie(COOKIE, { path: '/' })
     return { ok: true }
   })
@@ -39,8 +48,8 @@ export default async function (app: FastifyInstance) {
     const u = req.user!
     const row = q.get(`SELECT totp_secret, must_change_password, password_hash, last_login_at FROM users WHERE id = ?`, u.id)
     const config0 = config.accounts
-    const usingDefault = [config0.adminPassword, config0.managerPassword].some(p => verifyPassword(p, row?.password_hash))
-    return { id: u.id, name: u.name, email: u.email, role: u.role_name, permissions: u.permissions, branch_id: u.branch_id, party_id: u.party_id, totp: !!row?.totp_secret, mustChangePassword: !!row?.must_change_password, defaultPassword: usingDefault, lastLogin: row?.last_login_at }
+    const usingDefault = !inDemo() && [config0.adminPassword, config0.managerPassword].some(p => verifyPassword(p, row?.password_hash))
+    return { demo: inDemo(), id: u.id, name: u.name, email: u.email, role: u.role_name, permissions: u.permissions, branch_id: u.branch_id, party_id: u.party_id, totp: !!row?.totp_secret, mustChangePassword: !!row?.must_change_password, defaultPassword: usingDefault, lastLogin: row?.last_login_at }
   })
 
   app.post('/api/auth/change-password', { config: { rateLimit: { max: 8, timeWindow: '1 minute' } } }, async (req) => {

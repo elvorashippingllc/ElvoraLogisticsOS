@@ -25,6 +25,7 @@ async function periodic() {
   const safe = async (name: string, fn: () => Promise<unknown>) => { try { await fn() } catch (e) { console.error('periodic', name, e) } }
   if (getSetting('supabase_sync') && once('sb', now.slice(0, 15))) await safe('supabase', async () => (await import('./integrations/supabase')).syncToSupabase())
   if (once('ai', now.slice(0, 13))) await safe('agents', async () => (await import('./ai/agents')).runDueAgents())
+  if (hhmm >= '03:00' && hhmm < '05:00' && once('demo-rebuild', day)) await safe('demo', async () => (await import('./demo/workspace')).rebuildDemoWorkspace())
   if (hhmm >= '07:30' && once('wa-report', day)) await safe('wa-report', async () => (await import('./integrations/whatsapp')).ownerDailyReport())
   if (hhmm >= '10:00' && once('wa-overdue', day)) await safe('wa-overdue', async () => (await import('./integrations/whatsapp')).overdueReminders())
   if (hhmm >= '02:00' && hhmm < '05:00' && getSetting('r2_backup_nightly') && once('r2-backup', day)) await safe('r2-backup', async () => {

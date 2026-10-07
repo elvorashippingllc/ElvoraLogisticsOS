@@ -1,4 +1,4 @@
-import { db, q, qi, tx, type Row } from './db'
+import { db, q, qi, tx, currentDb, type Row } from './db'
 import { ENTITIES } from '../shared/entities'
 import { recordTitle, optValue, type EntityDef, type FieldDef, type Action } from '../shared/types'
 import { bad, conflict, forbidden, fromCents, nowIso, nowLocal, notFound, safeJson, todayStr, toCents, HttpError, clamp } from './util'
@@ -35,11 +35,13 @@ const SCOPE: Record<string, string> = {
 }
 
 // ------------------------------------------------------------------ custom fields
-let cfCache: Record<string, FieldDef[]> | null = null
-export function invalidateCustomFields() { cfCache = null }
+const cfCaches = new WeakMap<object, Record<string, FieldDef[]>>()
+export function invalidateCustomFields() { cfCaches.delete(currentDb()) }
 export function customFieldsFor(entity: string): FieldDef[] {
+  let cfCache = cfCaches.get(currentDb())
   if (!cfCache) {
     cfCache = {}
+    cfCaches.set(currentDb(), cfCache)
     for (const r of q.all(`SELECT * FROM custom_fields WHERE deleted_at IS NULL ORDER BY sort, id`)) {
       const type = r.type === 'number' ? 'number' : r.type === 'bool' ? 'bool' : r.type === 'date' ? 'date' : r.type === 'select' ? 'select' : r.type === 'textarea' ? 'textarea' : 'text'
       const f: FieldDef = { name: r.name, label: r.label, type, required: !!r.required, section: 'Custom fields' }

@@ -17,7 +17,7 @@ export const config = {
   sessionHours: Number(env.SESSION_HOURS ?? 12),
   trustProxy: bool(env.TRUST_PROXY, false),
   maxUploadMb: Number(env.MAX_UPLOAD_MB ?? 25),
-  seedDemo: bool(env.SEED_DEMO, false),
+  demo: { enabled: bool(env.DEMO_ENABLED, true), email: (env.DEMO_EMAIL ?? 'demo@elvorashipping.com').toLowerCase(), password: env.DEMO_PASSWORD ?? 'Demo@Elvora2026' },
   accounts: {
     adminEmail: (env.ADMIN_EMAIL ?? 'admin@elvorashipping.com').toLowerCase(),
     adminName: env.ADMIN_NAME ?? 'System Administrator',
@@ -37,6 +37,7 @@ export const config = {
 }
 
 export const dirs = {
+  demo: path.join(config.dataDir, 'demo'),
   data: config.dataDir,
   uploads: path.join(config.dataDir, 'uploads'),
   backups: path.join(config.dataDir, 'backups'),
@@ -44,5 +45,5 @@ export const dirs = {
 }
 
 export function ensureDirs() {
-  for (const d of [dirs.data, dirs.uploads, dirs.backups]) fs.mkdirSync(d, { recursive: true })
+  for (const d of [dirs.data, dirs.uploads, dirs.backups, dirs.demo]) fs.mkdirSync(d, { recursive: true })
 }

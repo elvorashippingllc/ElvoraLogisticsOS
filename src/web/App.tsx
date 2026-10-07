@@ -34,6 +34,7 @@ export default function App() {
   if (loc.pathname.startsWith('/t/')) return <Routes><Route path="/t/:token" element={<PublicTrack />} /></Routes>
   if (loading) return <div className="h-full grid place-items-center"><Loading label="Starting Elvora Logistics OS…" /></div>
   if (!me) return <Routes><Route path="/login" element={<Login />} /><Route path="*" element={<Navigate to="/login" replace state={{ from: loc.pathname }} />} /></Routes>
+  if (me.mustChangePassword && !loc.pathname.startsWith('/profile') && !loc.pathname.startsWith('/print')) return <Navigate to="/profile" replace />
   return (
     <Suspense fallback={<Loading />}>
       <Routes>

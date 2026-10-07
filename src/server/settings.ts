@@ -1,4 +1,4 @@
-import { q } from './db'
+import { q, currentDb, inDemo } from './db'
 import { nowIso, safeJson } from './util'
 import { config, dirs } from './config'
 import crypto from 'node:crypto'
@@ -56,14 +56,16 @@ export const SETTING_DEFAULTS: Record<string, any> = {
 }
 export const SECRET_SETTINGS = new Set(['smtp_pass', 'resend_api_key', 'r2_secret_access_key', 'supabase_service_key', 'wa_access_token', 'wa_app_secret', 'ai_api_key', 'ai_fallback_api_key', 'tracking_api_key', 'tracking_webhook_secret', 'einv_api_key', 'edi_http_auth', 'edi_sftp_pass', 'customs_gateway_key', 'bank_webhook_secret'])
 
-let cache: Record<string, any> | null = null
+const caches = new WeakMap<object, Record<string, any>>()
 export function loadSettings(): Record<string, any> {
+  let cache = caches.get(currentDb()) ?? null
   if (!cache) {
     cache = { ...SETTING_DEFAULTS }
+    caches.set(currentDb(), cache)
     for (const r of q.all<{ key: string; value: string }>('SELECT key, value FROM settings')) { const val = safeJson(r.value, null); cache[r.key] = SECRET_SETTINGS.has(r.key) && typeof val === 'string' ? decryptSecret(val) : val }
     // environment overrides for SMTP so secrets can live outside the DB
     const s = config.smtp
-    if (s.host && !cache.smtp_host) { cache.smtp_host = s.host; cache.smtp_port = s.port; cache.smtp_user = s.user; cache.smtp_pass = s.pass; cache.smtp_from = s.from; cache.smtp_secure = s.secure }
+    if (s.host && !cache.smtp_host && !inDemo()) { cache.smtp_host = s.host; cache.smtp_port = s.port; cache.smtp_user = s.user; cache.smtp_pass = s.pass; cache.smtp_from = s.from; cache.smtp_secure = s.secure }
   }
   return cache
 }
@@ -74,7 +76,7 @@ export function setSettings(patch: Record<string, any>) {
     const stored = SECRET_SETTINGS.has(k) && typeof v === 'string' && v ? encryptSecret(v) : v
     q.run(`INSERT INTO settings(key, value, updated_at) VALUES (?,?,?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`, k, JSON.stringify(stored), nowIso())
   }
-  cache = null
+  caches.delete(currentDb())
 }
 export function publicSettings(includeSecrets = false) {
   const s = { ...loadSettings() }

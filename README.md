@@ -17,18 +17,18 @@ npm run build && npm start
 docker compose up -d --build
 ```
 
-Copy `.env.example` to `.env` to configure. `SEED_DEMO=true` loads fictional demo data into an empty database
-(admins can also load it from the Administration area).
+Copy `.env.example` to `.env` to configure. A separate, fictional **demo workspace** is built at start-up (see [docs/HANDOVER.md](docs/HANDOVER.md)); production data is never mixed with it.
 
-## First sign-in
+## Sign-in
 
-| Role | E-mail | Password |
-|---|---|---|
-| Administrator (all access) | admin@elvorashipping.com | Elvora@Admin2026 |
-| Manager (all access) | manager@elvorashipping.com | Elvora@Manager2026 |
+| Account | E-mail | Password | Workspace |
+|---|---|---|---|
+| Administrator (all access) | admin@elvorashipping.com | Elvora@Admin2026 | Production – empty, no sample data |
+| Manager (all access) | manager@elvorashipping.com | Elvora@Manager2026 | Production – empty, no sample data |
+| Demo presenter (all access) | demo@elvorashipping.com | Demo@Elvora2026 | Isolated demo – fictional data, resets nightly |
 
-These are defaults. **Change both passwords at first login** (the app shows a banner until you do) or set
-`ADMIN_PASSWORD` / `MANAGER_PASSWORD` before the first start.
+The two production accounts must set their own password at first sign-in (the app blocks everything else until they do), or set
+`ADMIN_PASSWORD` / `MANAGER_PASSWORD` before the first start. The demo account can be disabled with `DEMO_ENABLED=false`.
 
 ## Design
 
@@ -44,4 +44,4 @@ See [docs/FEATURES.md](docs/FEATURES.md) (features & limits), [docs/INTEGRATIONS
 
 ## Tests
 
-`npm run typecheck`; with the server running on an empty database: `npm test` (134 API checks). Integrations/AI/finance extensions: start the API with `SEED_DEMO=true WA_GRAPH_URL=http://localhost:9099/graph RESEND_API_URL=http://localhost:9099/resend R2_ENDPOINT=http://localhost:9099/r2` on a fresh data dir, then `npm run test:integrations` (81 checks against built-in mock providers).
+`npm run typecheck`; with the server running on an empty database: `npm test` (134 API checks). Integrations/AI/finance extensions: start the API with `WA_GRAPH_URL=http://localhost:9099/graph RESEND_API_URL=http://localhost:9099/resend R2_ENDPOINT=http://localhost:9099/r2` on a fresh data dir, then `npm run test:integrations` (83 checks against built-in mock providers). `npm run test:handover` (48 checks) proves production is empty, the demo is rich and the two are isolated; run it on a fresh data directory.
