@@ -10,6 +10,7 @@ export const SETTING_DEFAULTS: Record<string, any> = {
   company_address: 'Dubai, United Arab Emirates',
   company_phone: '',
   company_email: 'sales@elvorashipping.com',
+  company_info_email: 'info@elvorashipping.com',
   company_website: 'https://www.elvorashipping.com',
   company_trn: '',
   company_trade_license: '',
