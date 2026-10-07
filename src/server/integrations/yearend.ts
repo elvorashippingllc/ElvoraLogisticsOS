@@ -8,7 +8,7 @@ import { getDef, insertRow, SYSTEM_CTX, audit, type Ctx } from '../engine'
 export function yearEndPreview(year: number, entityId?: number | null) {
   const from = `${year}-01-01`, to = `${year}-12-31`
   const ent = entityId ? ' AND e.legal_entity_id = ' + Number(entityId) : ''
-  const rows = q.all(`SELECT a.id, a.code, a.name, a.type, COALESCE(SUM(l.debit),0) d, COALESCE(SUM(l.credit),0) c FROM accounts a JOIN journal_lines l ON l.account_id = a.id AND l.deleted_at IS NULL JOIN journal_entries e ON e.id = l.entry_id AND e.deleted_at IS NULL WHERE a.deleted_at IS NULL AND a.type IN ('Income','Expense') AND e.entry_date BETWEEN ? AND ? AND e.source_type <> 'Year-end close' ${ent} GROUP BY a.id HAVING d <> c ORDER BY a.code`, from, to)
+  const rows = q.all(`SELECT a.id, a.code, a.name, a.type, COALESCE(SUM(l.debit),0) d, COALESCE(SUM(l.credit),0) c FROM accounts a JOIN journal_lines l ON l.account_id = a.id AND l.deleted_at IS NULL JOIN journal_entries e ON e.id = l.entry_id AND e.deleted_at IS NULL WHERE a.deleted_at IS NULL AND a.type IN ('Income','Expense') AND e.entry_date BETWEEN ? AND ? AND e.source_type <> 'Year-end close' ${ent} GROUP BY a.id HAVING COALESCE(SUM(l.debit),0) <> COALESCE(SUM(l.credit),0) ORDER BY a.code`, from, to)
   const net = rows.reduce((s, r) => s + (r.c - r.d), 0)
   const existing = q.get(`SELECT * FROM year_end_closes WHERE fiscal_year = ? AND status = 'Closed' AND legal_entity_id IS ? AND deleted_at IS NULL`, String(year), entityId ?? null)
   return { year, from, to, accounts: rows.map(r => ({ code: r.code, name: r.name, type: r.type, balance: r2((r.c - r.d) / 100) })), net_result: r2(net / 100), already_closed: !!existing }

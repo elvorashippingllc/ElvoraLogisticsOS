@@ -4,7 +4,7 @@ Full-stack freight-forwarding and logistics ERP with AI employees, WhatsApp auto
 shipments, tracking, customs, transport, warehouse, double-entry accounting, HR, support, projects, documents,
 reports/KPI and administration — in one app.
 
-**Stack:** Node 22, Fastify 5, SQLite (better-sqlite3, WAL), zod · React 19, Vite, Tailwind 4, react-query, recharts.
+**Stack:** Node 22, Fastify 5, SQLite (better-sqlite3, WAL) or PostgreSQL/Supabase ([docs/POSTGRES.md](docs/POSTGRES.md)), zod · React 19, Vite, Tailwind 4, react-query, recharts.
 
 ## Run
 

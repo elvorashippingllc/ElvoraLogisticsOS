@@ -10,6 +10,9 @@ export const config = {
   port: Number(env.PORT ?? 8080),
   host: env.HOST ?? '0.0.0.0',
   dataDir: path.resolve(env.DATA_DIR ?? 'data'),
+  /** When set, the app runs on PostgreSQL (e.g. Supabase) instead of the local SQLite file. */
+  databaseUrl: env.DATABASE_URL ?? '',
+  pgSchema: (env.PG_SCHEMA ?? 'elvora').replace(/[^a-z0-9_]/gi, '').toLowerCase() || 'elvora',
   baseUrl: env.PUBLIC_URL ?? '',
   timezone: env.APP_TIMEZONE ?? 'Asia/Dubai',
   baseCurrency: env.BASE_CURRENCY ?? 'AED',
@@ -47,3 +50,7 @@ export const dirs = {
 export function ensureDirs() {
   for (const d of [dirs.data, dirs.uploads, dirs.backups, dirs.demo]) fs.mkdirSync(d, { recursive: true })
 }
+
+/** Backup files: a copy of the SQLite file, or a gzip NDJSON snapshot when running on PostgreSQL. */
+export const BACKUP_EXT = config.databaseUrl ? '.json.gz' : '.db'
+export const isBackupFile = (f: string) => f.endsWith('.db') || f.endsWith('.json.gz')

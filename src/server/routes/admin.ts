@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { z } from 'zod'
 import { db, q } from '../db'
-import { dirs, config } from '../config'
+import { dirs, config, BACKUP_EXT, isBackupFile } from '../config'
 import { loadSettings, publicSettings, setSettings, SETTING_DEFAULTS, SECRET_SETTINGS } from '../settings'
 import { audit, getDef, getRecord, SYSTEM_CTX, createRecord } from '../engine'
 import { bad, nowIso, safeJson, todayStr, notFound } from '../util'
@@ -117,11 +117,11 @@ export default async function (app: FastifyInstance) {
   })
   app.get('/api/admin/backups', async (req) => {
     need(req, 'admin', 'view')
-    return fs.readdirSync(dirs.backups).filter(f => f.endsWith('.db')).sort().reverse().map(f => ({ name: f, bytes: fs.statSync(path.join(dirs.backups, f)).size, at: fs.statSync(path.join(dirs.backups, f)).mtime.toISOString() }))
+    return fs.readdirSync(dirs.backups).filter(isBackupFile).sort().reverse().map(f => ({ name: f, bytes: fs.statSync(path.join(dirs.backups, f)).size, at: fs.statSync(path.join(dirs.backups, f)).mtime.toISOString() }))
   })
   app.post('/api/admin/backups', async (req) => {
     need(req, 'admin', 'edit')
-    const name = `elvora-${nowIso().replace(/[:.]/g, '-').slice(0, 19)}.db`
+    const name = `elvora-${nowIso().replace(/[:.]/g, '-').slice(0, 19)}${BACKUP_EXT}`
     await db.backup(path.join(dirs.backups, name))
     audit(req.ctx, getDef('branches'), 0, 'backup', { file: [null, name] }, name)
     return { name }
@@ -130,7 +130,7 @@ export default async function (app: FastifyInstance) {
     need(req, 'admin', 'export')
     const name = path.basename(String((req.params as any).name))
     const p = path.join(dirs.backups, name)
-    if (!name.endsWith('.db') || !fs.existsSync(p)) throw notFound('Backup not found')
+    if (!isBackupFile(name) || !fs.existsSync(p)) throw notFound('Backup not found')
     reply.header('content-type', 'application/octet-stream').header('content-disposition', `attachment; filename="${name}"`)
     return reply.send(fs.createReadStream(p))
   })

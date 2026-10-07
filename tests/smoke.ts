@@ -187,7 +187,7 @@ async function main() {
   cookie = adminCookie
   r = await api('DELETE', `/api/e/parties/${cust}`); ok('cannot delete a customer that has records', r.status === 409, r.data)
   r = await api('PUT', '/api/e/users/1', { active: false }); ok('cannot deactivate yourself', r.status === 400, r.data)
-  r = await api('POST', '/api/admin/backups'); ok('database backup created', r.status === 200 && r.data.name?.endsWith('.db'), r.data)
+  r = await api('POST', '/api/admin/backups'); ok('database backup created', r.status === 200 && /\.(db|json\.gz)$/.test(r.data.name ?? ''), r.data)
 
   console.log(`\n${pass} passed, ${fail} failed`)
   if (fail) { console.log('Failures:\n - ' + failures.join('\n - ')); process.exit(1) }

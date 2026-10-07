@@ -77,9 +77,9 @@ export async function buildApp(): Promise<FastifyInstance> {
     if (err instanceof HttpError) return reply.status(err.status).send({ error: err.message, details: err.details })
     if (err instanceof ZodError) return reply.status(400).send({ error: err.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; ') })
     if (err?.statusCode && err.statusCode < 500) return reply.status(err.statusCode).send({ error: err.message })
-    if (typeof err?.code === 'string' && err.code.startsWith('SQLITE_CONSTRAINT')) {
+    if (typeof err?.code === 'string' && (err.code.startsWith('SQLITE_CONSTRAINT') || /^23\d{3}$/.test(err.code))) {
       req.log.warn({ err }, 'constraint')
-      return reply.status(409).send({ error: /UNIQUE/.test(err.message) ? 'A record with the same unique value already exists' : 'The change conflicts with existing data' })
+      return reply.status(409).send({ error: /UNIQUE/.test(err.message) || err.code === '23505' || /duplicate key/.test(err.message) ? 'A record with the same unique value already exists' : 'The change conflicts with existing data' })
     }
     req.log.error({ err, url: req.url }, 'unhandled')
     return reply.status(500).send({ error: config.isProd ? 'Unexpected server error' : String(err?.message ?? err) })

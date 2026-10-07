@@ -69,7 +69,7 @@ export default async function (app: FastifyInstance) {
     q.run(`UPDATE users SET totp_secret = NULL WHERE id = ?`, req.user!.id)
     const pending = secret
     // store pending secret in the session-less settings table keyed by user until verified
-    q.run(`INSERT OR REPLACE INTO settings(key, value, updated_at) VALUES (?,?,?)`, `totp-pending:${req.user!.id}`, JSON.stringify(pending), nowIso())
+    q.run(`INSERT INTO settings(key, value, updated_at) VALUES (?,?,?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`, `totp-pending:${req.user!.id}`, JSON.stringify(pending), nowIso())
     const issuer = 'Elvora Logistics OS'
     return { secret, uri: `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(req.user!.email)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}&digits=6&period=30` }
   })

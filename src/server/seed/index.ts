@@ -6,7 +6,7 @@ import * as D from './data'
 import { seedCompliance } from './compliance'
 
 const done = (g: string) => !!q.val(`SELECT 1 FROM settings WHERE key = ?`, `seed:${g}`)
-const mark = (g: string) => q.run(`INSERT OR REPLACE INTO settings(key, value, updated_at) VALUES (?, '1', ?)`, `seed:${g}`, nowIso())
+const mark = (g: string) => q.run(`INSERT INTO settings(key, value, updated_at) VALUES (?, '1', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`, `seed:${g}`, nowIso())
 const idOf = (table: string, col: string, val: string) => q.val<number>(`SELECT id FROM ${table} WHERE ${col} = ? AND deleted_at IS NULL`, val)
 
 export function seedReference(opts: { users?: boolean; demo?: boolean } = {}) {

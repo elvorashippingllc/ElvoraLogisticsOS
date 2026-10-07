@@ -52,7 +52,7 @@ export const REPORTS: ReportDef[] = [
     key: 'customer_profitability', label: 'Customer profitability', group: 'Operations', module: 'reports', description: 'Jobs, revenue and profit by client.', params: FROM_TO,
     run: p => {
       const { from, to } = range(p)
-      const rows = q.all(`SELECT pr.name AS client, COUNT(*) AS jobs, SUM(j.total_revenue) rev, SUM(j.total_cost) cost, SUM(j.profit) profit FROM jobs j LEFT JOIN parties pr ON pr.id = j.client_id WHERE j.deleted_at IS NULL AND j.job_status <> 'CANCELLED' AND j.job_date BETWEEN ? AND ? GROUP BY j.client_id ORDER BY profit DESC`, from, to)
+      const rows = q.all(`SELECT pr.name AS client, COUNT(*) AS jobs, SUM(j.total_revenue) rev, SUM(j.total_cost) cost, SUM(j.profit) profit FROM jobs j LEFT JOIN parties pr ON pr.id = j.client_id WHERE j.deleted_at IS NULL AND j.job_status <> 'CANCELLED' AND j.job_date BETWEEN ? AND ? GROUP BY j.client_id, pr.name ORDER BY profit DESC`, from, to)
         .map(r => ({ client: r.client, jobs: r.jobs, revenue: m(r.rev), cost: m(r.cost), profit: m(r.profit), margin: r.rev > 0 ? r2((r.profit / r.rev) * 100) : null }))
       return { title: 'Customer profitability', columns: [{ key: 'client', label: 'Client' }, { key: 'jobs', label: 'Jobs', type: 'number' }, { key: 'revenue', label: 'Revenue', type: 'money' }, { key: 'cost', label: 'Cost', type: 'money' }, { key: 'profit', label: 'Profit', type: 'money' }, { key: 'margin', label: 'Margin %', type: 'percent' }], rows, totals: sumKeys(rows, ['jobs', 'revenue', 'cost', 'profit']) }
     },
@@ -61,7 +61,7 @@ export const REPORTS: ReportDef[] = [
     key: 'lane_profitability', label: 'Lane profitability', group: 'Operations', module: 'reports', description: 'Volume and margin by trade lane (POL → POD).', params: FROM_TO,
     run: p => {
       const { from, to } = range(p)
-      const rows = q.all(`SELECT pol.code || ' → ' || pod.code AS lane, j.department, COUNT(*) jobs, SUM(j.total_revenue) rev, SUM(j.total_cost) cost, SUM(j.profit) profit FROM jobs j JOIN locations pol ON pol.id = j.pol_id JOIN locations pod ON pod.id = j.pod_id WHERE j.deleted_at IS NULL AND j.job_status <> 'CANCELLED' AND j.job_date BETWEEN ? AND ? GROUP BY j.pol_id, j.pod_id, j.department ORDER BY jobs DESC`, from, to)
+      const rows = q.all(`SELECT pol.code || ' → ' || pod.code AS lane, j.department, COUNT(*) jobs, SUM(j.total_revenue) rev, SUM(j.total_cost) cost, SUM(j.profit) profit FROM jobs j JOIN locations pol ON pol.id = j.pol_id JOIN locations pod ON pod.id = j.pod_id WHERE j.deleted_at IS NULL AND j.job_status <> 'CANCELLED' AND j.job_date BETWEEN ? AND ? GROUP BY j.pol_id, j.pod_id, j.department, pol.code, pod.code ORDER BY jobs DESC`, from, to)
         .map(r => ({ lane: r.lane, department: r.department, jobs: r.jobs, revenue: m(r.rev), cost: m(r.cost), profit: m(r.profit), margin: r.rev > 0 ? r2((r.profit / r.rev) * 100) : null }))
       return { title: 'Lane profitability', columns: [{ key: 'lane', label: 'Lane' }, { key: 'department', label: 'Department' }, { key: 'jobs', label: 'Jobs', type: 'number' }, { key: 'revenue', label: 'Revenue', type: 'money' }, { key: 'cost', label: 'Cost', type: 'money' }, { key: 'profit', label: 'Profit', type: 'money' }, { key: 'margin', label: 'Margin %', type: 'percent' }], rows, totals: sumKeys(rows, ['jobs', 'revenue', 'cost', 'profit']) }
     },
@@ -118,7 +118,7 @@ export const REPORTS: ReportDef[] = [
     key: 'sales_by_branch', label: 'Sales by branch', group: 'Sales', module: 'reports', description: 'Posted invoices (net of credit notes) by branch, in base currency.', params: FROM_TO,
     run: p => {
       const { from, to } = range(p)
-      const rows = q.all(`SELECT COALESCE(b.name, 'Unassigned') AS branch, COUNT(*) AS docs, SUM(${SIGN} * i.subtotal * i.ex_rate) AS net, SUM(${SIGN} * i.base_total) AS gross FROM invoices i LEFT JOIN branches b ON b.id = i.branch_id WHERE ${SALES_STATUS} AND i.invoice_date BETWEEN ? AND ? GROUP BY i.branch_id ORDER BY gross DESC`, from, to).map(r => ({ branch: r.branch, docs: r.docs, net: m(Math.round(r.net)), gross: m(r.gross) }))
+      const rows = q.all(`SELECT COALESCE(b.name, 'Unassigned') AS branch, COUNT(*) AS docs, SUM(${SIGN} * i.subtotal * i.ex_rate) AS net, SUM(${SIGN} * i.base_total) AS gross FROM invoices i LEFT JOIN branches b ON b.id = i.branch_id WHERE ${SALES_STATUS} AND i.invoice_date BETWEEN ? AND ? GROUP BY i.branch_id, b.name ORDER BY gross DESC`, from, to).map(r => ({ branch: r.branch, docs: r.docs, net: m(Math.round(r.net)), gross: m(r.gross) }))
       return { title: 'Sales by branch', columns: [{ key: 'branch', label: 'Branch' }, { key: 'docs', label: 'Documents', type: 'number' }, { key: 'net', label: 'Sales ex-VAT (AED)', type: 'money' }, { key: 'gross', label: 'Sales incl. VAT (AED)', type: 'money' }], rows, totals: sumKeys(rows, ['docs', 'net', 'gross']) }
     },
   },
@@ -126,7 +126,7 @@ export const REPORTS: ReportDef[] = [
     key: 'sales_by_customer', label: 'Sales by customer', group: 'Sales', module: 'reports', description: 'Posted invoices by customer.', params: FROM_TO,
     run: p => {
       const { from, to } = range(p)
-      const rows = q.all(`SELECT pr.name AS customer, COUNT(*) docs, SUM(${SIGN} * i.subtotal * i.ex_rate) net, SUM(${SIGN} * i.base_total) gross FROM invoices i JOIN parties pr ON pr.id = i.party_id WHERE ${SALES_STATUS} AND i.invoice_date BETWEEN ? AND ? GROUP BY i.party_id ORDER BY gross DESC`, from, to).map(r => ({ customer: r.customer, docs: r.docs, net: m(Math.round(r.net)), gross: m(r.gross) }))
+      const rows = q.all(`SELECT pr.name AS customer, COUNT(*) docs, SUM(${SIGN} * i.subtotal * i.ex_rate) net, SUM(${SIGN} * i.base_total) gross FROM invoices i JOIN parties pr ON pr.id = i.party_id WHERE ${SALES_STATUS} AND i.invoice_date BETWEEN ? AND ? GROUP BY i.party_id, pr.name ORDER BY gross DESC`, from, to).map(r => ({ customer: r.customer, docs: r.docs, net: m(Math.round(r.net)), gross: m(r.gross) }))
       return { title: 'Sales by customer', columns: [{ key: 'customer', label: 'Customer' }, { key: 'docs', label: 'Documents', type: 'number' }, { key: 'net', label: 'Sales ex-VAT (AED)', type: 'money' }, { key: 'gross', label: 'Sales incl. VAT (AED)', type: 'money' }], rows, totals: sumKeys(rows, ['docs', 'net', 'gross']) }
     },
   },
@@ -134,7 +134,7 @@ export const REPORTS: ReportDef[] = [
     key: 'sales_by_salesperson', label: 'Sales by salesperson', group: 'Sales', module: 'reports', description: 'Posted invoices attributed to the customer\'s salesperson.', params: FROM_TO,
     run: p => {
       const { from, to } = range(p)
-      const rows = q.all(`SELECT COALESCE(u.name, 'Unassigned') AS salesperson, COUNT(*) docs, SUM(${SIGN} * i.subtotal * i.ex_rate) net FROM invoices i JOIN parties pr ON pr.id = i.party_id LEFT JOIN users u ON u.id = pr.salesperson_id WHERE ${SALES_STATUS} AND i.invoice_date BETWEEN ? AND ? GROUP BY pr.salesperson_id ORDER BY net DESC`, from, to).map(r => ({ ...r, net: m(Math.round(r.net)) }))
+      const rows = q.all(`SELECT COALESCE(u.name, 'Unassigned') AS salesperson, COUNT(*) docs, SUM(${SIGN} * i.subtotal * i.ex_rate) net FROM invoices i JOIN parties pr ON pr.id = i.party_id LEFT JOIN users u ON u.id = pr.salesperson_id WHERE ${SALES_STATUS} AND i.invoice_date BETWEEN ? AND ? GROUP BY pr.salesperson_id, u.name ORDER BY net DESC`, from, to).map(r => ({ ...r, net: m(Math.round(r.net)) }))
       return { title: 'Sales by salesperson', columns: [{ key: 'salesperson', label: 'Salesperson' }, { key: 'docs', label: 'Documents', type: 'number' }, { key: 'net', label: 'Sales ex-VAT (AED)', type: 'money' }], rows, totals: sumKeys(rows, ['docs', 'net']) }
     },
   },
@@ -153,7 +153,7 @@ export const REPORTS: ReportDef[] = [
     key: 'quotation_funnel', label: 'Quotation conversion', group: 'Sales', module: 'sales', description: 'Quotations by status and salesperson.', params: FROM_TO,
     run: p => {
       const { from, to } = range(p)
-      const rows = q.all(`SELECT COALESCE(u.name,'Unassigned') AS salesperson, COUNT(*) AS total, SUM(CASE WHEN qt.status IN ('Accepted','Converted to job') THEN 1 ELSE 0 END) won, SUM(CASE WHEN qt.status = 'Rejected' THEN 1 ELSE 0 END) lost, SUM(CASE WHEN qt.status IN ('Draft','Pending approval','Approved','Sent') THEN 1 ELSE 0 END) open, SUM(qt.total * qt.ex_rate) value, SUM(CASE WHEN qt.status IN ('Accepted','Converted to job') THEN qt.total * qt.ex_rate ELSE 0 END) won_value FROM quotations qt LEFT JOIN users u ON u.id = qt.salesperson_id WHERE qt.deleted_at IS NULL AND qt.quote_date BETWEEN ? AND ? GROUP BY qt.salesperson_id`, from, to)
+      const rows = q.all(`SELECT COALESCE(u.name,'Unassigned') AS salesperson, COUNT(*) AS total, SUM(CASE WHEN qt.status IN ('Accepted','Converted to job') THEN 1 ELSE 0 END) won, SUM(CASE WHEN qt.status = 'Rejected' THEN 1 ELSE 0 END) lost, SUM(CASE WHEN qt.status IN ('Draft','Pending approval','Approved','Sent') THEN 1 ELSE 0 END) open, SUM(qt.total * qt.ex_rate) value, SUM(CASE WHEN qt.status IN ('Accepted','Converted to job') THEN qt.total * qt.ex_rate ELSE 0 END) won_value FROM quotations qt LEFT JOIN users u ON u.id = qt.salesperson_id WHERE qt.deleted_at IS NULL AND qt.quote_date BETWEEN ? AND ? GROUP BY qt.salesperson_id, u.name`, from, to)
         .map(r => ({ ...r, value: m(Math.round(r.value)), won_value: m(Math.round(r.won_value)), conversion: r.total ? r2((r.won / r.total) * 100) : null }))
       return { title: 'Quotation conversion', columns: [{ key: 'salesperson', label: 'Salesperson' }, { key: 'total', label: 'Quotes', type: 'number' }, { key: 'open', label: 'Open', type: 'number' }, { key: 'won', label: 'Won', type: 'number' }, { key: 'lost', label: 'Lost', type: 'number' }, { key: 'conversion', label: 'Conversion %', type: 'percent' }, { key: 'value', label: 'Quoted value (AED)', type: 'money' }, { key: 'won_value', label: 'Won value (AED)', type: 'money' }], rows, totals: sumKeys(rows, ['total', 'open', 'won', 'lost', 'value', 'won_value']) }
     },
@@ -170,7 +170,7 @@ export const REPORTS: ReportDef[] = [
     key: 'lead_funnel', label: 'Lead sources & funnel', group: 'Sales', module: 'crm', description: 'Leads by source and status.', params: FROM_TO,
     run: p => {
       const { from, to } = range(p)
-      const rows = q.all(`SELECT COALESCE(source,'Unknown') AS source, COUNT(*) total, SUM(status='Qualified') qualified, SUM(status='Converted') converted, SUM(status='Unqualified') unqualified FROM leads WHERE deleted_at IS NULL AND substr(created_at,1,10) BETWEEN ? AND ? GROUP BY source ORDER BY total DESC`, from, to).map(r => ({ ...r, rate: r.total ? r2((r.converted / r.total) * 100) : null }))
+      const rows = q.all(`SELECT COALESCE(source,'Unknown') AS source, COUNT(*) total, SUM(CASE WHEN status='Qualified' THEN 1 ELSE 0 END) qualified, SUM(CASE WHEN status='Converted' THEN 1 ELSE 0 END) converted, SUM(CASE WHEN status='Unqualified' THEN 1 ELSE 0 END) unqualified FROM leads WHERE deleted_at IS NULL AND substr(created_at,1,10) BETWEEN ? AND ? GROUP BY source ORDER BY total DESC`, from, to).map(r => ({ ...r, rate: r.total ? r2((r.converted / r.total) * 100) : null }))
       return { title: 'Lead sources & funnel', columns: [{ key: 'source', label: 'Source' }, { key: 'total', label: 'Leads', type: 'number' }, { key: 'qualified', label: 'Qualified', type: 'number' }, { key: 'converted', label: 'Converted', type: 'number' }, { key: 'unqualified', label: 'Unqualified', type: 'number' }, { key: 'rate', label: 'Conversion %', type: 'percent' }], rows, totals: sumKeys(rows, ['total', 'qualified', 'converted', 'unqualified']) }
     },
   },
@@ -180,7 +180,7 @@ export const REPORTS: ReportDef[] = [
     run: p => {
       const asOf = String(p.as_of || todayStr())
       const inv = q.all(`SELECT i.party_id, pr.name AS customer, i.invoice_no, i.due_date, i.invoice_date, (CASE WHEN i.doc_type='Credit Note' THEN -(i.total - i.paid_amount) ELSE i.balance END) * i.ex_rate AS open FROM invoices i JOIN parties pr ON pr.id = i.party_id WHERE i.status IN ('Posted','Partially paid','Paid') AND i.doc_type IN ('Tax Invoice','Debit Note','Credit Note') AND i.deleted_at IS NULL AND i.invoice_date <= ? AND ((i.doc_type <> 'Credit Note' AND i.balance > 0) OR (i.doc_type = 'Credit Note' AND i.total > i.paid_amount))`, asOf)
-      const onAcc = q.all(`SELECT r.party_id, pr.name AS customer, SUM(r.unallocated * r.ex_rate) AS amt FROM receipts r JOIN parties pr ON pr.id = r.party_id WHERE r.status = 'Posted' AND r.unallocated > 0 AND r.receipt_date <= ? AND r.deleted_at IS NULL GROUP BY r.party_id`, asOf)
+      const onAcc = q.all(`SELECT r.party_id, pr.name AS customer, SUM(r.unallocated * r.ex_rate) AS amt FROM receipts r JOIN parties pr ON pr.id = r.party_id WHERE r.status = 'Posted' AND r.unallocated > 0 AND r.receipt_date <= ? AND r.deleted_at IS NULL GROUP BY r.party_id, pr.name`, asOf)
       const by = new Map<number, any>()
       const get = (id: number, name: string) => { if (!by.has(id)) by.set(id, { customer: name, current: 0, d30: 0, d60: 0, d90: 0, d90p: 0, on_account: 0, total: 0 }); return by.get(id) }
       for (const r of inv) { const x = get(r.party_id, r.customer); const od = daysBetween(r.due_date ?? r.invoice_date, asOf); const k = od <= 0 ? 'current' : od <= 30 ? 'd30' : od <= 60 ? 'd60' : od <= 90 ? 'd90' : 'd90p'; x[k] += r.open }
@@ -194,7 +194,7 @@ export const REPORTS: ReportDef[] = [
     run: p => {
       const asOf = String(p.as_of || todayStr())
       const bills = q.all(`SELECT b.vendor_id, pr.name AS vendor, b.due_date, b.bill_date, b.balance * b.ex_rate AS open FROM bills b JOIN parties pr ON pr.id = b.vendor_id WHERE b.status IN ('Posted','Partially paid') AND b.balance > 0 AND b.deleted_at IS NULL AND b.bill_date <= ?`, asOf)
-      const adv = q.all(`SELECT p.vendor_id, pr.name AS vendor, SUM(p.unallocated * p.ex_rate) amt FROM payments p JOIN parties pr ON pr.id = p.vendor_id WHERE p.status='Posted' AND p.unallocated > 0 AND p.payment_date <= ? AND p.deleted_at IS NULL GROUP BY p.vendor_id`, asOf)
+      const adv = q.all(`SELECT p.vendor_id, pr.name AS vendor, SUM(p.unallocated * p.ex_rate) amt FROM payments p JOIN parties pr ON pr.id = p.vendor_id WHERE p.status='Posted' AND p.unallocated > 0 AND p.payment_date <= ? AND p.deleted_at IS NULL GROUP BY p.vendor_id, pr.name`, asOf)
       const by = new Map<number, any>()
       const get = (id: number, name: string) => { if (!by.has(id)) by.set(id, { vendor: name, current: 0, d30: 0, d60: 0, d90: 0, d90p: 0, advance: 0 }); return by.get(id) }
       for (const r of bills) { const x = get(r.vendor_id, r.vendor); const od = daysBetween(r.due_date ?? r.bill_date, asOf); x[od <= 0 ? 'current' : od <= 30 ? 'd30' : od <= 60 ? 'd60' : od <= 90 ? 'd90' : 'd90p'] += r.open }
@@ -207,7 +207,7 @@ export const REPORTS: ReportDef[] = [
     key: 'trial_balance', label: 'Trial balance', group: 'Finance', module: 'finance', description: 'Account balances as of a date (base currency).', params: [D('as_of', 'As of', 'today'), { name: 'legal_entity_id', label: 'Legal entity', type: 'ref', ref: 'legal_entities' }],
     run: p => {
       const asOf = String(p.as_of || todayStr())
-      const rows = q.all(`SELECT a.code, a.name, a.type, COALESCE(SUM(l.debit),0) d, COALESCE(SUM(l.credit),0) c FROM accounts a LEFT JOIN journal_lines l ON l.account_id = a.id AND l.deleted_at IS NULL AND l.entry_id IN (SELECT id FROM journal_entries WHERE entry_date <= ? AND deleted_at IS NULL ${p.legal_entity_id ? 'AND legal_entity_id = ' + Number(p.legal_entity_id) : ''}) WHERE a.deleted_at IS NULL GROUP BY a.id HAVING d <> 0 OR c <> 0 ORDER BY a.code`, asOf)
+      const rows = q.all(`SELECT a.code, a.name, a.type, COALESCE(SUM(l.debit),0) d, COALESCE(SUM(l.credit),0) c FROM accounts a LEFT JOIN journal_lines l ON l.account_id = a.id AND l.deleted_at IS NULL AND l.entry_id IN (SELECT id FROM journal_entries WHERE entry_date <= ? AND deleted_at IS NULL ${p.legal_entity_id ? 'AND legal_entity_id = ' + Number(p.legal_entity_id) : ''}) WHERE a.deleted_at IS NULL GROUP BY a.id HAVING COALESCE(SUM(l.debit),0) <> 0 OR COALESCE(SUM(l.credit),0) <> 0 ORDER BY a.code`, asOf)
         .map(r => { const bal = r.d - r.c; return { code: r.code, name: r.name, type: r.type, debit: m(bal > 0 ? bal : 0), credit: m(bal < 0 ? -bal : 0) } })
       return { title: `Trial balance as of ${asOf}`, columns: [{ key: 'code', label: 'Code' }, { key: 'name', label: 'Account' }, { key: 'type', label: 'Type' }, { key: 'debit', label: 'Debit', type: 'money' }, { key: 'credit', label: 'Credit', type: 'money' }], rows, totals: sumKeys(rows, ['debit', 'credit']) }
     },
@@ -303,7 +303,7 @@ export const REPORTS: ReportDef[] = [
     key: 'transport_utilisation', label: 'Fleet utilisation', group: 'Transport', module: 'transport', description: 'Trips, distance, revenue and cost per vehicle.', params: FROM_TO,
     run: p => {
       const { from, to } = range(p)
-      const rows = q.all(`SELECT COALESCE(v.plate_no, 'Subcontracted') AS vehicle, COUNT(*) trips, COALESCE(SUM(t.distance_km),0) km, COALESCE(SUM(t.rate),0) rev, COALESCE(SUM(t.cost),0) cost FROM transport_orders t LEFT JOIN vehicles v ON v.id = t.vehicle_id WHERE t.deleted_at IS NULL AND t.status <> 'Cancelled' AND substr(COALESCE(t.pickup_at, t.created_at),1,10) BETWEEN ? AND ? GROUP BY t.vehicle_id ORDER BY trips DESC`, from, to).map(r => ({ vehicle: r.vehicle, trips: r.trips, km: r.km, revenue: m(r.rev), cost: m(r.cost), margin: m(r.rev - r.cost) }))
+      const rows = q.all(`SELECT COALESCE(v.plate_no, 'Subcontracted') AS vehicle, COUNT(*) trips, COALESCE(SUM(t.distance_km),0) km, COALESCE(SUM(t.rate),0) rev, COALESCE(SUM(t.cost),0) cost FROM transport_orders t LEFT JOIN vehicles v ON v.id = t.vehicle_id WHERE t.deleted_at IS NULL AND t.status <> 'Cancelled' AND substr(COALESCE(t.pickup_at, t.created_at),1,10) BETWEEN ? AND ? GROUP BY t.vehicle_id, v.plate_no ORDER BY trips DESC`, from, to).map(r => ({ vehicle: r.vehicle, trips: r.trips, km: r.km, revenue: m(r.rev), cost: m(r.cost), margin: m(r.rev - r.cost) }))
       return { title: 'Fleet utilisation', columns: [{ key: 'vehicle', label: 'Vehicle' }, { key: 'trips', label: 'Trips', type: 'number' }, { key: 'km', label: 'Distance (km)', type: 'number' }, { key: 'revenue', label: 'Revenue', type: 'money' }, { key: 'cost', label: 'Cost', type: 'money' }, { key: 'margin', label: 'Margin', type: 'money' }], rows, totals: sumKeys(rows, ['trips', 'km', 'revenue', 'cost', 'margin']) }
     },
   },

@@ -4,7 +4,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { z } from 'zod'
 import { db, q } from '../db'
-import { dirs, config } from '../config'
+import { dirs, config, BACKUP_EXT } from '../config'
 import { getSetting, publicSettings, setSettings } from '../settings'
 import { audit, getDef, getRecord, assertCan, can } from '../engine'
 import { bad, notFound, nowIso, safeJson, todayStr } from '../util'
@@ -34,7 +34,7 @@ const same = (a: string, b: string) => { const x = Buffer.from(a), y = Buffer.fr
 const origin = (req: any) => String(config.baseUrl || `${req.protocol}://${req.headers.host}`).replace(/\/+$/, '')
 
 export async function backupToR2(): Promise<string> {
-  const name = `elvora-${nowIso().replace(/[:.]/g, '-').slice(0, 19)}.db`
+  const name = `elvora-${nowIso().replace(/[:.]/g, '-').slice(0, 19)}${BACKUP_EXT}`
   const p = path.join(dirs.backups, name)
   await db.backup(p)
   if (r2Configured()) await r2Put(`backups/${name}`, fs.readFileSync(p), 'application/octet-stream')
