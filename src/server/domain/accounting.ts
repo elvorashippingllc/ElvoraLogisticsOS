@@ -40,6 +40,8 @@ export function postJournal(ctx: Ctx, j: JournalInput): number {
     entry_date: j.date, memo: j.memo, source_type: j.source_type, source_id: j.source_id ?? null, source_no: j.source_no ?? null, branch_id: j.branch_id ?? null, status: 'Posted',
     children: { lines: lines.map(l => ({ account_id: l.account_id, party_id: l.party_id ?? null, job_id: l.job_id ?? null, description: l.description ?? null, debit: l.debit ?? 0, credit: l.credit ?? 0 })) },
   }, { ...SYSTEM_CTX, user: ctx.user, ip: ctx.ip })
+  const ent = (j.branch_id ? q.val<number>(`SELECT legal_entity_id FROM branches WHERE id = ?`, j.branch_id) : null) ?? q.val<number>(`SELECT id FROM legal_entities WHERE is_default = 1 AND deleted_at IS NULL ORDER BY id LIMIT 1`)
+  if (ent) q.run(`UPDATE journal_entries SET legal_entity_id = ? WHERE id = ?`, ent, rec.id)
   return rec.id
 }
 

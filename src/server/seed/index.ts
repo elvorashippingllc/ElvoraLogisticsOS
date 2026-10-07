@@ -20,6 +20,11 @@ export function seedReference() {
     mk('branches', { code: 'DXB', name: 'Dubai – Head Office', city: 'Dubai', country: 'United Arab Emirates', is_head_office: true, active: true })
     mark('branches')
   }
+  if (!done('legal_entity')) {
+    const id = mk('legal_entities', { code: 'ELV', name: 'Elvora Shipping L.L.C.', base_currency: config.baseCurrency, is_default: true, active: true }).id
+    q.run(`UPDATE branches SET legal_entity_id = ? WHERE legal_entity_id IS NULL`, id)
+    mark('legal_entity')
+  }
   if (!done('departments')) {
     for (const [code, name] of [['OPS', 'Operations'], ['SAL', 'Sales & Business Development'], ['ACC', 'Accounts & Finance'], ['DOC', 'Documentation & Customs'], ['WHS', 'Warehouse & Transport'], ['HR', 'Human Resources'], ['MGT', 'Management']]) mk('departments', { code, name })
     mark('departments')

@@ -13,7 +13,7 @@ export const people: EntityDef[] = [
       PH('phone', 'Phone'), E('email', 'Work e-mail'), T('nationality', 'Nationality'), S('gender', 'Gender', ['Male', 'Female']), D('dob', 'Date of birth'),
       T('passport_no', 'Passport no.', { section: 'Documents' }), D('passport_expiry', 'Passport expiry', { list: true }), T('emirates_id', 'Emirates ID'), D('eid_expiry', 'Emirates ID expiry'), T('visa_no', 'Visa / residence no.'), D('visa_expiry', 'Visa expiry', { list: true }), T('labour_card_no', 'Labour card no.'),
       D('health_card_expiry', 'Health insurance expiry'),
-      M('basic_salary', 'Basic salary', { section: 'Compensation' }), M('housing_allowance', 'Housing'), M('transport_allowance', 'Transport'), M('other_allowance', 'Other allowances'), T('bank_iban', 'Salary IBAN'),
+      M('basic_salary', 'Basic salary', { section: 'Compensation' }), M('housing_allowance', 'Housing'), M('transport_allowance', 'Transport'), M('other_allowance', 'Other allowances'), T('bank_iban', 'Salary IBAN'), T('bank_routing_code', 'Bank routing code (WPS, 9 digits)'), T('bank_name', 'Salary bank'), T('mol_person_id', 'MOHRE person ID (WPS, 14 digits)'),
       N('annual_leave_days', 'Annual leave entitlement', { default: 30 }), TA('notes', 'Notes'),
     ],
   },

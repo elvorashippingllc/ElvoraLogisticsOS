@@ -5,7 +5,7 @@ export const MODULE_DEFS = [
   ['dashboard', 'Dashboard'], ['crm', 'CRM'], ['sales', 'Sales & Pricing'], ['jobs', 'Jobs & Shipments'],
   ['customs', 'Customs'], ['transport', 'Transport'], ['warehouse', 'Warehouse'], ['finance', 'Accounts & Finance'],
   ['hr', 'HR & Payroll'], ['support', 'Support & Claims'], ['projects', 'Projects & Tasks'], ['documents', 'Documents'],
-  ['assets', 'Assets & Procurement'], ['reports', 'Reports & KPI'], ['masters', 'Master Data'], ['admin', 'Administration'],
+  ['assets', 'Assets & Procurement'], ['ai', 'AI Team & Automation'], ['reports', 'Reports & KPI'], ['masters', 'Master Data'], ['admin', 'Administration'],
 ] as const
 
 export const platform: EntityDef[] = [
@@ -15,7 +15,7 @@ export const platform: EntityDef[] = [
       T('code', 'Branch code', { required: true, unique: true, list: true, search: true, help: 'Used as the job-number prefix, e.g. DXB', section: 'Branch' }),
       T('name', 'Branch name', { required: true, list: true, search: true }),
       T('address', 'Address', { span: 3 }), T('city', 'City', { list: true }), T('country', 'Country', { default: 'United Arab Emirates' }),
-      PH('phone', 'Phone'), E('email', 'Email'), T('trn', 'Tax registration no. (TRN)'),
+      PH('phone', 'Phone'), E('email', 'Email'), T('trn', 'Tax registration no. (TRN)'), R('legal_entity_id', 'Legal entity', 'legal_entities', { list: true }),
       T('trade_license', 'Trade licence no.'), B('is_head_office', 'Head office', { list: true }), B('active', 'Active', { default: true, list: true }),
     ],
   },
@@ -102,7 +102,7 @@ export const platform: EntityDef[] = [
       T('name', 'Rule name', { required: true, list: true, search: true, span: 2, section: 'Trigger' }), T('entity', 'Record type (entity key)', { required: true, list: true, help: 'e.g. jobs, invoices, quotations, tickets' }),
       S('trigger', 'When', ['Record created', 'Record updated', 'Status / stage changed to'], { required: true, list: true }), T('field', 'Field to check', { help: 'Optional field name, e.g. job_status' }),
       S('operator', 'Condition', ['equals', 'not equals', 'contains', 'greater than', 'less than', 'is empty', 'is not empty'], { default: 'equals' }), T('value', 'Value', { list: true }),
-      S('action', 'Then', ['Create follow-up task', 'Notify user', 'Queue e-mail to customer contact', 'Queue e-mail to address', 'Set field value'], { required: true, list: true, section: 'Action' }),
+      S('action', 'Then', ['Create follow-up task', 'Notify user', 'Queue e-mail to customer contact', 'Queue e-mail to address', 'Send WhatsApp to customer contact', 'Send WhatsApp to number', 'Ask an AI employee to review', 'Set field value'], { required: true, list: true, section: 'Action' }),
       R('assignee_id', 'Assign / notify user', 'users'), T('target', 'E-mail address / field=value', { help: 'For "Queue e-mail to address": address. For "Set field value": field=value' }),
       T('message', 'Title / subject template', { span: 3, placeholder: 'Follow up job {job_no} – {job_status}' }), TA('body', 'Body template'), I('due_days', 'Task due in (days)', { default: 1 }), B('active', 'Active', { default: true, list: true }),
     ],

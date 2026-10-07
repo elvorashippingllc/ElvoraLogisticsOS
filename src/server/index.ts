@@ -12,6 +12,7 @@ async function main() {
   if (errs.length) { console.error('Entity metadata errors:\n' + errs.join('\n')); process.exit(1) }
   syncSchema()
   seedReference()
+  ;(await import('./ai/agents')).ensureAgents()
   if (cfg.seedDemo) { const { seedDemo } = await import('./seed/demo'); const n = db.prepare(`SELECT COUNT(*) c FROM parties WHERE deleted_at IS NULL`).get() as any; if (!n.c) seedDemo({ user: null, system: true }) }
   const app = await buildApp()
   await app.listen({ port: config.port, host: config.host })

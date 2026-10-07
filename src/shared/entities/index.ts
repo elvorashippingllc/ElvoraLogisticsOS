@@ -6,12 +6,13 @@ import { ops } from './ops'
 import { transportWarehouse } from './operations2'
 import { finance } from './finance'
 import { people } from './people'
+import { automation } from './automation'
 
 export { MODULE_DEFS } from './platform'
 export * from './ops'
 export { INCOTERMS, PACKAGE_TYPES } from './masters'
 
-export const ENTITY_LIST: EntityDef[] = [...platform, ...masters, ...crm, ...ops, ...transportWarehouse, ...finance, ...people]
+export const ENTITY_LIST: EntityDef[] = [...platform, ...masters, ...crm, ...ops, ...transportWarehouse, ...finance, ...people, ...automation]
 export const ENTITIES: Record<string, EntityDef> = Object.fromEntries(ENTITY_LIST.map(e => [e.key, e]))
 
 export function validateMeta(): string[] {
@@ -83,12 +84,16 @@ export const NAV: NavGroup[] = [
     { label: 'Bank Reconciliation', to: '/e/bank_transactions', icon: 'Scale', module: 'finance' },
     { label: 'Chart of Accounts', to: '/e/accounts', icon: 'BookOpenText', module: 'finance' },
     { label: 'Financial Statements', to: '/finance/statements', icon: 'Sigma', module: 'finance' },
+    { label: 'Bank Statement Import', to: '/finance/bank-import', icon: 'FileUp', module: 'finance' },
+    { label: 'Year-end Close', to: '/finance/year-end', icon: 'CalendarCheck2', module: 'finance' },
+    { label: 'Legal Entities', to: '/e/legal_entities', icon: 'Building2', module: 'finance' },
   ] },
   { label: 'People & Support', icon: 'Users', items: [
     { label: 'Employees', to: '/e/employees', icon: 'UserRound', module: 'hr' },
     { label: 'Leave', to: '/e/leave_requests', icon: 'Plane', module: 'hr' },
     { label: 'Attendance', to: '/e/attendance', icon: 'Clock', module: 'hr' },
     { label: 'Payroll', to: '/e/payslips', icon: 'BadgeDollarSign', module: 'hr' },
+    { label: 'WPS Salary File', to: '/hr/wps', icon: 'FileSpreadsheet', module: 'hr' },
     { label: 'Complaints & Tickets', to: '/e/tickets', icon: 'LifeBuoy', module: 'support' },
     { label: 'Cargo Claims', to: '/e/claims', icon: 'ShieldAlert', module: 'support' },
     { label: 'Cargo Insurance', to: '/e/insurance_certs', icon: 'Umbrella', module: 'support' },
@@ -101,6 +106,12 @@ export const NAV: NavGroup[] = [
     { label: 'Blog & Announcements', to: '/e/announcements', icon: 'Newspaper', module: 'documents' },
     { label: 'Fixed Assets', to: '/e/fixed_assets', icon: 'Armchair', module: 'assets' },
     { label: 'Purchase Orders', to: '/e/purchase_orders', icon: 'ShoppingCart', module: 'assets' },
+  ] },
+  { label: 'AI Team', icon: 'Bot', items: [
+    { label: 'Jarvis & Employees', to: '/ai', icon: 'Bot', module: 'ai' },
+    { label: 'Approvals', to: '/ai?tab=approvals', icon: 'ShieldCheck', module: 'ai' },
+    { label: 'AI Activity', to: '/e/ai_runs', icon: 'Activity', module: 'ai' },
+    { label: 'WhatsApp', to: '/whatsapp', icon: 'MessageCircle', module: 'crm' },
   ] },
   { label: 'Reports & Tools', icon: 'BarChart3', items: [
     { label: 'Reports', to: '/reports', icon: 'BarChart3', module: 'reports' },
@@ -128,6 +139,8 @@ export const NAV: NavGroup[] = [
     { label: 'Branches', to: '/e/branches', icon: 'Building2', module: 'admin' },
     { label: 'Departments', to: '/e/departments', icon: 'Network', module: 'admin' },
     { label: 'Company Settings', to: '/admin/settings', icon: 'Settings', module: 'admin' },
+    { label: 'Integrations', to: '/admin/integrations', icon: 'Plug', module: 'admin' },
+    { label: 'Integration Log', to: '/e/integration_logs', icon: 'Activity', module: 'admin' },
     { label: 'Custom Fields', to: '/e/custom_fields', icon: 'SlidersHorizontal', module: 'admin' },
     { label: 'Automation Rules', to: '/e/automation_rules', icon: 'Workflow', module: 'admin' },
     { label: 'E-mail Outbox', to: '/e/email_outbox', icon: 'Mail', module: 'admin' },

@@ -10,6 +10,7 @@ import { assertCan, getDef, getRecord, insertRow, labelsFor, can } from '../engi
 import { bad, forbidden, notFound, nowIso, todayStr } from '../util'
 import { audit } from '../engine'
 import { idOf } from './helpers'
+import { openStored, persistUpload } from '../integrations/storage'
 
 const BLOCKED = new Set(['exe', 'bat', 'cmd', 'com', 'msi', 'scr', 'js', 'mjs', 'vbs', 'sh', 'ps1', 'jar', 'dll', 'html', 'htm', 'svg', 'php', 'apk', 'app', 'iso', 'lnk'])
 const INLINE: Record<string, string> = { pdf: 'application/pdf', png: 'image/png', jpg: 'image/jpeg', jpeg: 'image/jpeg', gif: 'image/gif', webp: 'image/webp', txt: 'text/plain; charset=utf-8' }
@@ -31,7 +32,8 @@ export default async function (app: FastifyInstance) {
       const full = path.join(dirs.uploads, stored)
       await pipeline(part.file, fs.createWriteStream(full))
       if ((part.file as any).truncated) { fs.unlinkSync(full); throw bad(`File exceeds the ${config.maxUploadMb} MB limit`) }
-      saved.push({ name: orig, stored, size: fs.statSync(full).size, mime: part.mimetype })
+      const size = fs.statSync(full).size
+      saved.push({ name: orig, stored: await persistUpload(stored, part.mimetype), size, mime: part.mimetype })
     }
     if (!saved.length) throw bad('No file received')
     const entity = fields.link_entity, linkId = Number(fields.link_id)
@@ -58,13 +60,13 @@ export default async function (app: FastifyInstance) {
     if (!f) throw notFound('File not found')
     if (f.link_entity && ENTITIES[f.link_entity]) getRecord(getDef(f.link_entity), f.link_id, req.ctx, { children: false })
     else assertCan(req.ctx, 'documents', 'view')
-    const full = path.join(dirs.uploads, f.stored_name)
-    if (!full.startsWith(dirs.uploads) || !fs.existsSync(full)) throw notFound('The stored file is missing')
+    const stream = await openStored(f.stored_name)
+    if (!stream) throw notFound('The stored file is missing')
     const ext = path.extname(f.file_name).slice(1).toLowerCase()
     const inline = INLINE[ext] && (req.query as any).inline !== '0'
     reply.header('content-type', INLINE[ext] ?? 'application/octet-stream').header('x-content-type-options', 'nosniff').header('content-security-policy', "sandbox; default-src 'none'; img-src 'self'; style-src 'unsafe-inline'")
     reply.header('content-disposition', `${inline ? 'inline' : 'attachment'}; filename*=UTF-8''${encodeURIComponent(f.file_name)}`)
-    return reply.send(fs.createReadStream(full))
+    return reply.send(stream)
   })
 
   app.delete('/api/files/:id', async (req) => {

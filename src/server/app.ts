@@ -24,7 +24,8 @@ export async function buildApp(): Promise<FastifyInstance> {
 
   // tolerate empty JSON bodies (action endpoints such as POST .../post)
   app.removeContentTypeParser('application/json')
-  app.addContentTypeParser('application/json', { parseAs: 'string' }, (_req, raw, done) => {
+  app.addContentTypeParser('application/json', { parseAs: 'string' }, (req, raw, done) => {
+    ;(req as any).rawBody = raw
     if (!raw || !(raw as string).trim()) return done(null, {})
     try { done(null, JSON.parse(raw as string)) } catch { const e: any = new Error('Invalid JSON body'); e.statusCode = 400; done(e) }
   })
@@ -76,7 +77,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   // routes
   const mods = await Promise.all([
     import('./routes/auth'), import('./routes/meta'), import('./routes/crud'), import('./routes/panel'), import('./routes/files'),
-    import('./routes/jobs'), import('./routes/sales'), import('./routes/finance'), import('./routes/warehouse'), import('./routes/insights'), import('./routes/admin'),
+    import('./routes/jobs'), import('./routes/sales'), import('./routes/finance'), import('./routes/warehouse'), import('./routes/insights'), import('./routes/admin'), import('./routes/integrations'),
   ])
   for (const m of mods) await app.register(m.default)
   app.get('/api/health', async () => ({ ok: true, time: new Date().toISOString() }))

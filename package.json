@@ -4,7 +4,9 @@
   "private": true,
   "description": "Elvora Logistics OS — freight forwarding, CRM, jobs, accounts, warehouse and transport ERP for Elvora Shipping LLC",
   "type": "module",
-  "engines": { "node": ">=22.0.0" },
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "dev": "concurrently -k -n api,web -c green,cyan \"npm:dev:api\" \"npm:dev:web\"",
     "dev:api": "tsx watch --env-file-if-exists=.env src/server/index.ts",
@@ -17,6 +19,7 @@
     "test": "tsx --env-file-if-exists=.env tests/smoke.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1147.0",
     "@fastify/cookie": "^11.0.2",
     "@fastify/helmet": "^13.0.1",
     "@fastify/multipart": "^9.0.3",
@@ -25,6 +28,8 @@
     "better-sqlite3": "^12.4.1",
     "fastify": "^5.6.1",
     "nodemailer": "^7.0.10",
+    "playwright-core": "^1.63.0",
+    "ssh2-sftp-client": "^12.1.1",
     "zod": "^3.25.76"
   },
   "devDependencies": {
@@ -36,6 +41,7 @@
     "@types/qrcode": "^1.5.5",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
+    "@types/ssh2-sftp-client": "^9.0.6",
     "@vitejs/plugin-react": "^5.1.0",
     "clsx": "^2.1.1",
     "concurrently": "^9.2.1",

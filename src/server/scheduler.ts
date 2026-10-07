@@ -3,6 +3,8 @@ import { addDays, nowIso, todayStr } from './util'
 import { notify, notifyRole } from './notify'
 import { processOutbox } from './mailer'
 import { runReport } from './reports'
+import { getSetting } from './settings'
+import { nowLocal } from './util'
 
 /** Light-weight in-process scheduler: reminders, expiries and the e-mail outbox. */
 export function startScheduler() {
@@ -10,6 +12,26 @@ export function startScheduler() {
   setTimeout(tick, 8_000)
   setInterval(tick, 60 * 60 * 1000).unref()
   setInterval(() => { void processOutbox() }, 60 * 1000).unref()
+  setInterval(() => { void periodic() }, 5 * 60 * 1000).unref()
+  setTimeout(() => { void periodic() }, 20_000)
+}
+
+const done = new Map<string, string>()
+const once = (key: string, stamp: string) => { if (done.get(key) === stamp) return false; done.set(key, stamp); return true }
+
+/** Every 5 minutes: time-of-day automations, AI employees, replication and nightly backup. */
+async function periodic() {
+  const now = nowLocal(), hhmm = now.slice(11, 16), day = now.slice(0, 10)
+  const safe = async (name: string, fn: () => Promise<unknown>) => { try { await fn() } catch (e) { console.error('periodic', name, e) } }
+  if (getSetting('supabase_sync') && once('sb', now.slice(0, 15))) await safe('supabase', async () => (await import('./integrations/supabase')).syncToSupabase())
+  if (once('ai', now.slice(0, 13))) await safe('agents', async () => (await import('./ai/agents')).runDueAgents())
+  if (hhmm >= '07:30' && once('wa-report', day)) await safe('wa-report', async () => (await import('./integrations/whatsapp')).ownerDailyReport())
+  if (hhmm >= '10:00' && once('wa-overdue', day)) await safe('wa-overdue', async () => (await import('./integrations/whatsapp')).overdueReminders())
+  if (hhmm >= '02:00' && hhmm < '05:00' && getSetting('r2_backup_nightly') && once('r2-backup', day)) await safe('r2-backup', async () => {
+    const r = await import('./routes/integrations'); const name = await r.backupToR2(); const { logIntegration } = await import('./integrations/log'); logIntegration('backup', 'nightly', true, `Backup ${name} created${getSetting('r2_account_id') ? ' and uploaded to R2' : ''}`)
+    const fs = await import('node:fs'), path = await import('node:path'), { dirs } = await import('./config')
+    for (const f of fs.readdirSync(dirs.backups).filter(x => x.endsWith('.db')).sort().slice(0, -14)) fs.rmSync(path.join(dirs.backups, f), { force: true })
+  })
 }
 
 export function daily() {

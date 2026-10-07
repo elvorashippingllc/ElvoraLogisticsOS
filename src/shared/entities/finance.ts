@@ -1,5 +1,5 @@
 import type { EntityDef } from '../types'
-import { T, TA, I, N, M, P, B, S, R, D } from '../dsl'
+import { T, TA, I, N, M, P, B, S, R, D, DT } from '../dsl'
 import { ACCOUNT_TYPES } from './masters'
 
 const CUR = ['AED', 'USD', 'EUR', 'GBP', 'SAR', 'INR', 'CNY', 'ZAR']
@@ -25,7 +25,7 @@ export const finance: EntityDef[] = [
       T('entry_no', 'Entry no.', { readonly: true, list: true, search: true, section: 'Journal' }), D('entry_date', 'Date', { required: true, default: 'today', list: true }), R('branch_id', 'Branch', 'branches'),
       T('memo', 'Narration', { list: true, search: true, span: 2 }), S('status', 'Status', ['Posted', 'Reversed'], { default: 'Posted', list: true, readonly: true }), T('source_type', 'Source', { readonly: true, list: true }),
       I('source_id', 'Source id', { readonly: true, hidden: true }), T('source_no', 'Source no.', { readonly: true, list: true }), M('total_debit', 'Total debit', { computed: true, list: true }), M('total_credit', 'Total credit', { computed: true }),
-      I('reversal_of', 'Reversal of', { readonly: true, hidden: true }),
+      I('reversal_of', 'Reversal of', { readonly: true, hidden: true }), R('legal_entity_id', 'Legal entity', 'legal_entities', { readonly: true, list: true }),
     ],
     defaultSort: { field: 'id', dir: 'desc' },
   },
@@ -48,6 +48,7 @@ export const finance: EntityDef[] = [
       S('status', 'Status', ['Draft', 'Posted', 'Partially paid', 'Paid', 'Void'], { default: 'Draft', list: true, readonly: true }),
       M('subtotal', 'Subtotal', { computed: true }), M('vat_total', 'VAT', { computed: true }), M('total', 'Total', { computed: true, list: true }), M('paid_amount', 'Paid', { computed: true }), M('balance', 'Balance', { computed: true, list: true }), M('base_total', 'Total (AED)', { computed: true }),
       R('bank_account_id', 'Remit to bank account', 'bank_accounts'), R('journal_id', 'Journal', 'journal_entries', { readonly: true }), T('void_reason', 'Void reason', { readonly: true }),
+      S('einvoice_status', 'E-invoice', ['', 'Not sent', 'Submitted', 'Accepted', 'Rejected'], { readonly: true, list: false }), T('einvoice_ref', 'E-invoice reference', { readonly: true }), DT('einvoice_at', 'E-invoice sent at', { readonly: true }),
       TA('notes', 'Notes to customer'), TA('terms', 'Terms'),
     ],
     defaultSort: { field: 'id', dir: 'desc' },
@@ -129,7 +130,7 @@ export const finance: EntityDef[] = [
     description: 'Import bank statement lines (CSV) and match them to posted receipts and payments.',
     fields: [
       R('bank_account_id', 'Bank account', 'bank_accounts', { required: true, list: true, section: 'Statement line' }), D('txn_date', 'Date', { required: true, list: true }), T('description', 'Description', { list: true, search: true, span: 2 }),
-      T('reference', 'Reference', { list: true, search: true }), M('debit', 'Withdrawal', { list: true }), M('credit', 'Deposit', { list: true }),
+      T('reference', 'Reference', { list: true, search: true }), M('debit', 'Withdrawal', { list: true }), M('credit', 'Deposit', { list: true }), T('fingerprint', 'Import key', { hidden: true }),
       S('status', 'Status', ['Unreconciled', 'Reconciled'], { default: 'Unreconciled', list: true }), T('matched_to', 'Matched to', { list: true, help: 'e.g. RCT2600012' }), D('reconciled_on', 'Reconciled on'),
     ],
     defaultSort: { field: 'txn_date', dir: 'desc' },

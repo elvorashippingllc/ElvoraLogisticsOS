@@ -22,6 +22,7 @@ export const modeOf = (dep: string | null | undefined): string => {
 
 export function addJobEvent(jobId: number, type: string, o: { at?: string; location?: string; description?: string; source?: string; container_no?: string; user_id?: number | null; visible?: boolean } = {}) {
   insertRow(getDef('job_events'), { job_id: jobId, event_at: o.at ?? nowLocal(), event_type: type, location: o.location ?? null, description: o.description ?? null, source: o.source ?? 'System', container_no: o.container_no ?? null, visible_to_customer: o.visible ?? true, user_id: o.user_id ?? null })
+  if (o.visible !== false) void import('../integrations/whatsapp').then(m => m.notifyMilestone(jobId, type, o.location)).catch(() => {})
 }
 
 function computeCharges(rows: Rec[], jobId: number | undefined) {

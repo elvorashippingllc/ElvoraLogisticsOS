@@ -64,6 +64,13 @@ function runAction(r: any, entity: string, rec: Rec) {
       if (c?.email) queueEmail({ to: c.email, subject: title, body, link_entity: entity, link_id: rec.id })
       break
     }
+    case 'Send WhatsApp to customer contact': {
+      const partyId = rec.client_id ?? rec.party_id ?? rec.customer_id
+      if (partyId) void import('./integrations/whatsapp').then(async m => { for (const ph of m.phonesForParty(partyId).slice(0, 2)) await m.sendWhatsApp(ph, `${title}${body ? '\n' + body : ''}`, { origin: 'automation', party_id: partyId, tpl: 'wa_tpl_notify' }) }).catch(() => {})
+      break
+    }
+    case 'Send WhatsApp to number': if (r.target) void import('./integrations/whatsapp').then(m => m.sendWhatsApp(r.target, `${title}${body ? '\n' + body : ''}`, { origin: 'automation', tpl: 'wa_tpl_notify' })).catch(() => {}); break
+    case 'Ask an AI employee to review': void import('./ai/agents').then(m => { const a = q.get(`SELECT id FROM ai_agents WHERE deleted_at IS NULL AND (lower(name) = lower(?) OR role_key = ?) LIMIT 1`, r.target ?? 'Jarvis', r.target ?? 'jarvis'); if (a) return m.runAgent(a.id, `${title}\n${body}\nRecord: ${entity} #${rec.id} (${rec._title ?? ''}). Review it and take the appropriate action.`, 'automation') }).catch(() => {}); break
     case 'Set field value': {
       const [field, ...rest] = String(r.target ?? '').split('=')
       if (field && ENTITIES[entity].fields.some(f => f.name === field.trim())) patchRecord(ENTITIES[entity], rec.id, { [field.trim()]: rest.join('=').trim() }, SYSTEM_CTX)

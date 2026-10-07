@@ -19,8 +19,9 @@ export default async function (app: FastifyInstance) {
     need(req, 'admin', 'edit')
     const patch = { ...(req.body as Record<string, any>) }
     for (const k of SECRET_SETTINGS) if (patch[k] === '********') delete patch[k]
-    const num = ['quote_validity_days', 'min_margin_pct', 'bill_approval_limit', 'payment_approval_limit', 'weight_divisor_air', 'weight_divisor_courier', 'free_days_default', 'smtp_port']
-    for (const k of num) if (k in patch) { const v = Number(patch[k]); if (!Number.isFinite(v) || v < 0) throw bad(`${k} must be a non-negative number`); patch[k] = v }
+    delete patch.supabase_cursors; delete patch.seeded
+    const num = ['quote_validity_days', 'min_margin_pct', 'bill_approval_limit', 'payment_approval_limit', 'weight_divisor_air', 'weight_divisor_courier', 'free_days_default', 'smtp_port', 'edi_sftp_port']
+    for (const k of num) if (k in patch && patch[k] !== '') { const v = Number(patch[k]); if (!Number.isFinite(v) || v < 0) throw bad(`${k} must be a non-negative number`); patch[k] = v }
     if ('lock_date' in patch && patch.lock_date && !/^\d{4}-\d{2}-\d{2}$/.test(patch.lock_date)) throw bad('Lock date must be YYYY-MM-DD')
     const before = publicSettings()
     setSettings(patch)

@@ -204,19 +204,19 @@ export const REPORTS: ReportDef[] = [
     },
   },
   {
-    key: 'trial_balance', label: 'Trial balance', group: 'Finance', module: 'finance', description: 'Account balances as of a date (base currency).', params: [D('as_of', 'As of', 'today')],
+    key: 'trial_balance', label: 'Trial balance', group: 'Finance', module: 'finance', description: 'Account balances as of a date (base currency).', params: [D('as_of', 'As of', 'today'), { name: 'legal_entity_id', label: 'Legal entity', type: 'ref', ref: 'legal_entities' }],
     run: p => {
       const asOf = String(p.as_of || todayStr())
-      const rows = q.all(`SELECT a.code, a.name, a.type, COALESCE(SUM(l.debit),0) d, COALESCE(SUM(l.credit),0) c FROM accounts a LEFT JOIN journal_lines l ON l.account_id = a.id AND l.deleted_at IS NULL AND l.entry_id IN (SELECT id FROM journal_entries WHERE entry_date <= ? AND deleted_at IS NULL) WHERE a.deleted_at IS NULL GROUP BY a.id HAVING d <> 0 OR c <> 0 ORDER BY a.code`, asOf)
+      const rows = q.all(`SELECT a.code, a.name, a.type, COALESCE(SUM(l.debit),0) d, COALESCE(SUM(l.credit),0) c FROM accounts a LEFT JOIN journal_lines l ON l.account_id = a.id AND l.deleted_at IS NULL AND l.entry_id IN (SELECT id FROM journal_entries WHERE entry_date <= ? AND deleted_at IS NULL ${p.legal_entity_id ? 'AND legal_entity_id = ' + Number(p.legal_entity_id) : ''}) WHERE a.deleted_at IS NULL GROUP BY a.id HAVING d <> 0 OR c <> 0 ORDER BY a.code`, asOf)
         .map(r => { const bal = r.d - r.c; return { code: r.code, name: r.name, type: r.type, debit: m(bal > 0 ? bal : 0), credit: m(bal < 0 ? -bal : 0) } })
       return { title: `Trial balance as of ${asOf}`, columns: [{ key: 'code', label: 'Code' }, { key: 'name', label: 'Account' }, { key: 'type', label: 'Type' }, { key: 'debit', label: 'Debit', type: 'money' }, { key: 'credit', label: 'Credit', type: 'money' }], rows, totals: sumKeys(rows, ['debit', 'credit']) }
     },
   },
   {
-    key: 'profit_loss', label: 'Profit & loss', group: 'Finance', module: 'finance', description: 'Income statement for a period (base currency).', params: [D('from', 'From', 'yearStart'), D('to', 'To', 'today')],
+    key: 'profit_loss', label: 'Profit & loss', group: 'Finance', module: 'finance', description: 'Income statement for a period (base currency). Year-end closing entries are excluded.', params: [D('from', 'From', 'yearStart'), D('to', 'To', 'today'), { name: 'legal_entity_id', label: 'Legal entity', type: 'ref', ref: 'legal_entities' }],
     run: p => {
       const { from, to } = range(p)
-      const acc = q.all(`SELECT a.code, a.name, a.type, a.subtype, COALESCE(SUM(l.debit),0) d, COALESCE(SUM(l.credit),0) c FROM accounts a JOIN journal_lines l ON l.account_id = a.id AND l.deleted_at IS NULL JOIN journal_entries e ON e.id = l.entry_id AND e.deleted_at IS NULL WHERE a.deleted_at IS NULL AND a.type IN ('Income','Expense') AND e.entry_date BETWEEN ? AND ? GROUP BY a.id ORDER BY a.code`, from, to)
+      const acc = q.all(`SELECT a.code, a.name, a.type, a.subtype, COALESCE(SUM(l.debit),0) d, COALESCE(SUM(l.credit),0) c FROM accounts a JOIN journal_lines l ON l.account_id = a.id AND l.deleted_at IS NULL JOIN journal_entries e ON e.id = l.entry_id AND e.deleted_at IS NULL WHERE a.deleted_at IS NULL AND a.type IN ('Income','Expense') AND e.entry_date BETWEEN ? AND ? AND e.source_type <> 'Year-end close' ${p.legal_entity_id ? 'AND e.legal_entity_id = ' + Number(p.legal_entity_id) : ''} GROUP BY a.id ORDER BY a.code`, from, to)
       const rows: any[] = []
       const section = (title: string, list: any[], sign: 1 | -1) => {
         rows.push({ kind: 'header', name: title }); let tot = 0
@@ -232,10 +232,10 @@ export const REPORTS: ReportDef[] = [
     },
   },
   {
-    key: 'balance_sheet', label: 'Balance sheet', group: 'Finance', module: 'finance', description: 'Financial position as of a date (base currency).', params: [D('as_of', 'As of', 'today')],
+    key: 'balance_sheet', label: 'Balance sheet', group: 'Finance', module: 'finance', description: 'Financial position as of a date (base currency).', params: [D('as_of', 'As of', 'today'), { name: 'legal_entity_id', label: 'Legal entity', type: 'ref', ref: 'legal_entities' }],
     run: p => {
       const asOf = String(p.as_of || todayStr())
-      const acc = q.all(`SELECT a.code, a.name, a.type, COALESCE(SUM(l.debit),0) d, COALESCE(SUM(l.credit),0) c FROM accounts a JOIN journal_lines l ON l.account_id = a.id AND l.deleted_at IS NULL JOIN journal_entries e ON e.id = l.entry_id AND e.deleted_at IS NULL WHERE a.deleted_at IS NULL AND e.entry_date <= ? GROUP BY a.id ORDER BY a.code`, asOf)
+      const acc = q.all(`SELECT a.code, a.name, a.type, COALESCE(SUM(l.debit),0) d, COALESCE(SUM(l.credit),0) c FROM accounts a JOIN journal_lines l ON l.account_id = a.id AND l.deleted_at IS NULL JOIN journal_entries e ON e.id = l.entry_id AND e.deleted_at IS NULL WHERE a.deleted_at IS NULL AND e.entry_date <= ? ${p.legal_entity_id ? 'AND e.legal_entity_id = ' + Number(p.legal_entity_id) : ''} GROUP BY a.id ORDER BY a.code`, asOf)
       const rows: any[] = []
       const sec = (title: string, type: string, sign: 1 | -1, extra: any[] = []) => {
         rows.push({ kind: 'header', name: title }); let tot = 0
@@ -249,7 +249,7 @@ export const REPORTS: ReportDef[] = [
       const eq = sec('Equity', 'Equity', -1, [{ code: '', name: 'Accumulated profit / (loss) to date', amount: pl }])
       rows.push({ kind: 'grand', name: 'Total liabilities & equity', amount: r2(liab + eq) })
       rows.push({ kind: 'check', name: 'Difference (assets − liabilities − equity)', amount: r2(assets - liab - eq) })
-      return { title: `Balance sheet as of ${asOf}`, layout: 'statement', columns: [{ key: 'code', label: 'Code' }, { key: 'name', label: 'Account' }, { key: 'amount', label: 'Amount (AED)', type: 'money' }], rows, note: 'Profit and loss accounts are not closed at year-end in this system; the cumulative result is shown in equity.' }
+      return { title: `Balance sheet as of ${asOf}`, layout: 'statement', columns: [{ key: 'code', label: 'Code' }, { key: 'name', label: 'Account' }, { key: 'amount', label: 'Amount (AED)', type: 'money' }], rows, note: 'Closed years are carried in retained earnings; the current-year result is shown as accumulated profit.' }
     },
   },
   {

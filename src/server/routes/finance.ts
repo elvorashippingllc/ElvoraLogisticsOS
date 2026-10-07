@@ -65,28 +65,10 @@ export default async function (app: FastifyInstance) {
   // ---------------------------------------------------------------- bank statement import & reconciliation
   app.post('/api/finance/bank/import', async (req) => {
     need(req, 'finance', 'create')
-    const b = z.object({ bank_account_id: z.number().int(), csv: z.string().min(10) }).parse(req.body)
-    const rows = parseCsv(b.csv)
-    const head = rows[0].map(h => h.trim().toLowerCase())
-    const col = (...names: string[]) => head.findIndex(h => names.some(n => h.includes(n)))
-    const cDate = col('date'), cDesc = col('description', 'narration', 'details', 'particulars'), cRef = col('reference', 'ref', 'cheque'), cDeb = col('debit', 'withdraw'), cCred = col('credit', 'deposit'), cAmt = col('amount')
-    if (cDate < 0 || (cDeb < 0 && cCred < 0 && cAmt < 0)) throw bad('CSV needs Date and either Debit/Credit (Withdrawal/Deposit) or Amount columns')
-    const num = (s: string | undefined) => { const n = Number(String(s ?? '').replace(/[, ]/g, '')); return Number.isFinite(n) ? n : 0 }
-    const iso = (s: string) => { const t = s.trim(); if (/^\d{4}-\d{2}-\d{2}/.test(t)) return t.slice(0, 10); const m = t.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{2,4})$/); if (m) return `${m[3].length === 2 ? '20' + m[3] : m[3]}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`; throw bad(`Unrecognised date "${s}" (use YYYY-MM-DD or DD/MM/YYYY)`) }
-    let created = 0, dup = 0
-    tx(() => {
-      for (const r of rows.slice(1)) {
-        const date = iso(r[cDate] ?? '')
-        let debit = cDeb >= 0 ? num(r[cDeb]) : 0, credit = cCred >= 0 ? num(r[cCred]) : 0
-        if (cAmt >= 0 && !debit && !credit) { const a = num(r[cAmt]); if (a < 0) debit = -a; else credit = a }
-        if (!debit && !credit) continue
-        const desc = (r[cDesc] ?? '').trim() || '(no description)', ref = (r[cRef] ?? '').trim() || null
-        const exists = q.get(`SELECT id FROM bank_transactions WHERE bank_account_id = ? AND txn_date = ? AND debit = ? AND credit = ? AND description = ? AND deleted_at IS NULL`, b.bank_account_id, date, toCents(debit), toCents(credit), desc)
-        if (exists) { dup++; continue }
-        createRecord(getDef('bank_transactions'), { bank_account_id: b.bank_account_id, txn_date: date, description: desc, reference: ref, debit, credit, status: 'Unreconciled' }, req.ctx); created++
-      }
-    })
-    return { created, duplicates: dup }
+    const b = z.object({ bank_account_id: z.number().int(), csv: z.string().min(10).max(5_000_000).optional(), text: z.string().min(10).max(5_000_000).optional(), format: z.string().optional() }).parse(req.body)
+    const { importLines, parseStatement } = await import('../integrations/bank')
+    const r = importLines(b.bank_account_id, parseStatement(b.text ?? b.csv ?? '', b.format))
+    return { created: r.imported, duplicates: r.duplicates, matched: r.matched }
   })
   app.get('/api/finance/bank/suggest/:txnId', async (req) => {
     need(req, 'finance', 'view')

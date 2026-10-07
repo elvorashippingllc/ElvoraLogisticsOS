@@ -25,9 +25,33 @@ export const SETTING_DEFAULTS: Record<string, any> = {
   weight_divisor_air: 6000,
   weight_divisor_courier: 5000,
   free_days_default: 7,
+  // --- e-mail (Resend / SMTP)
+  mail_provider: 'auto', resend_api_key: '', resend_from: '',
+  // --- file storage (Cloudflare R2, S3 compatible)
+  storage_provider: 'local', r2_account_id: '', r2_access_key_id: '', r2_secret_access_key: '', r2_bucket: '', r2_backup_nightly: true,
+  // --- Supabase (Postgres replica for BI / disaster recovery)
+  supabase_url: '', supabase_service_key: '', supabase_sync: false, supabase_cursors: {},
+  // --- WhatsApp Cloud API
+  wa_enabled: false, wa_phone_number_id: '', wa_access_token: '', wa_verify_token: '', wa_app_secret: '', wa_owner_numbers: '', wa_default_country_code: '971',
+  wa_template_lang: 'en', wa_tpl_notify: '', wa_tpl_reminder: '', wa_tpl_report: '',
+  wa_auto_leads: true, wa_auto_milestones: false, wa_auto_overdue: false, wa_owner_daily_report: false, wa_staff_bot: true, wa_customer_bot: true,
+  // --- AI
+  ai_enabled: false, ai_provider: 'groq', ai_base_url: '', ai_api_key: '', ai_model: '', ai_fallback_provider: '', ai_fallback_base_url: '', ai_fallback_api_key: '', ai_fallback_model: '', ai_company_context: '',
+  // --- tracking
+  tracking_provider: 'none', tracking_api_key: '', tracking_webhook_secret: '',
+  // --- e-invoicing (UAE PINT AE / Peppol)
+  einv_enabled: false, einv_endpoint: '', einv_api_key: '', einv_endpoint_id: '', einv_scheme_id: '0235', einv_auto_submit: false,
+  // --- EDI transmission & customs gateway
+  edi_transport: 'none', edi_http_url: '', edi_http_auth: '', edi_email_to: '', edi_sftp_host: '', edi_sftp_port: 22, edi_sftp_user: '', edi_sftp_pass: '', edi_sftp_dir: '/',
+  customs_gateway_url: '', customs_gateway_key: '',
+  // --- bank feed
+  bank_webhook_secret: '',
+  // --- WPS
+  wps_employer_id: '', wps_bank_routing: '', wps_employer_ref: '',
+  ui_lang: 'en',
   seeded: {},
 }
-export const SECRET_SETTINGS = new Set(['smtp_pass'])
+export const SECRET_SETTINGS = new Set(['smtp_pass', 'resend_api_key', 'r2_secret_access_key', 'supabase_service_key', 'wa_access_token', 'wa_app_secret', 'ai_api_key', 'ai_fallback_api_key', 'tracking_api_key', 'tracking_webhook_secret', 'einv_api_key', 'edi_http_auth', 'edi_sftp_pass', 'customs_gateway_key', 'bank_webhook_secret'])
 
 let cache: Record<string, any> | null = null
 export function loadSettings(): Record<string, any> {
@@ -50,7 +74,7 @@ export function setSettings(patch: Record<string, any>) {
 }
 export function publicSettings(includeSecrets = false) {
   const s = { ...loadSettings() }
-  delete s.seeded
+  delete s.seeded; delete s.supabase_cursors
   if (!includeSecrets) for (const k of SECRET_SETTINGS) s[k] = s[k] ? '********' : ''
   return s
 }
