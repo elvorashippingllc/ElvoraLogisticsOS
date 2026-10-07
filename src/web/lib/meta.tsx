@@ -1,3 +1,4 @@
+import { tr, lang } from './i18n'
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { EntityDef, FieldDef, NavGroup, Action } from '@shared/types'
 import { get } from './api'
@@ -17,6 +18,10 @@ export function MetaProvider({ children }: { children: ReactNode }) {
     try {
       const m = await get<Me>('/api/auth/me')
       const mt = await get<Meta>('/api/meta')
+      if (lang === 'ar') {
+        for (const e of mt.entities) { e.label = tr(e.label); e.plural = tr(e.plural); for (const f of [...e.fields, ...(e.customFieldDefs ?? [])]) { f.label = tr(f.label); if (f.section) f.section = tr(f.section) } for (const c of e.children ?? []) c.label = tr(c.label) }
+        for (const g of mt.nav) { g.label = tr(g.label); for (const i of g.items) i.label = tr(i.label) }
+      }
       setMe(m); setMeta(mt)
     } catch { setMe(null); setMeta(null) } finally { setLoading(false) }
   }, [])

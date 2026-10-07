@@ -15,6 +15,10 @@ import { DocumentsPage } from './pages/DocumentsPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { RolesPage, SettingsPage, AuditPage, BackupPage } from './pages/AdminPages'
 import { PublicTrack } from './pages/PublicTrack'
+import { IntegrationsPage } from './pages/IntegrationsPage'
+import { AiPage } from './pages/AiPage'
+import { WhatsAppPage } from './pages/WhatsAppPage'
+import { BankImportPage, YearEndPage, WpsPage } from './pages/FinanceExtras'
 import { PrintPage } from './print/PrintPage'
 import { Loading, ErrorBox } from './ui/kit'
 
@@ -52,6 +56,12 @@ export default function App() {
           <Route path="/admin/roles" element={<Guard module="admin"><RolesPage /></Guard>} />
           <Route path="/admin/settings" element={<Guard module="admin"><SettingsPage /></Guard>} />
           <Route path="/admin/audit" element={<Guard module="admin"><AuditPage /></Guard>} />
+          <Route path="/admin/integrations" element={<Guard module="admin"><IntegrationsPage /></Guard>} />
+          <Route path="/ai" element={<Guard module="ai"><AiPage /></Guard>} />
+          <Route path="/whatsapp" element={<Guard module="crm"><WhatsAppPage /></Guard>} />
+          <Route path="/finance/bank-import" element={<Guard module="finance"><BankImportPage /></Guard>} />
+          <Route path="/finance/year-end" element={<Guard module="finance"><YearEndPage /></Guard>} />
+          <Route path="/hr/wps" element={<Guard module="hr"><WpsPage /></Guard>} />
           <Route path="/admin/backup" element={<Guard module="admin"><BackupPage /></Guard>} />
           <Route path="/print/:entity/:id" element={<PrintPage />} />
           <Route path="*" element={<ErrorBox error={new Error('Page not found')} />} />

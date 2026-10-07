@@ -1,6 +1,9 @@
 import { q } from './db'
 import { nowIso, safeJson } from './util'
-import { config } from './config'
+import { config, dirs } from './config'
+import crypto from 'node:crypto'
+import fs from 'node:fs'
+import path from 'node:path'
 
 export const SETTING_DEFAULTS: Record<string, any> = {
   company_name: 'Elvora Shipping L.L.C.',
@@ -57,7 +60,7 @@ let cache: Record<string, any> | null = null
 export function loadSettings(): Record<string, any> {
   if (!cache) {
     cache = { ...SETTING_DEFAULTS }
-    for (const r of q.all<{ key: string; value: string }>('SELECT key, value FROM settings')) cache[r.key] = safeJson(r.value, null)
+    for (const r of q.all<{ key: string; value: string }>('SELECT key, value FROM settings')) { const val = safeJson(r.value, null); cache[r.key] = SECRET_SETTINGS.has(r.key) && typeof val === 'string' ? decryptSecret(val) : val }
     // environment overrides for SMTP so secrets can live outside the DB
     const s = config.smtp
     if (s.host && !cache.smtp_host) { cache.smtp_host = s.host; cache.smtp_port = s.port; cache.smtp_user = s.user; cache.smtp_pass = s.pass; cache.smtp_from = s.from; cache.smtp_secure = s.secure }
@@ -68,7 +71,8 @@ export const getSetting = <T = any>(key: string): T => loadSettings()[key] as T
 export function setSettings(patch: Record<string, any>) {
   for (const [k, v] of Object.entries(patch)) {
     if (!(k in SETTING_DEFAULTS)) continue
-    q.run(`INSERT INTO settings(key, value, updated_at) VALUES (?,?,?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`, k, JSON.stringify(v), nowIso())
+    const stored = SECRET_SETTINGS.has(k) && typeof v === 'string' && v ? encryptSecret(v) : v
+    q.run(`INSERT INTO settings(key, value, updated_at) VALUES (?,?,?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`, k, JSON.stringify(stored), nowIso())
   }
   cache = null
 }
@@ -77,4 +81,32 @@ export function publicSettings(includeSecrets = false) {
   delete s.seeded; delete s.supabase_cursors
   if (!includeSecrets) for (const k of SECRET_SETTINGS) s[k] = s[k] ? '********' : ''
   return s
+}
+
+// ---- secret encryption (AES-256-GCM). Key: APP_SECRET env var, or an auto-generated key file in the data directory.
+let key: Buffer | null = null
+function secretKey(): Buffer {
+  if (key) return key
+  const env = process.env.APP_SECRET
+  if (env) key = crypto.createHash('sha256').update(env).digest()
+  else {
+    const f = path.join(dirs.data, '.secret')
+    if (!fs.existsSync(f)) fs.writeFileSync(f, crypto.randomBytes(32).toString('hex'), { mode: 0o600 })
+    key = Buffer.from(fs.readFileSync(f, 'utf8').trim(), 'hex')
+  }
+  return key
+}
+export function encryptSecret(v: string): string {
+  if (!v || v.startsWith('enc:v1:')) return v
+  const iv = crypto.randomBytes(12), c = crypto.createCipheriv('aes-256-gcm', secretKey(), iv)
+  const enc = Buffer.concat([c.update(v, 'utf8'), c.final()])
+  return 'enc:v1:' + Buffer.concat([iv, c.getAuthTag(), enc]).toString('base64')
+}
+export function decryptSecret(v: string): string {
+  if (typeof v !== 'string' || !v.startsWith('enc:v1:')) return v
+  try {
+    const b = Buffer.from(v.slice(7), 'base64'), d = crypto.createDecipheriv('aes-256-gcm', secretKey(), b.subarray(0, 12))
+    d.setAuthTag(b.subarray(12, 28))
+    return Buffer.concat([d.update(b.subarray(28)), d.final()]).toString('utf8')
+  } catch { return '' }
 }

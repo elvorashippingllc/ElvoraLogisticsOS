@@ -19,11 +19,29 @@ Odoo (CRM/Sales/Accounting/Inventory/HR/Helpdesk), CargoWise-style forwarding wo
 | Work | Projects, tasks, calendar |
 | Platform | Roles/permissions, audit log, automation rules, webhooks (HMAC), API keys, custom fields, SMTP outbox, backups, customer portal role, TOTP |
 
-## Not included (be aware)
+## Added in release 2
 
-- No live carrier, customs (e.g. Dubai Trade/ICP), bank, or e-invoicing integrations; tracking and customs are manual entry plus links.
-- EDI (IFTMIN, FWB, JSON) is generated for download, not transmitted.
-- No WPS salary file; no year-end close; single accounting entity.
-- No Arabic/RTL UI yet.
-- PDF output is via browser print ("Save as PDF").
-- SQLite single-node; default passwords must be changed.
+| Area | What was added |
+|---|---|
+| Carriers | Terminal49 live tracking + universal tracking webhook → job timeline |
+| Customs | Gateway/broker API submission, JSON export |
+| EDI | IFTMIN / FWB / JSON **transmission** over HTTP, e-mail or SFTP |
+| Banking | CSV + MT940 import, bank-feed webhook, automatic matching |
+| E-invoicing | UBL 2.1 PINT AE XML, ASP submission, status on the invoice |
+| Payroll | UAE WPS SIF file with validation of every employee's IBAN / routing / person ID |
+| Accounting | Year-end close & re-open, multiple legal entities with entity-filtered ledgers |
+| Documents | Server-rendered **PDF** (download + e-mail with attachment); bilingual EN/AR document headings |
+| Language | Arabic UI with right-to-left layout and Arabic web font (UI chrome, navigation and ~600 field labels) |
+| Platform | Resend mail, Cloudflare R2 files & backups, Supabase Postgres replica, encrypted secrets |
+| WhatsApp | Lead capture, staff & customer bots, milestone alerts, overdue reminders, owner daily report, inbox, automation actions |
+| AI | Jarvis chat + 7 AI employees, approvals queue, schedules, free-provider presets with fallback |
+
+## Limits you should know about
+
+- Integrations were verified against mock providers, not live services (see INTEGRATIONS.md). Credentials and provider approvals (Meta templates, ASP accreditation, bank WPS onboarding, Terminal49 plan) are yours to obtain.
+- Supabase is a replica; the live database is SQLite (single server). MongoDB is not used.
+- WPS SIF follows the common bank layout – confirm with your bank before first upload. Deductions are netted into the fixed component.
+- Arabic translation covers navigation, buttons, statuses and field labels; free-text data, error messages and some long help texts stay in English. Printed documents are English with Arabic titles.
+- No live customs-system integrations ship out of the box (Dubai Trade / Mirsal / ICP need your own registered API access); the gateway adapter accepts JSON.
+- PDF engine is Chromium (included in the Docker image; set `CHROME_PATH` otherwise).
+- Default passwords must be changed; set `APP_SECRET`.

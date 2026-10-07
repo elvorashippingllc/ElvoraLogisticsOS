@@ -16,7 +16,8 @@
     "build:api": "esbuild src/server/index.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/server/index.mjs --packages=external --sourcemap",
     "start": "node --env-file-if-exists=.env dist/server/index.mjs",
     "typecheck": "tsc --noEmit -p tsconfig.json",
-    "test": "tsx --env-file-if-exists=.env tests/smoke.ts"
+    "test": "tsx --env-file-if-exists=.env tests/smoke.ts",
+    "test:integrations": "tsx --env-file-if-exists=.env tests/phase2.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1147.0",
@@ -33,6 +34,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@fontsource/noto-sans-arabic": "^5.3.0",
     "@tailwindcss/vite": "^4.1.16",
     "@tanstack/react-query": "^5.90.5",
     "@types/better-sqlite3": "^7.6.13",

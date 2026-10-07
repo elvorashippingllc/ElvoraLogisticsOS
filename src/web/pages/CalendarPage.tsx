@@ -24,7 +24,7 @@ export function CalendarPage() {
         <div className="grid grid-cols-7 text-center text-xs font-bold text-muted bg-soft border-b border-line">{['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => <div key={d} className="py-2">{d}</div>)}</div>
         <div className="grid grid-cols-7">{days.map(d => { const k = iso(d), evs = byDay.get(k) ?? [], other = d.getMonth() !== cur.getMonth()
           return <div key={k} className={cls('min-h-[104px] border-b border-r border-line p-1.5', other && 'bg-soft/60', k === today && 'bg-mint/60')}><div className={cls('text-xs font-bold mb-1', other ? 'text-muted' : 'text-ink', k === today && 'text-fold')}>{d.getDate()}</div>
-            <div className="grid gap-0.5">{evs.slice(0, 4).map((e, i) => <button key={i} className="text-left text-[11px] leading-tight px-1.5 py-1 rounded border-0 cursor-pointer text-white truncate font-semibold" style={{ background: e.color, color: e.color === '#E5D1A4' ? '#161d1a' : '#fff' }} title={e.title} onClick={() => nav(e.link)}>{e.title}</button>)}{evs.length > 4 && <div className="text-[11px] text-muted px-1">+{evs.length - 4} more</div>}</div></div> })}</div>
+            <div className="grid gap-0.5">{evs.slice(0, 4).map((e, i) => <button key={i} className="text-start text-[11px] leading-tight px-1.5 py-1 rounded border-0 cursor-pointer text-white truncate font-semibold" style={{ background: e.color, color: e.color === '#E5D1A4' ? '#161d1a' : '#fff' }} title={e.title} onClick={() => nav(e.link)}>{e.title}</button>)}{evs.length > 4 && <div className="text-[11px] text-muted px-1">+{evs.length - 4} more</div>}</div></div> })}</div>
       </div>
     </div>
   )

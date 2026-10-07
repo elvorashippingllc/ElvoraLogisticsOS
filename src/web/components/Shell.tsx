@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bell, BookOpen, Search, User, CircleHelp, Power, Menu, ChevronDown, ChevronRight, LayoutDashboard, X, KeyRound, ShieldCheck, Calculator, ExternalLink, Command, Check } from 'lucide-react'
+import { Languages, Bell, BookOpen, Search, User, CircleHelp, Power, Menu, ChevronDown, ChevronRight, LayoutDashboard, X, KeyRound, ShieldCheck, Calculator, ExternalLink, Command, Check } from 'lucide-react'
 import { useMeta } from '../lib/meta'
 import { get, post } from '../lib/api'
 import { iconByName } from '../lib/icons'
 import { cls, fmtIsoStamp } from '../lib/format'
 import { Dropdown, Modal, useClickOutside } from '../ui/kit'
+import { tr, lang, setLang } from '../lib/i18n'
 import { CommandPalette } from './CommandPalette'
 
 function Clock() {
@@ -32,7 +33,7 @@ function NotificationBell() {
           <div className="flex items-center px-4 py-2.5 border-b border-line"><b className="font-display">Notifications</b><div className="flex-1" />{unread > 0 && <button className="btn ghost sm" onClick={() => void read()}><Check /> Mark all read</button>}</div>
           <div className="max-h-[60vh] overflow-auto">
             {!q.data?.rows.length ? <div className="p-8 text-center text-muted text-sm">You're all caught up.</div> : q.data.rows.map(n => (
-              <button key={n.id} className={cls('w-full text-left px-4 py-3 border-0 border-b border-line bg-transparent cursor-pointer hover:bg-hover', !n.read_at && 'bg-[#f1faf5]')} onClick={() => { void read([n.id]); setOpen(false); if (n.link) nav(n.link) }}>
+              <button key={n.id} className={cls('w-full text-start px-4 py-3 border-0 border-b border-line bg-transparent cursor-pointer hover:bg-hover', !n.read_at && 'bg-[#f1faf5]')} onClick={() => { void read([n.id]); setOpen(false); if (n.link) nav(n.link) }}>
                 <div className="flex gap-2 items-start">{!n.read_at && <span className="w-2 h-2 rounded-full bg-emerald mt-1.5 flex-none" />}<div className="min-w-0"><div className="text-[13.5px] font-semibold text-ink">{n.title}</div>{n.body && <div className="text-xs text-muted truncate">{n.body}</div>}<div className="text-[11px] text-muted mt-0.5">{fmtIsoStamp(n.created_at)}</div></div></div>
               </button>))}
           </div>
@@ -50,7 +51,7 @@ function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   useEffect(() => { if (activeGroup) setOpen(o => ({ ...o, [activeGroup.label]: true })) }, [activeGroup?.label])
   return (
     <nav className="sidebar h-full" aria-label="Main navigation">
-      <NavLink to="/" end onClick={onNavigate} className={({ isActive }) => cls('group-btn no-underline', isActive && 'bg-white/10')} style={{ borderLeft: '3px solid transparent' }}><LayoutDashboard />Dashboard</NavLink>
+      <NavLink to="/" end onClick={onNavigate} className={({ isActive }) => cls('group-btn no-underline', isActive && 'bg-white/10')} style={{ borderLeft: '3px solid transparent' }}><LayoutDashboard />{tr('Dashboard')}</NavLink>
       {groups.map(g => {
         const Icon = iconByName(g.icon); const isOpen = open[g.label]
         return (
@@ -89,13 +90,14 @@ export function Shell() {
         <Link to="/" className="flex items-center gap-2 mr-2" aria-label="Elvora Logistics OS home"><img src="/brand/icon-reverse.png" alt="" width="32" height="27" className="h-7 w-auto" /><span className="font-display font-extrabold text-[17px] tracking-tight hidden sm:block">Elvora <span className="font-semibold opacity-90">Logistics OS</span></span></Link>
         <div className="flex-1" />
         <NotificationBell />
-        <Link to="/e/announcements" className="tb hidden md:inline-flex"><BookOpen />Blog</Link>
-        <button className="tb" onClick={() => setPalette(true)} aria-label="Search"><Search /><span className="hidden md:inline">Search</span><kbd className="hidden xl:inline text-[10px] border border-white/40 rounded px-1 ml-1">Ctrl K</kbd></button>
+        <Link to="/e/announcements" className="tb hidden md:inline-flex"><BookOpen />{tr('Blog')}</Link>
+        <button className="tb" onClick={() => setPalette(true)} aria-label="Search"><Search /><span className="hidden md:inline">{tr('Search')}</span><kbd className="hidden xl:inline text-[10px] border border-white/40 rounded px-1 ml-1">Ctrl K</kbd></button>
         <Dropdown className="tb" label={<><User /><span className="hidden sm:inline">{me?.email.split('@')[0]}</span></>} items={[
           { label: <><KeyRound size={15} /> Profile &amp; security</>, onClick: () => nav('/profile') }, { label: <><ShieldCheck size={15} /> {me?.role}</>, disabled: true }, { divider: true, label: '' }, { label: <><Power size={15} /> Sign out</>, onClick: () => void logout() }]} />
-        <Dropdown className="tb hidden sm:inline-flex" label={<><CircleHelp />Help</>} items={[
+        <Dropdown className="tb hidden sm:inline-flex" label={<><CircleHelp />{tr('Help')}</>} items={[
           { label: 'Quick guide & shortcuts', onClick: () => setGuide(true) }, { label: <><Calculator size={15} /> Freight tools</>, onClick: () => nav('/tools') }, { label: <><ExternalLink size={15} /> Elvora website</>, onClick: () => window.open('https://www.elvorashipping.com', '_blank', 'noopener') }]} />
-        <button className="tb" onClick={() => void logout()}><Power /><span className="hidden md:inline">Log Out</span></button>
+        <button className="tb" onClick={() => void logout()}><Power /><span className="hidden md:inline">{tr('Log Out')}</span></button>
+        <button className="tb" onClick={() => setLang(lang === 'ar' ? 'en' : 'ar')} title="English / العربية" aria-label="Language"><Languages /><span className="hidden lg:inline">{lang === 'ar' ? 'English' : 'العربية'}</span></button>
       </header>
       <div className="flex flex-1 min-h-0">
         <aside className="hidden lg:block no-print flex-none" style={{ width: 252 }}><div className="h-full overflow-y-auto sidebar" style={{ width: 252 }}><Sidebar /></div></aside>

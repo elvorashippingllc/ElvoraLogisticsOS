@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Plus, ArrowRight, AlertTriangle, Info, TriangleAlert, Plane, Ship } from 'lucide-react'
+import { Bot, Plus, ArrowRight, AlertTriangle, Info, TriangleAlert, Plane, Ship } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { get } from '../lib/api'
 import { useMeta } from '../lib/meta'
@@ -47,9 +47,10 @@ export function Dashboard() {
   return (
     <div className="fade-in">
       <Welcome name={me?.name} />
+      {can('ai', 'view') && <AiBrief />}
       {d.alerts?.length > 0 && <div className="grid gap-2 mb-5 md:grid-cols-2 xl:grid-cols-3">{d.alerts.slice(0, 6).map((a: any, i: number) => (
         <Link key={i} to={a.link} className={cls('flex items-center gap-3 px-4 py-2.5 rounded-xl border text-[13.5px] font-semibold', a.level === 'danger' ? 'bg-blush border-[#f2bcc3] text-[#8f1325]' : a.level === 'warn' ? 'bg-gold border-[#ead49a] text-[#6b4a00]' : 'bg-sky border-[#bcd6f0] text-[#1f4f85]')}>
-          {a.level === 'danger' ? <AlertTriangle size={17} /> : a.level === 'warn' ? <TriangleAlert size={17} /> : <Info size={17} />}<span className="flex-1">{a.text}</span><ArrowRight size={15} /></Link>))}</div>}
+          {a.level === 'danger' ? <AlertTriangle size={17} /> : a.level === 'warn' ? <TriangleAlert size={17} /> : <Info size={17} />}<span className="flex-1" dir="auto">{a.text}</span><ArrowRight size={15} /></Link>))}</div>}
       <div className="grid gap-3 mb-5 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">{tiles.map(t => <Kpi key={t.label} label={t.label} value={t.value ?? 0} hint={t.hint} tone={t.tone} onClick={t.to ? () => nav(t.to!) : undefined} />)}</div>
 
       <div className="grid gap-4 xl:grid-cols-12">
@@ -117,5 +118,16 @@ function Welcome({ name, portal }: { name?: string; portal?: boolean }) {
       <div><h1 className="text-[24px] sm:text-[28px] font-extrabold m-0">Welcome to Elvora Logistics OS</h1>
         <div className="text-muted text-[14.5px]">{portal ? 'Track your shipments, documents and invoices.' : 'Track and Manage Sales, Shipments, Jobs, Accounts and Warehouse'}</div></div>
     </div>
+  )
+}
+
+function AiBrief() {
+  const q = useQuery({ queryKey: ['ai-brief'], queryFn: () => get<{ output: string; started_at: string; name: string }>('/api/ai/brief'), retry: false })
+  if (!q.data?.output) return null
+  return (
+    <Link to="/ai" className="block mb-5 rounded-2xl border border-[#bfe3d0] bg-mint px-4 py-3 no-underline text-ink">
+      <div className="flex items-center gap-2 text-[12.5px] font-bold text-fold mb-1"><Bot size={16} /> {q.data.name} · today’s briefing <span className="font-normal text-muted">{String(q.data.started_at).replace('T', ' ').slice(0, 16)}</span><span className="flex-1" /><span className="underline">Open AI Team</span></div>
+      <div dir="auto" className="text-[13.5px] whitespace-pre-line leading-relaxed max-h-[9.5em] overflow-hidden">{q.data.output}</div>
+    </Link>
   )
 }

@@ -7,6 +7,9 @@ import App from './App'
 import { MetaProvider } from './lib/meta'
 import { ToastProvider } from './lib/toast'
 import { DialogProvider } from './ui/kit'
+import { applyLangToDocument, startDomTranslator } from './lib/i18n'
+
+applyLangToDocument()
 
 const qc = new QueryClient({ defaultOptions: { queries: { staleTime: 15_000, refetchOnWindowFocus: false, retry: 1 } } })
 createRoot(document.getElementById('root')!).render(
@@ -18,3 +21,4 @@ createRoot(document.getElementById('root')!).render(
     </QueryClientProvider>
   </StrictMode>,
 )
+startDomTranslator()

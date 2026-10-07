@@ -96,7 +96,7 @@ export function JobPage() {
               </dl>
               <div className="grid grid-cols-3 gap-2 text-center">
                 {[['Revenue', j.total_revenue, ''], ['Cost', j.total_cost, ''], ['Profit', j.profit, j.profit < 0 ? 'text-signal' : 'text-fold']].map(([l, v, c]) => <div key={l as string} className="rounded-xl bg-soft border border-line px-2 py-3"><div className="text-[11px] font-semibold text-muted">{l} (AED)</div><div className={cls('font-display font-extrabold text-[17px]', c as string)}>{fmtMoney(v as number, 0)}</div></div>)}
-                <div className="col-span-3 text-xs text-muted text-left">{margin !== null ? <>Margin <b className="text-ink">{margin}%</b> · </> : null}{j.containers_summary ? <>Equipment <b className="text-ink">{j.containers_summary}</b> · </> : null}{j.packages ? <>{j.packages} pkgs · </> : null}{j.gross_weight ? <>{j.gross_weight} kg · </> : null}{j.volume_cbm ? <>{j.volume_cbm} CBM</> : null}</div>
+                <div className="col-span-3 text-xs text-muted text-start">{margin !== null ? <>Margin <b className="text-ink">{margin}%</b> · </> : null}{j.containers_summary ? <>Equipment <b className="text-ink">{j.containers_summary}</b> · </> : null}{j.packages ? <>{j.packages} pkgs · </> : null}{j.gross_weight ? <>{j.gross_weight} kg · </> : null}{j.volume_cbm ? <>{j.volume_cbm} CBM</> : null}</div>
               </div>
             </div>
             <div className="flex flex-wrap gap-2 mt-5 pt-4 border-t border-line">
@@ -226,7 +226,7 @@ function TrackTab({ job, reload }: { job: any; reload: () => void }) {
                 {can('jobs', 'edit') && e.source !== 'System' && <button className="btn ghost icon sm" aria-label="Delete milestone" onClick={async () => { await del(`/api/jobs/${job.id}/events/${e.id}`); reload() }}><Trash2 className="text-signal" /></button>}</div></li>))}</ol>)}
       </div>
       <div className="grid gap-4 content-start">
-        {can('jobs', 'edit') && <div className="rounded-xl border border-line p-4 bg-soft"><h3 className="m-0 mb-3 text-[14px]">Add milestone</h3><div className="grid gap-2">
+        {can('jobs', 'edit') && <div className="rounded-xl border border-line p-4 bg-soft"><div className="flex items-center gap-2 mb-3"><h3 className="m-0 text-[14px] flex-1">Add milestone</h3><button className="btn outline sm" title="Ask the carrier-tracking provider to push events for this job's MBL / container" onClick={async () => { try { const r = await post<any>(`/api/jobs/${job.id}/live-tracking`); toast.ok(r.message) } catch (e: any) { toast.error(e.message) } }}><MapPinned /> Start live tracking</button></div><div className="grid gap-2">
           <select className="select" value={f.event_type} onChange={e => setF({ ...f, event_type: e.target.value })}>{EVENT_TYPES.map(t => <option key={t}>{t}</option>)}</select>
           <input className="input" type="datetime-local" value={f.event_at} onChange={e => setF({ ...f, event_at: e.target.value })} />
           <input className="input" placeholder="Location (e.g. Jebel Ali)" value={f.location} onChange={e => setF({ ...f, location: e.target.value })} />
@@ -308,9 +308,10 @@ function KpiDialog({ jid, onClose }: { jid: number; onClose: () => void }) {
 function EdiDialog({ jid, air, onClose }: { jid: number; air: boolean; onClose: () => void }) {
   const [fmt, setFmt] = useState(air ? 'fwb' : 'iftmin')
   const q = useQuery({ queryKey: ['edi', jid, fmt], queryFn: () => get<any>(`/api/jobs/${jid}/edi-preview`, { format: fmt }), retry: false })
-  const toast = useToast()
+  const toast = useToast(); const [via, setVia] = useState(''); const [sending, setSending] = useState(false)
+  const transmit = async () => { setSending(true); try { const r = await post<any>(`/api/jobs/${jid}/edi/transmit`, { format: fmt, via: via || undefined }); toast.ok(r.message) } catch (e: any) { toast.error(e.message) } finally { setSending(false) } }
   return (
-    <Modal open onClose={onClose} title="Generate EDI / data file" width={760} footer={<><div className="flex-1" /><button className="btn outline" onClick={onClose}>Close</button><button className="btn outline" disabled={!q.data} onClick={() => { void navigator.clipboard.writeText(q.data.content); toast.ok('Copied') }}><Copy /> Copy</button><a className={cls('btn green', !q.data && 'opacity-50 pointer-events-none')} href={`/api/jobs/${jid}/edi?format=${fmt}`}>Download</a></>}>
+    <Modal open onClose={onClose} title="Generate EDI / data file" width={760} footer={<><select className="select !w-auto" value={via} onChange={e => setVia(e.target.value)} title="Transport (default from Integrations)"><option value="">Default transport</option><option value="http">HTTP</option><option value="email">E-mail</option><option value="sftp">SFTP</option></select><button className="btn violet" disabled={!q.data || sending} onClick={() => void transmit()}>{sending ? 'Sending…' : 'Transmit'}</button><div className="flex-1" /><button className="btn outline" onClick={onClose}>Close</button><button className="btn outline" disabled={!q.data} onClick={() => { void navigator.clipboard.writeText(q.data.content); toast.ok('Copied') }}><Copy /> Copy</button><a className={cls('btn green', !q.data && 'opacity-50 pointer-events-none')} href={`/api/jobs/${jid}/edi?format=${fmt}`}>Download</a></>}>
       <div className="flex gap-2 mb-3 flex-wrap">{[['iftmin', 'UN/EDIFACT IFTMIN (booking / instruction)'], ...(air ? [['fwb', 'IATA FWB (air waybill)']] : []), ['json', 'JSON (full job record)']].map(([k, l]) => <button key={k} className={cls('btn sm', fmt === k ? 'green' : 'outline')} onClick={() => setFmt(k)}>{l}</button>)}</div>
       {q.isLoading ? <Loading /> : q.error ? <ErrorBox error={q.error} /> : <><pre className="bg-graphite text-[#d6f5e6] rounded-xl p-4 text-[12px] overflow-auto max-h-[46vh] m-0 whitespace-pre-wrap break-all">{q.data.content}</pre><p className="text-xs text-muted mt-2 mb-0">{q.data.note}</p></>}
     </Modal>

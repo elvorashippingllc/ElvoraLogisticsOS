@@ -56,7 +56,7 @@ export function ReportsPage({ fixed }: { fixed?: string[] }) {
       <PageHeader icon={<BarChart3 size={20} />} title={fixed ? 'Financial Statements' : 'Reports'} subtitle="Operational, sales, finance and compliance reports — export to CSV or print / save as PDF" />
       <div className="grid gap-4 lg:grid-cols-[270px_1fr] items-start">
         <nav className="card py-2 no-print lg:sticky lg:top-0 max-h-[78vh] overflow-auto" aria-label="Reports">
-          {!cat.data ? <Loading /> : groups.map(([g, list]) => <div key={g}><div className="px-4 pt-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-muted">{g}</div>{list.map(r => <button key={r.key} onClick={() => choose(r.key)} className={cls('w-full text-left px-4 py-1.5 text-[13.5px] border-0 cursor-pointer', r.key === key ? 'bg-mint text-fold font-bold' : 'bg-transparent text-body hover:bg-hover')}>{r.label}</button>)}</div>)}
+          {!cat.data ? <Loading /> : groups.map(([g, list]) => <div key={g}><div className="px-4 pt-3 pb-1 text-[11px] font-bold uppercase tracking-wider text-muted">{g}</div>{list.map(r => <button key={r.key} onClick={() => choose(r.key)} className={cls('w-full text-start px-4 py-1.5 text-[13.5px] border-0 cursor-pointer', r.key === key ? 'bg-mint text-fold font-bold' : 'bg-transparent text-body hover:bg-hover')}>{r.label}</button>)}</div>)}
         </nav>
         <div className="min-w-0">
           {!def ? <div className="card"><Empty icon={<BarChart3 size={34} />} title="Choose a report" hint="Pick a report from the list to set its filters and run it." /></div> : (

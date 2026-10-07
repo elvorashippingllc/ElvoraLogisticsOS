@@ -31,7 +31,7 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
           {items.map((it, i) => {
             const I = iconByName(it.icon); const head = it.group !== lastGroup; lastGroup = it.group
             return (<div key={i}>{head && <div className="px-4 pt-2 pb-1 text-[11px] font-bold uppercase tracking-wider text-muted">{it.group}</div>}
-              <button className={cls('w-full text-left flex items-center gap-3 px-4 py-2 border-0 cursor-pointer text-[14px]', i === hi ? 'bg-mint text-fold' : 'bg-transparent text-ink hover:bg-hover')} onMouseEnter={() => setHi(i)} onClick={() => go(it.link)}><I size={16} className="flex-none" /><span className="flex-1 truncate">{it.label}</span>{it.sub && <span className="text-xs text-muted">{it.sub}</span>}{i === hi && <CornerDownLeft size={14} />}</button></div>)
+              <button className={cls('w-full text-start flex items-center gap-3 px-4 py-2 border-0 cursor-pointer text-[14px]', i === hi ? 'bg-mint text-fold' : 'bg-transparent text-ink hover:bg-hover')} onMouseEnter={() => setHi(i)} onClick={() => go(it.link)}><I size={16} className="flex-none" /><span className="flex-1 truncate">{it.label}</span>{it.sub && <span className="text-xs text-muted">{it.sub}</span>}{i === hi && <CornerDownLeft size={14} />}</button></div>)
           })}
         </div>
       </div>
