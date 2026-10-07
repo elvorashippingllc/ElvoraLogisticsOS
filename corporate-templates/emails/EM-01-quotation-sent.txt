@@ -1,0 +1,25 @@
+Subject: Quotation [ELV-Q-YYYY-NNN] – [Origin] to [Destination]
+
+Dear [Name],
+
+Thank you for your enquiry. Please find our quotation for the shipment from [Origin] to [Destination] attached.
+
+Quotation no.: [ELV-Q-YYYY-NNN]
+Valid until: [DD MMM YYYY]
+Cargo: [Commodity, packages, weight, volume]
+Total: [Currency and amount, excl. VAT unless stated]
+
+The rates depend on space and equipment at the time of booking, and the attached terms apply. If you would like to go ahead, just reply to this e-mail with “accepted” or sign the quotation and we will book it the same day.
+
+Please tell me if anything about the cargo, dates or delivery address needs to change; I would rather correct it now than after booking.
+
+Kind regards,
+[Your name]
+[Position]
+Elvora Shipping LLC
++971 50 422 1950 · sales@elvorashipping.com
+
+--
+Elvora Shipping LLC · Bur Dubai, Dubai, United Arab Emirates
++971 50 422 1950 · sales@elvorashipping.com · www.elvorashipping.com
+Hours: Sun–Thu 09:00–18:00 GST; 24/7 for active shipments

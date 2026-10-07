@@ -1,0 +1,27 @@
+Subject: Booking confirmed – [ELV-BK-YYYY-NNN] – [Origin] to [Destination]
+
+Dear [Name],
+
+Your booking is confirmed. The details are below and in the attached confirmation.
+
+Booking ref.: [ELV-BK-YYYY-NNN]
+Carrier: [Name]
+Vessel / flight: [Name and voyage]
+ETD / ETA: [DD MMM YYYY] / [DD MMM YYYY]
+Documents cut-off: [DD MMM YYYY, HH:MM GST]
+Cargo cut-off: [DD MMM YYYY, HH:MM GST]
+
+To keep the cargo on this sailing we need the commercial invoice, packing list and your bill of lading instructions by [date]. Late documents can mean the cargo is rolled and extra charges apply.
+
+Dates are the carrier’s estimates and can change; I will tell you straight away if they do.
+
+Kind regards,
+[Your name]
+[Position]
+Elvora Shipping LLC
++971 50 422 1950 · sales@elvorashipping.com
+
+--
+Elvora Shipping LLC · Bur Dubai, Dubai, United Arab Emirates
++971 50 422 1950 · sales@elvorashipping.com · www.elvorashipping.com
+Hours: Sun–Thu 09:00–18:00 GST; 24/7 for active shipments
