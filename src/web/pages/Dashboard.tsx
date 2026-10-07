@@ -21,7 +21,7 @@ export function Dashboard() {
   const base = meta?.settings.base_currency ?? 'AED'
 
   if (d.portal) return (
-    <div className="fade-in">
+    <div className="fade-in dashboard-page">
       <Welcome name={me?.name} portal />
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5"><Kpi label="Open shipments" value={k.open_jobs} /><Kpi label="Delivered" value={k.delivered} /><Kpi label={`Outstanding (${base})`} value={fmtMoney(k.outstanding)} /></div>
       <Panel title="Your recent shipments" color={C.teal} bodyClass="table-wrap"><table className="grid"><thead><tr><th>Job No</th><th>POL</th><th>POD</th><th>ETD</th><th>ETA</th><th>Status</th></tr></thead><tbody>{d.recent_jobs.map((j: any) => <tr key={j.id} className="clickable" onClick={() => nav(`/jobs/${j.id}`)}><td><Link className="link" to={`/jobs/${j.id}`}>{j.job_no}</Link></td><td>{j.pol}</td><td>{j.pod}</td><td>{fmtDateTime(j.etd)}</td><td>{fmtDateTime(j.eta)}</td><td><Badge value={j.operational_status ?? j.job_status} /></td></tr>)}</tbody></table></Panel>
@@ -45,13 +45,14 @@ export function Dashboard() {
 
   const ch = d.charts ?? {}, ls = d.lists ?? {}
   return (
-    <div className="fade-in">
+    <div className="fade-in dashboard-page">
       <Welcome name={me?.name} />
-      {can('ai', 'view') && <AiBrief />}
       {d.alerts?.length > 0 && <div className="grid gap-2 mb-5 md:grid-cols-2 xl:grid-cols-3">{d.alerts.slice(0, 6).map((a: any, i: number) => (
         <Link key={i} to={a.link} className={cls('flex items-center gap-3 px-4 py-2.5 rounded-xl border text-[13.5px] font-semibold', a.level === 'danger' ? 'bg-blush border-[#f2bcc3] text-[#8f1325]' : a.level === 'warn' ? 'bg-gold border-[#ead49a] text-[#6b4a00]' : 'bg-sky border-[#bcd6f0] text-[#1f4f85]')}>
           {a.level === 'danger' ? <AlertTriangle size={17} /> : a.level === 'warn' ? <TriangleAlert size={17} /> : <Info size={17} />}<span className="flex-1" dir="auto">{a.text}</span><ArrowRight size={15} /></Link>))}</div>}
-      <div className="grid gap-3 mb-5 grid-cols-2 md:grid-cols-3 xl:grid-cols-6">{tiles.map(t => <Kpi key={t.label} label={t.label} value={t.value ?? 0} hint={t.hint} tone={t.tone} onClick={t.to ? () => nav(t.to!) : undefined} />)}</div>
+      <div className="dashboard-metrics">{tiles.map(t => <Kpi key={t.label} label={t.label} value={t.value ?? 0} hint={t.hint} tone={t.tone} onClick={t.to ? () => nav(t.to!) : undefined} />)}</div>
+
+      {can('ai', 'view') && <AiBrief />}
 
       <div className="grid gap-4 xl:grid-cols-12">
         {ch.sales_branch && (
@@ -113,7 +114,7 @@ export function Dashboard() {
 
 function Welcome({ name, portal }: { name?: string; portal?: boolean }) {
   return (
-    <div className="flex items-center gap-4 mb-5 flex-wrap">
+    <div className="dashboard-welcome flex items-center gap-4 mb-5 flex-wrap">
       <img src="/brand/icon-primary.png" alt="" width="54" height="46" className="h-[46px] w-auto" />
       <div><h1 className="text-[24px] sm:text-[28px] font-extrabold m-0">Welcome to Elvora Logistics OS</h1>
         <div className="text-muted text-[14.5px]">{portal ? 'Track your shipments, documents and invoices.' : 'Track and Manage Sales, Shipments, Jobs, Accounts and Warehouse'}</div></div>
@@ -125,9 +126,10 @@ function AiBrief() {
   const q = useQuery({ queryKey: ['ai-brief'], queryFn: () => get<{ output: string; started_at: string; name: string }>('/api/ai/brief'), retry: false })
   if (!q.data?.output) return null
   return (
-    <Link to="/ai" className="block mb-5 rounded-2xl border border-[#bfe3d0] bg-mint px-4 py-3 no-underline text-ink">
+    <Link to="/ai" className="dashboard-brief block mb-5 rounded-2xl border border-[#bfe3d0] bg-mint px-4 py-3 no-underline text-ink">
       <div className="flex items-center gap-2 text-[12.5px] font-bold text-fold mb-1"><Bot size={16} /> {q.data.name} · today’s briefing <span className="font-normal text-muted">{String(q.data.started_at).replace('T', ' ').slice(0, 16)}</span><span className="flex-1" /><span className="underline">Open AI Team</span></div>
-      <div dir="auto" className="text-[13.5px] whitespace-pre-line leading-relaxed max-h-[9.5em] overflow-hidden">{q.data.output}</div>
+      <div dir="auto" className="text-[13.5px] whitespace-pre-line leading-relaxed brief-output">{q.data.output}</div>
     </Link>
   )
 }
+

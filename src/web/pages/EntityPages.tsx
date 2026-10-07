@@ -73,7 +73,7 @@ export function EntityRecordPage() {
   const approvalBadge = rec.approval_status && rec.approval_status !== 'Not required' ? <Badge value={`Approval: ${rec.approval_status}`} tone={rec.approval_status === 'Approved' ? 'green' : rec.approval_status === 'Rejected' ? 'red' : 'amber'} /> : null
 
   return (
-    <div className="fade-in">
+    <div className="fade-in record-page">
       <PageHeader back={<Link className="btn grey" to={`/e/${entity}`}><ArrowLeft /> Back</Link>} icon={<Icon size={20} />} title={<span className="flex items-center gap-3 flex-wrap">{rec._title}{status && <Badge value={status} />}{approvalBadge}{rec.doc_type && <Badge value={rec.doc_type} tone="blue" />}</span>} subtitle={`${def.label} · last updated ${new Date(rec.updated_at).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' })}`}
         actions={<>
           {primary.map(a => <button key={a.key} className={cls('btn', a.tone ?? 'green')} onClick={() => void a.run(helpers)}>{a.label}</button>)}
@@ -84,7 +84,7 @@ export function EntityRecordPage() {
           {(more.length > 0 || canDelete) && <Dropdown className="btn outline" label={<MoreHorizontal size={16} />} items={[...more.map(a => ({ label: a.label, onClick: () => void a.run(helpers), danger: a.tone === 'red' })), ...(canDelete ? [{ label: <><Trash2 size={14} /> Delete</>, onClick: () => void del_(), danger: true, divider: false }] : [])]} />}
         </>} />
       {facts.length > 0 && <div className="grid gap-3 mb-4 grid-cols-2 md:grid-cols-3 xl:grid-cols-5">{facts.map(f => <div key={f.name} className="card px-4 py-3"><div className="text-[11.5px] font-semibold text-muted">{f.label}</div><div className="font-display font-extrabold text-[17px] text-ink mt-0.5 break-words"><CellValue f={f} rec={rec} statusField={def.statusField} /></div></div>)}</div>}
-      <div className="flex gap-4 items-start flex-col lg:flex-row">
+      <div className="record-workspace flex gap-4 items-start flex-col lg:flex-row">
         <div className="flex-1 min-w-0 w-full card overflow-hidden">
           {tabs.length > 1 && <Tabs variant="sub" tabs={tabs} value={tab} onChange={setTab} />}
           <div className="p-4 md:p-5">

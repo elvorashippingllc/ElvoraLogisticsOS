@@ -90,7 +90,7 @@ export function EntityList({ entity, preset, embedded, title, hideNew, createPre
         </>} />
       )}
       {entity === 'bank_accounts' && !embedded && !query.error && <AccountCarousel def={def} rows={rows} />}
-      <div className="card overflow-hidden">
+      <div className="entity-surface card overflow-hidden">
         <div className="flex items-center gap-2 p-3 flex-wrap border-b border-line">
           <div className="relative flex-1 min-w-[200px] max-w-[420px]"><Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted" /><input className="input pl-9" placeholder={`Search ${def.plural.toLowerCase()}…`} value={search} onChange={e => setSearch(e.target.value)} aria-label="Search" /></div>
           {statusOpts.length > 0 && <select className="select" style={{ width: 170 }} value={status} onChange={e => setParam({ status: e.target.value, page: null })} aria-label="Status filter"><option value="">All statuses</option>{statusOpts.map(o => <option key={o}>{o}</option>)}</select>}
