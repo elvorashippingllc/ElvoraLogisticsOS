@@ -1,0 +1,27 @@
+Subject: Rate and space request – [Origin] to [Destination] – [date]
+
+Dear [Name],
+
+Please quote for the following shipment:
+
+Route: [Origin] → [Destination]
+Cargo: [Commodity, packages, weight, volume]
+Equipment: [Quantity × type]
+Ready date: [DD MMM YYYY]
+Incoterm: [Incoterm]
+Special requirements: [Dangerous goods, reefer, out-of-gauge – or none]
+
+Please include all-in rates, validity, transit time, free time and surcharges, and say whether space is available.
+
+Thank you for your prompt reply.
+
+Kind regards,
+[Your name]
+[Position]
+Elvora Shipping LLC
++971 50 422 1950 · sales@elvorashipping.com
+
+--
+Elvora Shipping LLC · Bur Dubai, Dubai, United Arab Emirates
++971 50 422 1950 · sales@elvorashipping.com · www.elvorashipping.com
+Hours: Sun–Thu 09:00–18:00 GST; 24/7 for active shipments

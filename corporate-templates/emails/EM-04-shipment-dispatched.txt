@@ -1,0 +1,26 @@
+Subject: Your shipment has departed – [Job ref.]
+
+Dear [Name],
+
+Your shipment left [Origin] on [DD MMM YYYY].
+
+Job reference: [ELV-JOB-…]
+B/L / AWB: [Number]
+Route: [Origin] → [Destination]
+Vessel / flight: [Name and voyage]
+Estimated arrival: [DD MMM YYYY]
+
+You can follow it on our tracking page: [tracking link]. I will write again when it is close to arrival with what is needed for clearance and delivery.
+
+Copies of the bill of lading / air waybill are attached.
+
+Kind regards,
+[Your name]
+[Position]
+Elvora Shipping LLC
++971 50 422 1950 · sales@elvorashipping.com
+
+--
+Elvora Shipping LLC · Bur Dubai, Dubai, United Arab Emirates
++971 50 422 1950 · sales@elvorashipping.com · www.elvorashipping.com
+Hours: Sun–Thu 09:00–18:00 GST; 24/7 for active shipments

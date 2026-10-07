@@ -1,0 +1,23 @@
+Subject: Invoice [Invoice no.] – [Job ref.]
+
+Dear [Name],
+
+Please find invoice [Invoice no.] attached for [Job ref.].
+
+Invoice date: [DD MMM YYYY]
+Amount due: [Currency and amount]
+Due date: [DD MMM YYYY]
+Pay to: Bank details on the invoice; please quote the invoice number
+
+If any item looks different from our quotation, please tell me within 7 days and I will check it with accounts straight away.
+
+Kind regards,
+[Your name]
+[Position]
+Elvora Shipping LLC
++971 50 422 1950 · sales@elvorashipping.com
+
+--
+Elvora Shipping LLC · Bur Dubai, Dubai, United Arab Emirates
++971 50 422 1950 · sales@elvorashipping.com · www.elvorashipping.com
+Hours: Sun–Thu 09:00–18:00 GST; 24/7 for active shipments

@@ -1,0 +1,18 @@
+Subject: Payment received – thank you
+
+Dear [Name],
+
+We have received your payment of [Currency and amount] on [DD MMM YYYY] and applied it to [Invoice no(s).]. A receipt is attached.
+
+Your account balance is now [amount]. Thank you.
+
+Kind regards,
+[Your name]
+[Position]
+Elvora Shipping LLC
++971 50 422 1950 · sales@elvorashipping.com
+
+--
+Elvora Shipping LLC · Bur Dubai, Dubai, United Arab Emirates
++971 50 422 1950 · sales@elvorashipping.com · www.elvorashipping.com
+Hours: Sun–Thu 09:00–18:00 GST; 24/7 for active shipments
