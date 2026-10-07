@@ -13,7 +13,6 @@
     "build:web": "vite build",
     "build:api": "esbuild src/server/index.ts --bundle --platform=node --format=esm --target=node22 --outfile=dist/server/index.mjs --packages=external --sourcemap",
     "start": "node --env-file-if-exists=.env dist/server/index.mjs",
-    "seed:demo": "tsx --env-file-if-exists=.env src/server/seed-demo-cli.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "tsx --env-file-if-exists=.env tests/smoke.ts"
   },

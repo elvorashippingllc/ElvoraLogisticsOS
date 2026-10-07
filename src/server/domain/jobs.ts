@@ -72,6 +72,10 @@ export const jobHooks: Hooks = {
       if (c?.status === 'Blocked') throw bad(`${c.name} is blocked — new jobs cannot be opened`)
     }
     if (rec.department?.includes('IMPORT') && rec.trade === 'Export' && isNew) rec.trade = 'Import'
+    if (old) {
+      if (old.branch_id !== rec.branch_id || old.job_date !== rec.job_date) throw bad('Branch and job date cannot be changed once the job number has been issued')
+      if ((old.client_id !== rec.client_id || old.department !== rec.department) && q.val(`SELECT 1 FROM job_charges WHERE job_id = ? AND status <> 'Unbilled' AND deleted_at IS NULL LIMIT 1`, rec.id)) throw bad('Client and department cannot be changed after charges have been invoiced or billed')
+    }
     if (children.charges) computeCharges(children.charges, rec.id)
     if (rec.etd && rec.eta && rec.eta < rec.etd) throw bad('ETA cannot be earlier than ETD')
     if (rec.atd && rec.ata && rec.ata < rec.atd) throw bad('ATA cannot be earlier than ATD')

@@ -4,7 +4,7 @@ let cookie = ''
 let pass = 0, fail = 0
 const failures: string[] = []
 
-async function api(method: string, path: string, body?: any, opts: { raw?: boolean; noAuth?: boolean } = {}) {
+async function api(method: string, path: string, body?: any, opts: { raw?: boolean; noAuth?: boolean } = {}): Promise<any> {
   const res = await fetch(BASE + path, { method, headers: { 'content-type': 'application/json', 'x-elvora-client': 'web', ...(cookie && !opts.noAuth ? { cookie } : {}) }, body: body !== undefined ? JSON.stringify(body) : undefined })
   const sc = res.headers.get('set-cookie'); if (sc && path.includes('/auth/login')) cookie = sc.split(';')[0]
   if (opts.raw) return res

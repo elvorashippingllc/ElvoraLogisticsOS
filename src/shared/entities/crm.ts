@@ -7,7 +7,7 @@ export const MODES = ['Ocean FCL', 'Ocean LCL', 'Air', 'Road', 'Multimodal', 'Cu
 
 export const crm: EntityDef[] = [
   {
-    key: 'parties', label: 'Customer / Party', plural: 'Customers & Parties', module: 'crm', icon: 'Building', title: ['code', 'name'], titleSep: ' – ', panel: true, customFields: true,
+    key: 'parties', label: 'Customer / Party', plural: 'Customers & Parties', module: 'crm', icon: 'Building', title: ['name'], panel: true, customFields: true,
     numbering: { field: 'code', pattern: 'P{seq:5}' }, statusField: 'status', print: 'party',
     fields: [
       T('code', 'Code', { readonly: true, list: true, search: true, section: 'Company' }),
