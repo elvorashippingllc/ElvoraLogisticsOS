@@ -19,7 +19,9 @@ export function buildEinvoiceXml(invoiceId: number): { xml: string; filename: st
   if (!trn) throw bad('Set the company TRN under Company Settings (or on the legal entity) before issuing e-invoices')
   const cur = inv.currency
   const credit = inv.doc_type === 'Credit Note'
-  const sellerEp = getSetting('einv_endpoint_id') || trn, scheme = getSetting('einv_scheme_id') || '0235'
+  const tin = (v?: string | null) => String(v ?? '').replace(/\D/g, '').slice(0, 10)
+  // PINT AE endpoint = scheme 0235 + the 10-digit TIN (first 10 digits of the TRN). Reserved values: 9900000098 buyer outside e-invoicing, 9900000099 export to a buyer not on Peppol.
+  const sellerEp = getSetting('einv_endpoint_id') || tin(trn), scheme = getSetting('einv_scheme_id') || '0235'
   const cats = new Map<string, { cat: string; pct: number; taxable: number; tax: number }>()
   for (const l of lines) {
     const cat = TAXCAT[l.category ?? 'Standard rated'] ?? 'S'
@@ -48,7 +50,7 @@ export function buildEinvoiceXml(invoiceId: number): { xml: string; filename: st
   <cbc:DocumentCurrencyCode>${x(cur)}</cbc:DocumentCurrencyCode>
   ${inv.reference ? `<cbc:BuyerReference>${x(inv.reference)}</cbc:BuyerReference>` : ''}
   ${party('AccountingSupplierParty', { name, trn, addr: ent?.address ?? getSetting('company_address'), city: 'Dubai', cc: 'AE', ep: sellerEp, email: getSetting('company_email') })}
-  ${party('AccountingCustomerParty', { name: buyer?.legal_name || buyer?.name, trn: buyer?.trn, addr: [buyer?.address1, buyer?.address2].filter(Boolean).join(', '), city: buyer?.city, cc: buyer?.cc, email: buyer?.email })}
+  ${party('AccountingCustomerParty', { name: buyer?.legal_name || buyer?.name, trn: buyer?.trn, addr: [buyer?.address1, buyer?.address2].filter(Boolean).join(', '), city: buyer?.city, cc: buyer?.cc, email: buyer?.email, ep: buyer?.trn ? tin(buyer.trn) : buyer?.cc && buyer.cc !== 'AE' ? '9900000099' : '9900000098' })}
   <cac:PaymentMeans><cbc:PaymentMeansCode>30</cbc:PaymentMeansCode></cac:PaymentMeans>
   <cac:TaxTotal><cbc:TaxAmount currencyID="${x(cur)}">${amt(inv.vat_total ?? 0)}</cbc:TaxAmount>
 ${[...cats.values()].map(c => `    <cac:TaxSubtotal><cbc:TaxableAmount currencyID="${x(cur)}">${amt(c.taxable)}</cbc:TaxableAmount><cbc:TaxAmount currencyID="${x(cur)}">${amt(c.tax)}</cbc:TaxAmount><cac:TaxCategory><cbc:ID>${c.cat}</cbc:ID><cbc:Percent>${c.pct}</cbc:Percent><cac:TaxScheme><cbc:ID>VAT</cbc:ID></cac:TaxScheme></cac:TaxCategory></cac:TaxSubtotal>`).join('\n')}

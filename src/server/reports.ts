@@ -315,12 +315,37 @@ export const REPORTS: ReportDef[] = [
       const push = (type: string, record: string, document: string, date: string | null, link: string) => { if (date && date <= limit) rows.push({ type, record, document, expiry: date, days_left: daysBetween(today, date), link }) }
       for (const v of q.all(`SELECT id, plate_no, registration_expiry, insurance_expiry FROM vehicles WHERE deleted_at IS NULL AND status <> 'Inactive'`)) { push('Vehicle', v.plate_no, 'Registration (Mulkiya)', v.registration_expiry, `/e/vehicles/${v.id}`); push('Vehicle', v.plate_no, 'Insurance', v.insurance_expiry, `/e/vehicles/${v.id}`) }
       for (const d of q.all(`SELECT id, name, licence_expiry, visa_expiry FROM drivers WHERE deleted_at IS NULL AND active = 1`)) { push('Driver', d.name, 'Driving licence', d.licence_expiry, `/e/drivers/${d.id}`); push('Driver', d.name, 'Visa', d.visa_expiry, `/e/drivers/${d.id}`) }
+      for (const c of q.all(`SELECT id, name, type, expiry_date FROM compliance_items WHERE deleted_at IS NULL AND status IN ('Active','Expired') AND expiry_date IS NOT NULL`)) push('Company licence', c.name, c.type, c.expiry_date, `/e/compliance_items/${c.id}`)
+      for (const e of q.all(`SELECT id, name, work_permit_expiry FROM employees WHERE deleted_at IS NULL AND status IN ('Active','On leave','Probation') AND work_permit_expiry IS NOT NULL`)) push('Employee', e.name, 'Work permit / labour contract', e.work_permit_expiry, `/e/employees/${e.id}`)
       for (const e of q.all(`SELECT id, name, passport_expiry, eid_expiry, visa_expiry, health_card_expiry FROM employees WHERE deleted_at IS NULL AND status IN ('Active','On leave','Probation')`)) { push('Employee', e.name, 'Passport', e.passport_expiry, `/e/employees/${e.id}`); push('Employee', e.name, 'Emirates ID', e.eid_expiry, `/e/employees/${e.id}`); push('Employee', e.name, 'Visa / residence', e.visa_expiry, `/e/employees/${e.id}`); push('Employee', e.name, 'Health insurance', e.health_card_expiry, `/e/employees/${e.id}`) }
       for (const c of q.all(`SELECT id, contract_no, title, end_date FROM contracts WHERE deleted_at IS NULL AND status = 'Active'`)) push('Contract', `${c.contract_no} ${c.title}`, 'Contract end', c.end_date, `/e/contracts/${c.id}`)
       for (const c of q.all(`SELECT id, name, kyc_expiry FROM parties WHERE deleted_at IS NULL AND status = 'Active'`)) push('Customer / party', c.name, 'KYC / licence', c.kyc_expiry, `/e/parties/${c.id}`)
       for (const a of q.all(`SELECT id, file_name, category, link_label, link_entity, link_id, expiry_date FROM attachments WHERE deleted_at IS NULL AND expiry_date IS NOT NULL`)) push('Document', a.link_label ?? a.file_name, `${a.category}: ${a.file_name}`, a.expiry_date, a.link_entity ? `/e/${a.link_entity}/${a.link_id}` : '/documents')
       rows.sort((a, b) => a.expiry.localeCompare(b.expiry))
       return { title: `Documents expiring within ${days} days`, columns: [{ key: 'type', label: 'Type' }, { key: 'record', label: 'Record' }, { key: 'document', label: 'Document' }, { key: 'expiry', label: 'Expiry', type: 'date' }, { key: 'days_left', label: 'Days left', type: 'number' }], rows }
+    },
+  },
+  {
+    key: 'end_of_service', label: 'End-of-service gratuity (accrued)', group: 'Compliance', module: 'hr', description: 'Gratuity accrued per employee under Federal Decree-Law 33 of 2021: 21 days of basic pay per year for the first 5 years and 30 days per year after, pro-rated, capped at two years of total pay. Requires 1 year of service.', params: [D('as_at', 'As at', 'today')],
+    run: p => {
+      const at = String(p.as_at || todayStr())
+      const rows = q.all(`SELECT emp_no, name, join_date, basic_salary, housing_allowance, transport_allowance, other_allowance, contract_type FROM employees WHERE deleted_at IS NULL AND status IN ('Active','On leave','Probation') ORDER BY emp_no`).map(e => {
+        const years = e.join_date ? Math.max(0, daysBetween(e.join_date, at) / 365) : 0
+        const basic = m(e.basic_salary ?? 0), total = basic + m((e.housing_allowance ?? 0) + (e.transport_allowance ?? 0) + (e.other_allowance ?? 0)), daily = basic / 30
+        const raw = years < 1 ? 0 : daily * (21 * Math.min(years, 5) + 30 * Math.max(0, years - 5))
+        const cap = total * 24
+        return { emp_no: e.emp_no, name: e.name, join_date: e.join_date, years: Math.round(years * 100) / 100, basic, gratuity: r2(Math.min(raw, cap)), capped: raw > cap ? 'Yes' : '' }
+      })
+      return { title: `End-of-service gratuity accrued at ${at}`, columns: [{ key: 'emp_no', label: 'Emp. no.' }, { key: 'name', label: 'Employee' }, { key: 'join_date', label: 'Joined', type: 'date' }, { key: 'years', label: 'Years', type: 'number' }, { key: 'basic', label: 'Basic (monthly)', type: 'money' }, { key: 'gratuity', label: 'Gratuity (AED)', type: 'money' }, { key: 'capped', label: 'Capped' }], rows, totals: sumKeys(rows, ['gratuity']), note: 'Indicative. Based on last basic salary and calendar-day service; confirm unpaid leave and contract type before settlement.' }
+    },
+  },
+  {
+    key: 'related_party', label: 'Related-party transactions', group: 'Compliance', module: 'finance', description: 'Sales, purchases and payments with parties flagged as related / connected persons – to be disclosed in the corporate tax return.', params: FROM_TO,
+    run: p => {
+      const { from, to } = range(p)
+      const rows = q.all(`SELECT pr.name, 'Sales invoiced' kind, COALESCE(SUM(${SIGN} * i.base_total),0) amt FROM invoices i JOIN parties pr ON pr.id = i.party_id WHERE pr.is_related_party = 1 AND ${SALES_STATUS} AND i.invoice_date BETWEEN ? AND ? GROUP BY pr.id
+        UNION ALL SELECT pr.name, 'Purchases billed', COALESCE(SUM(b.base_total),0) FROM bills b JOIN parties pr ON pr.id = b.vendor_id WHERE pr.is_related_party = 1 AND b.status IN ('Posted','Partially paid','Paid') AND b.deleted_at IS NULL AND b.bill_date BETWEEN ? AND ? GROUP BY pr.id`, from, to, from, to).map(r => ({ name: r.name, kind: r.kind, amt: m(Math.round(r.amt)) }))
+      return { title: `Related-party transactions ${from} → ${to}`, columns: [{ key: 'name', label: 'Related party' }, { key: 'kind', label: 'Nature' }, { key: 'amt', label: 'Amount (AED)', type: 'money' }], rows, note: 'Transactions with related parties must be at arm’s length and disclosed. Flag parties under Customers & Parties → Related party.' }
     },
   },
   {

@@ -7,12 +7,13 @@ import { transportWarehouse } from './operations2'
 import { finance } from './finance'
 import { people } from './people'
 import { automation } from './automation'
+import { compliance } from './compliance'
 
 export { MODULE_DEFS } from './platform'
 export * from './ops'
 export { INCOTERMS, PACKAGE_TYPES } from './masters'
 
-export const ENTITY_LIST: EntityDef[] = [...platform, ...masters, ...crm, ...ops, ...transportWarehouse, ...finance, ...people, ...automation]
+export const ENTITY_LIST: EntityDef[] = [...platform, ...masters, ...crm, ...ops, ...transportWarehouse, ...finance, ...people, ...automation, ...compliance]
 export const ENTITIES: Record<string, EntityDef> = Object.fromEntries(ENTITY_LIST.map(e => [e.key, e]))
 
 export function validateMeta(): string[] {
@@ -112,6 +113,13 @@ export const NAV: NavGroup[] = [
     { label: 'Approvals', to: '/ai?tab=approvals', icon: 'ShieldCheck', module: 'ai' },
     { label: 'AI Activity', to: '/e/ai_runs', icon: 'Activity', module: 'ai' },
     { label: 'WhatsApp', to: '/whatsapp', icon: 'MessageCircle', module: 'crm' },
+  ] },
+  { label: 'Compliance (UAE)', icon: 'BadgeCheck', items: [
+    { label: 'Compliance Centre', to: '/compliance', icon: 'BadgeCheck', module: 'compliance' },
+    { label: 'Licences & Registrations', to: '/e/compliance_items', icon: 'FileCheck2', module: 'compliance' },
+    { label: 'Licensed Activities', to: '/e/licence_activities', icon: 'ListChecks', module: 'compliance' },
+    { label: 'Compliance Calendar', to: '/e/compliance_filings', icon: 'CalendarClock', module: 'compliance' },
+    { label: 'Exceptions', to: '/e/compliance_exceptions', icon: 'ShieldAlert', module: 'compliance' },
   ] },
   { label: 'Reports & Tools', icon: 'BarChart3', items: [
     { label: 'Reports', to: '/reports', icon: 'BarChart3', module: 'reports' },

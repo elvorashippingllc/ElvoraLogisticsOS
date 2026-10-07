@@ -73,7 +73,7 @@ export async function seedExtras(ctx: Ctx) {
     const onacct = mk('receipts', { party_id: nordic, bank_account_id: bank, receipt_date: d(-3), method: 'Bank transfer', amount: 5000, reference: 'ADV-NORD-77', children: { allocations: [] } }); postReceipt(onacct.id, ctx)
   })
   step('credit-note', () => {
-    const base = posted[0]; const cn = mk('invoices', { doc_type: 'Credit Note', party_id: base.party_id, original_invoice_id: base.id, branch_id: dxb, invoice_date: d(-5), currency: 'AED', notes: 'Credit note against ' + base.invoice_no + ' – weight adjusted after reweigh', children: { lines: [L('FRT-AIR', 40, 6.5)] } }); postInvoice(cn.id, ctx)
+    const base = posted[0]; const cn = mk('invoices', { doc_type: 'Credit Note', party_id: base.party_id, original_invoice_id: base.id, branch_id: dxb, invoice_date: d(-5), currency: 'AED', credit_reason: 'Weight adjusted after reweigh', notes: 'Credit note against ' + base.invoice_no + ' – weight adjusted after reweigh', children: { lines: [L('FRT-AIR', 40, 6.5)] } }); postInvoice(cn.id, ctx)
   })
   step('proforma-void', () => {
     mk('invoices', { doc_type: 'Proforma Invoice', party_id: nordic, branch_id: dxb, invoice_date: d(-1), currency: 'USD', ex_rate: 3.6725, notes: 'Advance payment for Hamburg consolidation', children: { lines: [L('FRT-AIR', 120, 4.8)] } })

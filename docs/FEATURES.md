@@ -36,6 +36,10 @@ Odoo (CRM/Sales/Accounting/Inventory/HR/Helpdesk), CargoWise-style forwarding wo
 | WhatsApp | Lead capture, staff & customer bots, milestone alerts, overdue reminders, owner daily report, inbox, automation actions |
 | AI | Jarvis chat + 7 AI employees, approvals queue, schedules, free-provider presets with fallback |
 
+## Added in release 3 – UAE compliance
+
+Compliance Centre, licences & registrations register, licensed-activity guard, statutory calendar, exceptions log, UAE tax-invoice rules, sanctions-screening control, gratuity and related-party reports, PINT AE endpoint fix. See [UAE-COMPLIANCE.md](UAE-COMPLIANCE.md).
+
 ## Limits you should know about
 
 - Integrations were verified against mock providers, not live services (see INTEGRATIONS.md). Credentials and provider approvals (Meta templates, ASP accreditation, bank WPS onboarding, Terminal49 plan) are yours to obtain.

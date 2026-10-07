@@ -51,6 +51,10 @@ export const SETTING_DEFAULTS: Record<string, any> = {
   bank_webhook_secret: '',
   // --- WPS
   wps_employer_id: '', wps_bank_routing: '', wps_employer_ref: '',
+  // --- UAE compliance
+  company_name_ar: '', licence_name_en: '', licence_authority: '', licence_issue_date: '', licence_expiry_date: '', dcci_no: '', commercial_register_no: '', company_legal_form: '',
+  vat_registered: true, vat_filing_frequency: 'Quarterly', ct_registered: false, ct_trn: '', financial_year_end: '12-31', einv_revenue_over_50m: false,
+  compliance_mode: 'enforce', activity_scope_mode: 'warn', sanctions_review_days: 365,
   ui_lang: 'en',
   seeded: {},
 }

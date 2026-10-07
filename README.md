@@ -33,15 +33,17 @@ The two production accounts must set their own password at first sign-in (the ap
 ## Design
 
 One entity definition (`src/shared/entities/*`) drives the SQLite schema, REST API, validation, list/form UI, CSV
-import/export, permissions and audit — 93 entities across 17 permission modules (view / create / edit / delete /
+import/export, permissions and audit — 97 entities across 18 permission modules (view / create / edit / delete /
 approve / export). Money is stored as integer cents; invoices post to a double-entry ledger; job numbers follow
 `{branch}{MM}{YY}{seq}` (e.g. DXB10260136).
 
 Security: scrypt password hashing, httpOnly session cookie, CSRF header, login lockout, optional TOTP, API keys,
 helmet, rate limiting, audit log. Backups via Administration → Backup.
 
+UAE compliance (licence register, licensed-activity guard, VAT/TRN rules, sanctions, calendar): [docs/UAE-COMPLIANCE.md](docs/UAE-COMPLIANCE.md).
+
 See [docs/FEATURES.md](docs/FEATURES.md) (features & limits), [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) (Resend, R2, Supabase, WhatsApp, e-invoicing…), [docs/AI-TEAM.md](docs/AI-TEAM.md) (Jarvis & AI employees) and [docs/DEPLOY.md](docs/DEPLOY.md).
 
 ## Tests
 
-`npm run typecheck`; with the server running on an empty database: `npm test` (134 API checks). Integrations/AI/finance extensions: start the API with `WA_GRAPH_URL=http://localhost:9099/graph RESEND_API_URL=http://localhost:9099/resend R2_ENDPOINT=http://localhost:9099/r2` on a fresh data dir, then `npm run test:integrations` (83 checks against built-in mock providers). `npm run test:handover` (48 checks) proves production is empty, the demo is rich and the two are isolated; run it on a fresh data directory.
+`npm run typecheck`; with the server running on an empty database: `npm test` (135 API checks). Integrations/AI/finance extensions: start the API with `WA_GRAPH_URL=http://localhost:9099/graph RESEND_API_URL=http://localhost:9099/resend R2_ENDPOINT=http://localhost:9099/r2` on a fresh data dir, then `npm run test:integrations` (83 checks against built-in mock providers). `npm run test:compliance` (65 checks, UAE rules) and `npm run test:handover` (48 checks) proves production is empty, the demo is rich and the two are isolated; run it on a fresh data directory.

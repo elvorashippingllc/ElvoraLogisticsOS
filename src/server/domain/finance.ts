@@ -6,6 +6,7 @@ import { getDef, getRecord, patchRecord, formatNumber, can, SYSTEM_CTX, type Ctx
 import { accountByRole, accountByCode, assertNotLocked, BASE, fxRate, postJournal, reverseJournal, type JLine } from './accounting'
 import { getSetting } from '../settings'
 import { notify, notifyRole } from '../notify'
+import { checkInvoicePosting, checkBillPosting } from './compliance'
 import { ENTITIES } from '../../shared/entities'
 
 const vatPct = (id: number | null | undefined) => (id ? q.val<number>(`SELECT rate FROM vat_codes WHERE id = ?`, id) ?? 0 : 0)
@@ -112,6 +113,7 @@ export function postInvoice(id: number, ctx: Ctx): Rec {
   if (!lines.length) throw bad('Add at least one line before posting')
   if (inv.total <= 0) throw bad('Document total must be greater than zero')
   assertNotLocked(inv.invoice_date)
+  checkInvoicePosting(inv, lines)
   const ex = inv.ex_rate || 1
   const isCN = inv.doc_type === 'Credit Note'
   const proforma = inv.doc_type === 'Proforma Invoice'
@@ -160,6 +162,7 @@ export function postInvoice(id: number, ctx: Ctx): Rec {
   }
   patchRecord(def, id, { invoice_no: number, status: 'Posted', journal_id: journalId, base_total: totalBase, paid_amount: isCN ? applied : 0 }, ctx)
   q.run(`UPDATE invoices SET invoice_no = ?, status = 'Posted', journal_id = ? WHERE id = ?`, number, journalId, id)
+  q.run(`UPDATE compliance_exceptions SET link_label = ? WHERE link_entity = 'invoices' AND link_id = ? AND status <> 'Resolved'`, number, id)
   if (isCN) { const p = toCents(applied); q.run(`UPDATE invoices SET paid_amount = ?, balance = total - ?, status = CASE WHEN total - ? <= 0 THEN 'Paid' ELSE 'Posted' END WHERE id = ?`, p, p, p, id) }
   else q.run(`UPDATE invoices SET balance = total WHERE id = ?`, id)
   if (isCN && inv.original_invoice_id) refreshInvoiceBalance(inv.original_invoice_id)
@@ -226,6 +229,7 @@ export function postBill(id: number, ctx: Ctx): Rec {
   if (!lines.length) throw bad('Add at least one line before posting')
   if (b.total <= 0) throw bad('Bill total must be greater than zero')
   assertNotLocked(b.bill_date)
+  checkBillPosting(b, lines)
   const limit = Number(getSetting('bill_approval_limit')) || 0
   if (limit > 0 && b.base_total >= limit && b.approval_status !== 'Approved' && !can(ctx.user, 'finance', 'approve') && !ctx.system) {
     throw bad(`Bills of ${limit.toLocaleString()} ${BASE()} or more need approval. Request approval first.`)

@@ -4,6 +4,7 @@ import { notify, notifyRole } from './notify'
 import { processOutbox } from './mailer'
 import { runReport } from './reports'
 import { getSetting } from './settings'
+import { complianceDaily } from './domain/compliance'
 import { nowLocal } from './util'
 
 /** Light-weight in-process scheduler: reminders, expiries and the e-mail outbox. */
@@ -57,6 +58,7 @@ export function daily() {
   // free-time risk
   const ft = q.all(`SELECT c.container_no, j.id job_id, j.job_no, j.operator_id, c.free_time_until FROM job_containers c JOIN jobs j ON j.id = c.job_id WHERE c.deleted_at IS NULL AND j.deleted_at IS NULL AND j.job_status NOT IN ('CLOSED','CANCELLED') AND c.status <> 'Empty returned' AND c.free_time_until IS NOT NULL AND c.free_time_until <= ?`, addDays(today, 2))
   for (const c of ft) notify(c.operator_id, `Free time ending: ${c.container_no}`, `Job ${c.job_no} – free time until ${c.free_time_until}`, `/jobs/${c.job_id}`, 'alert', `ft-${c.container_no}-${today}`)
+  try { complianceDaily() } catch (e) { console.error('compliance', e) }
   // housekeeping
   q.run(`DELETE FROM sessions WHERE expires_at < ?`, nowIso())
   q.run(`DELETE FROM notifications WHERE read_at IS NOT NULL AND read_at < ?`, new Date(Date.now() - 90 * 86400000).toISOString())

@@ -21,7 +21,7 @@ export async function rebuildDemoWorkspace(): Promise<void> {
       const { seedReference } = await import('../seed')
       const { ensureAgents } = await import('../ai/agents')
       const { seedDemoScenarios } = await import('../seed/demo')
-      syncSchema(); seedReference({ users: false }); ensureAgents(); await seedDemoScenarios()
+      syncSchema(); seedReference({ users: false, demo: true }); ensureAgents(); await seedDemoScenarios()
     })
     t.pragma('wal_checkpoint(TRUNCATE)')
   } finally { t.close() }

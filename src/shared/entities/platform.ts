@@ -5,7 +5,7 @@ export const MODULE_DEFS = [
   ['dashboard', 'Dashboard'], ['crm', 'CRM'], ['sales', 'Sales & Pricing'], ['jobs', 'Jobs & Shipments'],
   ['customs', 'Customs'], ['transport', 'Transport'], ['warehouse', 'Warehouse'], ['finance', 'Accounts & Finance'],
   ['hr', 'HR & Payroll'], ['support', 'Support & Claims'], ['projects', 'Projects & Tasks'], ['documents', 'Documents'],
-  ['assets', 'Assets & Procurement'], ['ai', 'AI Team & Automation'], ['reports', 'Reports & KPI'], ['masters', 'Master Data'], ['admin', 'Administration'],
+  ['assets', 'Assets & Procurement'], ['compliance', 'Compliance & Legal'], ['ai', 'AI Team & Automation'], ['reports', 'Reports & KPI'], ['masters', 'Master Data'], ['admin', 'Administration'],
 ] as const
 
 export const platform: EntityDef[] = [

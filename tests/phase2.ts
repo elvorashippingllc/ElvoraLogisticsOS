@@ -58,6 +58,7 @@ async function main() {
   let r = await api('POST', '/api/auth/login', { email: 'admin@elvorashipping.com', password: 'Elvora@Admin2026' }); ok('admin signs in', r.status === 200, r.data)
 
   sec('Bootstrap (production workspace starts empty)')
+  await api('PUT', '/api/admin/settings', { company_trn: '100123456700003' })
   r = await api('POST', '/api/e/parties', { name: 'Integration Test Customer LLC', is_customer: true, status: 'Active', trn: '100123456700003', email: 'billing@itc.example' }); const cust = r.data.id; ok('customer created', r.status === 201, r.data)
   const branch = (await api('GET', '/api/e/branches')).data.rows[0], frt = (await api('GET', '/api/e/charge_codes?q=FRT-AIR')).data.rows[0], por = (await api('GET', '/api/e/locations?q=AEDXB')).data.rows[0], jnb = (await api('GET', '/api/e/locations?q=ZAJNB')).data.rows[0]
   r = await api('POST', '/api/e/jobs', { client_id: cust, branch_id: branch.id, department: 'AIR EXPORT', trade: 'Export', job_date: new Date().toLocaleDateString('sv-SE'), mbl_no: '60754163572', pol_id: por.id, pod_id: jnb.id, packages: 1, gross_weight: 14, commodity: 'Spare parts', children: { charges: [{ kind: 'Revenue', charge_code_id: frt.id, qty: 14, rate: 12.5, currency: 'AED', party_id: cust }], containers: [] } }); const JOB = r.data; ok('job created', r.status === 201, r.data)
@@ -161,6 +162,7 @@ async function main() {
   r = await api('GET', '/api/e/invoices?pageSize=100'); const posted = r.data.rows.find((i: any) => i.status !== 'Draft' && i.doc_type === 'Tax Invoice'); ok('a posted tax invoice exists', !!posted)
   r = await api('GET', `/api/invoices/${posted.id}/einvoice.xml`, undefined, true); const xml = await r.text()
   ok('UBL XML generated with PINT AE customization', r.status === 200 && xml.includes('urn:peppol:pint:billing-1@ae-1') && xml.includes('<cbc:InvoiceTypeCode>380') && xml.includes(posted.invoice_no) && xml.includes('<cac:InvoiceLine>'), xml.slice(0, 200))
+  ok('seller endpoint is scheme 0235 + 10-digit TIN, tax scheme carries the full TRN', xml.includes('schemeID="0235">1001234567</cbc:EndpointID>') && xml.includes('<cbc:CompanyID>100123456700003</cbc:CompanyID>'), xml.slice(300, 700))
   ok('XML totals match the invoice', xml.includes(`<cbc:PayableAmount currencyID="${posted.currency}">${Number(posted.total).toFixed(2)}`), xml.match(/PayableAmount[^<]*<?/)?.[0])
   r = await api('POST', `/api/invoices/${posted.id}/einvoice/submit`); ok('e-invoice submitted to provider', r.status === 200 && r.data.reference === 'ASP-123', r.data)
   r = await api('GET', `/api/e/invoices/${posted.id}`); ok('invoice shows e-invoice status', r.data.einvoice_status === 'Submitted' && r.data.einvoice_ref === 'ASP-123', r.data.einvoice_status)
