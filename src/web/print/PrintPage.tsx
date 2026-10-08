@@ -161,6 +161,8 @@ function StatementDoc({ partyId }: { partyId: string }) {
   </>)
 }
 
+function FreightDoc({r}:{r:any}) {return <><Title sub={`${r.doc_no} · revision ${r.revision}`} watermark={r.status==='Draft'?'DRAFT':'COPY'}>{r.kind==='HAWB'||r.kind==='MAWB'?'AIR WAYBILL WORKSHEET':'BILL OF LADING WORKSHEET'}</Title><Grid cols={2}><Box label="Shipper">{r.shipper}</Box><Box label="Consignee">{r.consignee}</Box><Box label="Notify party">{r.notify_party}</Box><Kv items={[['Job',r._labels.job_id],['Carrier document',r.carrier_document_no],['Vessel / flight',r.vessel_flight],['Origin',r.origin],['Destination',r.destination],['Release mode',r.release_mode],['Approval',r.status]]}/></Grid><Box label="Description of goods">{r.goods}</Box><Grid><Box label="Packages">{r.packages}</Box><Box label="Gross weight kg">{r.gross_weight}</Box><Box label="Volume CBM">{r.volume_cbm}</Box></Grid><Box label="Terms">{r.terms}</Box><Sign labels={['Prepared by','Reviewed by']}/><Foot>This is a controlled internal worksheet copy. Carrier originals and negotiable documents require the authorised carrier form and issuance process. Printing does not issue an original or authorise cargo release.</Foot></>}
+
 export function PrintPage() {
   const { entity = '', id = '' } = useParams(); const [sp] = useSearchParams(); const nav = useNavigate()
   const { meta } = useMeta()
@@ -178,6 +180,7 @@ export function PrintPage() {
     const rs = q.data
     return rs.map((r, i) => {
       const e = <div key={i} style={{ pageBreakAfter: i < rs.length - 1 ? 'always' : 'auto' }}>{(() => { switch (entity) {
+        case 'freight_documents': return <FreightDoc r={r} />
         case 'invoices': return <InvoiceDoc r={r} />
         case 'quotations': return <QuoteDoc r={r} />
         case 'receipts': return <VoucherDoc r={r} kind="receipt" />
@@ -205,4 +208,5 @@ export function PrintPage() {
   )
 }
 void Link
+
 

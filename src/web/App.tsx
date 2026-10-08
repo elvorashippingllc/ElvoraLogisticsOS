@@ -1,3 +1,7 @@
+import {ExtractionPage} from './pages/ExtractionPage'
+import {DepositPage} from './pages/DepositPage'
+import {CustodyPage} from './pages/CustodyPage'
+import {RfqComparisonPage,CompetencyPage} from './pages/EnterprisePages'
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { Suspense, lazy, type ReactNode } from 'react'
 import { useMeta } from './lib/meta'
@@ -55,6 +59,11 @@ export default function App() {
           <Route path="/e/:entity/:id" element={<EntityRecordPage />} />
           <Route path="/search" element={<Guard module="jobs"><JobSearch /></Guard>} />
           <Route path="/tracking" element={<Guard module="jobs"><TrackingPage /></Guard>} />
+          <Route path="/extractions/:id" element={<Guard module="documents"><ExtractionPage /></Guard>} />
+          <Route path="/container-deposits/:id" element={<Guard module="finance"><DepositPage /></Guard>} />
+          <Route path="/originals/:id" element={<Guard module="documents"><CustodyPage /></Guard>} />
+          <Route path="/rfqs/:id/compare" element={<Guard module="sales"><RfqComparisonPage /></Guard>} />
+          <Route path="/competency" element={<Guard module="hr"><CompetencyPage /></Guard>} />
           <Route path="/work/queues" element={<Guard module="projects"><WorkQueuePage /></Guard>} />
           <Route path="/work/handovers" element={<Guard module="projects"><HandoverPage /></Guard>} />
           <Route path="/calendar" element={<CalendarPage />} />

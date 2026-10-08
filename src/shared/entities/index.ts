@@ -1,3 +1,6 @@
+import {ocr} from './ocr'
+import {deposits} from './deposits'
+import {cargoDocs} from './cargo-docs'
 import type { EntityDef, NavGroup } from '../types'
 import { platform } from './platform'
 import { masters } from './masters'
@@ -7,6 +10,7 @@ import { transportWarehouse } from './operations2'
 import { finance } from './finance'
 import { people } from './people'
 import { automation } from './automation'
+import { enterprise } from './enterprise'
 import { work } from './work'
 import { compliance } from './compliance'
 
@@ -14,7 +18,7 @@ export { MODULE_DEFS } from './platform'
 export * from './ops'
 export { INCOTERMS, PACKAGE_TYPES } from './masters'
 
-export const ENTITY_LIST: EntityDef[] = [...platform, ...masters, ...crm, ...ops, ...transportWarehouse, ...finance, ...people, ...automation, ...compliance, ...work]
+export const ENTITY_LIST: EntityDef[] = [...platform, ...masters, ...crm, ...ops, ...transportWarehouse, ...finance, ...people, ...automation, ...compliance, ...work, ...enterprise, ...cargoDocs, ...deposits, ...ocr]
 export const ENTITIES: Record<string, EntityDef> = Object.fromEntries(ENTITY_LIST.map(e => [e.key, e]))
 
 export function validateMeta(): string[] {
@@ -55,6 +59,8 @@ export const NAV: NavGroup[] = [
     { label: 'Opportunities', to: '/e/opportunities', icon: 'Target', module: 'crm' },
     { label: 'Calls & Activities', to: '/e/activities', icon: 'PhoneCall', module: 'crm' },
     { label: 'Campaigns', to: '/e/campaigns', icon: 'Megaphone', module: 'crm' },
+    { label: 'Carrier RFQs', to: '/e/carrier_rfqs', icon: 'GitCompare', module: 'sales' },
+    { label: 'Carrier Responses', to: '/e/rfq_offers', icon: 'FileCheck', module: 'sales' },
     { label: 'Quotations', to: '/e/quotations', icon: 'FileSignature', module: 'sales' },
     { label: 'Rate Cards', to: '/e/rate_cards', icon: 'Tags', module: 'sales' },
     { label: 'Contracts', to: '/e/contracts', icon: 'FileCheck2', module: 'sales' },
@@ -83,6 +89,8 @@ export const NAV: NavGroup[] = [
     { label: 'Journal Entries', to: '/e/journal_entries', icon: 'NotebookPen', module: 'finance' },
     { label: 'Expense Claims', to: '/e/expenses', icon: 'Wallet', module: 'finance' },
     { label: 'Bank Accounts', to: '/e/bank_accounts', icon: 'Landmark', module: 'finance' },
+    { label: 'Container Deposits', to: '/e/container_deposits', icon: 'Container', module: 'finance' },
+    { label: 'Deposit Transactions', to: '/e/container_deposit_events', icon: 'Landmark', module: 'finance' },
     { label: 'Bank Reconciliation', to: '/e/bank_transactions', icon: 'Scale', module: 'finance' },
     { label: 'Chart of Accounts', to: '/e/accounts', icon: 'BookOpenText', module: 'finance' },
     { label: 'Financial Statements', to: '/finance/statements', icon: 'Sigma', module: 'finance' },
@@ -91,6 +99,10 @@ export const NAV: NavGroup[] = [
     { label: 'Legal Entities', to: '/e/legal_entities', icon: 'Building2', module: 'finance' },
   ] },
   { label: 'People & Support', icon: 'Users', items: [
+    { label: 'Competency Matrix', to: '/competency', icon: 'GraduationCap', module: 'hr' },
+    { label: 'Competencies', to: '/e/competencies', icon: 'GraduationCap', module: 'hr' },
+    { label: 'Staff Qualifications', to: '/e/staff_qualifications', icon: 'Award', module: 'hr' },
+    { label: 'Qualification Rules', to: '/e/activity_skill_rules', icon: 'ShieldCheck', module: 'hr' },
     { label: 'Employees', to: '/e/employees', icon: 'UserRound', module: 'hr' },
     { label: 'Leave', to: '/e/leave_requests', icon: 'Plane', module: 'hr' },
     { label: 'Attendance', to: '/e/attendance', icon: 'Clock', module: 'hr' },
@@ -102,10 +114,16 @@ export const NAV: NavGroup[] = [
   ] },
   { label: 'Work', icon: 'ListChecks', items: [
     { label: 'Shift Handovers', to: '/work/handovers', icon: 'ArrowLeftRight', module: 'projects' },
+    { label: 'Knowledge Base', to: '/e/knowledge_articles', icon: 'BookOpen', module: 'projects' },
+    { label: 'Knowledge Versions', to: '/e/knowledge_versions', icon: 'History', module: 'projects' },
     { label: 'Work Queues', to: '/work/queues', icon: 'ListChecks', module: 'projects' },
     { label: 'Tasks & Follow-ups', to: '/e/tasks', icon: 'ListChecks', module: 'projects' },
     { label: 'Projects', to: '/e/projects', icon: 'FolderKanban', module: 'projects' },
     { label: 'Calendar', to: '/calendar', icon: 'CalendarDays', module: 'dashboard' },
+    { label: 'BL / AWB Engine', to: '/e/freight_documents', icon: 'FileCheck', module: 'documents' },
+    { label: 'Original Custody', to: '/e/document_originals', icon: 'ShieldCheck', module: 'documents' },
+    { label: 'Custody History', to: '/e/document_custody_events', icon: 'History', module: 'documents' },
+    { label: 'OCR & Matching', to: '/e/document_extractions', icon: 'ScanText', module: 'documents' },
     { label: 'Documents Library', to: '/documents', icon: 'FolderOpen', module: 'documents' },
     { label: 'Blog & Announcements', to: '/e/announcements', icon: 'Newspaper', module: 'documents' },
     { label: 'Fixed Assets', to: '/e/fixed_assets', icon: 'Armchair', module: 'assets' },

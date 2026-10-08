@@ -444,6 +444,7 @@ export const journalHooks: Hooks = {
 export function reverseEntry(id: number, ctx: Ctx) {
   const e = q.get(`SELECT * FROM journal_entries WHERE id = ?`, id)
   if (!e) throw bad('Entry not found')
+  if(e.source_type==='Container deposit')throw bad('Reverse this entry through its deposit transaction to preserve the recoverable balance')
   if (e.status === 'Reversed' || e.source_type === 'Reversal') throw bad('This entry is already reversed or is itself a reversal')
   assertNotLocked(todayStr())
   return reverseJournal(ctx, id, `Reversal of ${e.entry_no}`)

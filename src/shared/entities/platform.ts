@@ -120,7 +120,7 @@ export const platform: EntityDef[] = [
   {
     key: 'attachments', label: 'Attachment', plural: 'Documents library', module: 'documents', icon: 'FolderOpen', title: ['file_name'], readonlyApi: true, panel: true,
     fields: [
-      T('file_name', 'File', { list: true, search: true }), S('category', 'Category', ['General', 'Bill of Lading', 'Air Waybill', 'Commercial Invoice', 'Packing List', 'Customs', 'Certificate of Origin', 'Insurance', 'POD', 'Contract', 'Licence / Permit', 'KYC', 'Invoice / Bill', 'Photo', 'Other'], { list: true }),
+      T('file_name', 'File', { list: true, search: true }), S('category', 'Category', ['General', 'Bill of Lading', 'Air Waybill', 'Commercial Invoice', 'Packing List', 'Customs', 'Certificate of Origin', 'Insurance', 'POD', 'Contract', 'Licence / Permit', 'KYC', 'Invoice / Bill', 'Receipt', 'Photo', 'Other'], { list: true }),
       T('link_entity', 'Linked to', { list: true }), I('link_id', 'Record'), T('link_label', 'Record label', { list: true }),
       D('expiry_date', 'Expiry', { list: true }), I('size', 'Size (bytes)'), T('mime', 'Type'), T('stored_name', 'stored', { secret: true, hidden: true }),
       T('note', 'Note', { span: 3 }), I('doc_version', 'Doc version', { default: 1 }),

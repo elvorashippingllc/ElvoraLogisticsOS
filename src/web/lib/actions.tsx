@@ -14,6 +14,29 @@ const run = async (h: ActionHelpers, fn: () => Promise<any>, ok: string) => { tr
 const fin = (h: ActionHelpers) => h.can('finance', 'edit')
 
 export const ACTIONS: Record<string, ActionDef[]> = {
+  attachments:[{key:'download',label:'Open source file',tone:'outline',show:()=>true,run:h=>{window.open(`/api/files/${h.rec.id}/download`,'_blank','noopener')}},{key:'extract',label:'Extract text and match job',tone:'outline',show:(r,h)=>h.can('documents','edit')&&h.can('jobs','view'),run:async h=>{try{const r=await post<any>(`/api/files/${h.rec.id}/extract`);h.nav(`/extractions/${r.id}`)}catch(e:any){h.toast.error(e.message)}}}],
+  document_extractions:[{key:'review',label:'Review extraction',tone:'outline',show:()=>true,run:h=>h.nav(`/extractions/${h.rec.id}`)}],
+  container_deposits:[{key:'transactions',label:'Manage deposit transactions',tone:'outline',show:()=>true,run:h=>h.nav(`/container-deposits/${h.rec.id}`)}],
+  freight_documents:[
+    {key:'approve',label:'Approve reviewed revision',tone:'green',show:(r,h)=>r.status==='Draft'&&h.can('documents','approve')&&r.draft_author_id!==h.userId&&r.updated_by!==h.userId,run:h=>run(h,()=>post(`/api/freight-documents/${h.rec.id}/approve`),'Revision approved; originals registered')},
+    {key:'amend',label:'Start amendment',tone:'outline',show:(r,h)=>r.status==='Approved'&&h.can('documents','edit'),run:async h=>{const reason=await h.dlg.prompt({title:'Amend freight document',label:'Amendment reason (at least 10 characters)',required:true,multiline:true});if(reason)await run(h,()=>post(`/api/freight-documents/${h.rec.id}/amend`,{reason}),'Draft amendment opened; approved history retained')}},
+    {key:'release',label:'Authorise document release',tone:'green',show:(r,h)=>r.status==='Approved'&&h.can('documents','approve')&&r.draft_author_id!==h.userId,run:async h=>{const evidence=await h.dlg.prompt({title:'Authorise document release',label:'Release authority and evidence (at least 10 characters)',message:'Customs, settled job revenue and original custody must pass server checks. This records authorisation; it does not transmit carrier release instructions.',required:true,multiline:true});if(evidence)await run(h,()=>post(`/api/freight-documents/${h.rec.id}/release`,{evidence}),'Release authorisation recorded')}},
+  ],
+  document_originals:[{key:'custody',label:'Manage custody',tone:'outline',show:()=>true,run:h=>h.nav(`/originals/${h.rec.id}`)}],
+  document_custody_events:[{key:'acknowledge',label:'Acknowledge receipt',tone:'green',show:(r,h)=>r.status==='Pending'&&h.can('documents','edit')&&(r.recipient_id?r.recipient_id===h.userId:r.actor_id!==h.userId&&h.can('documents','approve')),run:async h=>{const evidence=await h.dlg.prompt({title:'Acknowledge original receipt',label:'Receipt evidence (at least 10 characters)',required:true,multiline:true});if(evidence)await run(h,()=>post(`/api/custody-events/${h.rec.id}/acknowledge`,{evidence}),'Custody acknowledgement recorded')}}],
+  carrier_rfqs:[
+    {key:'compare',label:'Compare responses',tone:'outline',show:()=>true,run:h=>h.nav(`/rfqs/${h.rec.id}/compare`)},
+    {key:'issue',label:'Issue RFQ to providers',tone:'green',show:(r,h)=>r.status==='Draft'&&h.can('sales','edit'),run:async h=>{if(await h.dlg.confirm({title:'Issue RFQ?',message:'Locks this request and queues one email per invited provider. Delivery depends on configured mail service.'}))await run(h,()=>post(`/api/rfqs/${h.rec.id}/issue`),'RFQ issued; provider email queued')}},
+  ],
+  knowledge_articles:[
+    {key:'publish',label:'Publish reviewed revision',tone:'green',show:(r,h)=>r.status==='Draft'&&h.can('projects','approve')&&r.owner_id!==h.userId&&r.updated_by!==h.userId,run:h=>run(h,()=>post(`/api/knowledge/${h.rec.id}/publish`),'Reviewed version published')},
+    {key:'revise',label:'Start new revision',tone:'outline',show:(r,h)=>r.status==='Published'&&h.can('projects','edit'),run:async h=>{const reason=await h.dlg.prompt({title:'Start a new revision',label:'Reason (at least 10 characters)',required:true,multiline:true});if(reason)await run(h,()=>post(`/api/knowledge/${h.rec.id}/revise`,{reason}),'Draft revision opened; published history retained')}},
+    {key:'acknowledge',label:'Acknowledge this version',tone:'outline',show:r=>r.status==='Published',run:h=>run(h,()=>post(`/api/knowledge/${h.rec.id}/acknowledge`),'Your acknowledgement recorded')},
+  ],
+  staff_qualifications:[
+    {key:'verify',label:'Verify assessment',tone:'green',show:(r,h)=>r.status==='Pending'&&h.can('hr','approve')&&r.user_id!==h.userId&&r.created_by!==h.userId,run:h=>run(h,()=>post(`/api/qualifications/${h.rec.id}/verify`),'Qualification independently verified')},
+    {key:'revoke',label:'Revoke qualification',tone:'red',show:(r,h)=>r.status==='Verified'&&h.can('hr','approve')&&r.user_id!==h.userId,run:async h=>{const reason=await h.dlg.prompt({title:'Revoke qualification',label:'Reason (at least 10 characters)',required:true,multiline:true});if(reason)await run(h,()=>post(`/api/qualifications/${h.rec.id}/revoke`,{reason}),'Qualification revoked')}},
+  ],
   workflow_runs:[
     {key:'retry',label:'Retry internal workflow',tone:'orange',show:(r,h)=>r.status==='Failed'&&h.can('admin','edit'),run:async h=>{const reason=await h.dlg.prompt({title:'Retry workflow',label:'Reason (at least 10 characters)',required:true,multiline:true});if(reason)await run(h,()=>post(`/api/workflow-runs/${h.rec.id}/retry`,{reason}),'Retry queued')}},
     ...(['Succeeded','Cancelled'] as const).map(outcome=>({key:outcome,label:outcome==='Succeeded'?'Confirm completed':'Cancel after review',tone:'outline' as const,show:(r:any,h:ActionHelpers)=>r.status==='Needs review'&&h.can('admin','edit'),run:async(h:ActionHelpers)=>{const reason=await h.dlg.prompt({title:'Resolve uncertain external outcome',label:'Verification evidence (at least 10 characters)',required:true,multiline:true,message:'Check the integration/provider log before resolving. This action records the outcome and does not replay the send.'});if(reason)await run(h,()=>post(`/api/workflow-runs/${h.rec.id}/resolve`,{outcome,reason}),'Review recorded')}})),
@@ -112,7 +135,7 @@ export const ACTIONS: Record<string, ActionDef[]> = {
   ],
 }
 
-export const PRINTABLE = new Set(['invoices', 'quotations', 'delivery_orders', 'receipts', 'payments', 'grns', 'dispatches', 'transport_orders', 'shipments', 'customs_declarations', 'payslips', 'purchase_orders', 'insurance_certs', 'parties'])
+export const PRINTABLE = new Set(['freight_documents', 'invoices', 'quotations', 'delivery_orders', 'receipts', 'payments', 'grns', 'dispatches', 'transport_orders', 'shipments', 'customs_declarations', 'payslips', 'purchase_orders', 'insurance_certs', 'parties'])
 export const RELATED: Record<string, { key: string; label: string; entity: string; field: string }[]> = {
   parties: [
     { key: 'contacts', label: 'Contacts', entity: 'contacts', field: 'party_id' }, { key: 'jobs', label: 'Jobs', entity: 'jobs', field: 'client_id' }, { key: 'quotes', label: 'Quotations', entity: 'quotations', field: 'customer_id' },
