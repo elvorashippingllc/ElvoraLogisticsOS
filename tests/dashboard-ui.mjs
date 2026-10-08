@@ -54,7 +54,7 @@ try {
   }
   await checkDashboardContrast()
   await page.evaluate(() => document.documentElement.dataset.theme = 'dark')
-  await page.waitForTimeout(300)
+  await page.waitForFunction(() => getComputedStyle(document.querySelector('.metric-transit .v')).color === 'rgb(220, 238, 225)')
   await checkDashboardContrast()
   await capture('dark')
   await page.evaluate(() => delete document.documentElement.dataset.theme)
@@ -92,8 +92,7 @@ try {
     assert.ok(await serviceForm.evaluate(el => el.scrollWidth <= el.clientWidth + 1), 'vendor-service form has no horizontal overflow')
     await serviceForm.getByRole('button', { name: 'Cancel', exact: true }).click()
   }
-  assert.deepEqual(errors, [])
-  console.log('PASS: dashboard desktop/mobile, carousel, sidebar popup, focus return, email empty state and vendor-service forms')
   await page.goto(base + '/email'); await page.getByRole('button', { name: 'Help me write', exact: true }).click(); await page.getByLabel('What should this say?').fill('Ask for the delivery address'); await page.getByRole('button', { name: 'Create draft', exact: true }).click(); await page.getByText('AI writing requires a connected provider in your live workspace', { exact: true }).waitFor(); await page.getByLabel('Subject', { exact: true }).fill('Draft for review'); await page.getByLabel('Message', { exact: true }).fill('Please confirm the delivery address.'); await page.getByRole('button', { name: 'Save draft', exact: true }).click(); await page.getByRole('button', { name: /Saved drafts/ }).click(); await page.getByText('Draft for review', { exact: true }).waitFor(); await page.getByRole('button', { name: 'Continue writing', exact: true }).click(); assert.equal(await page.getByLabel('Message', { exact: true }).inputValue(), 'Please confirm the delivery address.');
+  assert.deepEqual(errors, []); console.log('PASS: sign-in dashboard landing, desktop/mobile contrast and layout, carousel, sidebar motion and focus, saved email drafts, AI demo guidance and vendor-service forms');
   if (process.env.UI_CAPTURE_PRINT === 'true') for (const name of ['desktop', 'mobile', 'dark', 'sidebar', 'email']) console.log(`UI_CAPTURE:${name}:${fs.readFileSync(`${out}/${name}.jpg`).toString('base64')}`)
 } finally { await browser?.close(); server.kill('SIGTERM'); fs.rmSync(data, { recursive: true, force: true }) }

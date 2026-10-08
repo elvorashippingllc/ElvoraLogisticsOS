@@ -133,7 +133,7 @@ table.grid tbody tr:last-child td { border-bottom: 0; }
 .login-world form { padding: 36px; border-radius: 16px; background: var(--card); box-shadow: var(--surface-floating); max-width: 460px; }
 .login-world form .input { background: var(--bg); border-color: var(--line); }
 .login-world > div:last-child { background: var(--bg); }
-:root[data-theme='dark'] { --bg: #111713; --card: #1b241e; --soft: #24332a; --hover: #293a30; --line: #304237; --line-strong: #52695b; }
+:root[data-theme='dark'] { --ink: #eef3ef; --body: #c4d0c7; --muted: #a6b9ac; --bg: #111713; --card: #1b241e; --soft: #24332a; --hover: #293a30; --line: #304237; --line-strong: #52695b; }
 :root[data-theme='dark'] .workspace-card:nth-child(n+2) { background: var(--card); }
 :root[data-theme='dark'] .cash-card, :root[data-theme='dark'] .workspace-card:first-child { background: #025e3d; }
 @media (min-width: 1600px) { .app-main { padding-inline: 32px 48px; } .dashboard-top { gap: 24px; } }
@@ -354,3 +354,7 @@ table.grid td { font-size: 14px; }
 .email-draft-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; padding: 16px; background: var(--soft); border-radius: 12px; }
 .email-draft-row > div { flex: 1 1 220px; overflow-wrap: anywhere; }
 .email-draft-row p { margin: 6px 0 0; font-size: 14px; }
+
+:root[data-theme='dark'] .dashboard-page .movement-ticket { color: #eef3ef; }
+:root[data-theme='dark'] .dashboard-page :is(.movement-kind,.movement-client) { color: #c4d0c7; }
+:root[data-theme='dark'] .dashboard-page .movement-action { color: #b9dec9; }
