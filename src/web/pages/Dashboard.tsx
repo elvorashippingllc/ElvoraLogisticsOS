@@ -131,7 +131,7 @@ function DashboardOverview({ data: d, base }: { data: any; base: string }) {
     { label: 'All workspaces', to: '/', module: '', Icon: LayoutGrid },
   ].filter(a => !a.module || can(a.module, 'view'))
   return <section className="dashboard-top" aria-label="Business overview">
-    <section className="card overview-ledger"><h2>{k.revenue_month !== undefined ? 'Business balance' : 'Shipment activity'}</h2><img src="/brand/icon-primary.svg" alt="Elvora" /><dl>
+    <section className="card overview-ledger"><h2>{k.revenue_month !== undefined ? 'Business balance' : 'Shipment activity'}</h2><img src="/brand/icon-primary.png" alt="Elvora" /><dl>
       {k.revenue_month !== undefined && <div className="ledger-main"><dt>Revenue this month · {base}</dt><dd>{fmtMoney(k.revenue_month, 0)}</dd></div>}
       {k.profit_month !== undefined && <div><dt>Job profit · {base}</dt><dd>{fmtMoney(k.profit_month, 0)}</dd></div>}
       {k.open_jobs !== undefined && <div><dt>Open jobs</dt><dd>{k.open_jobs}</dd></div>}

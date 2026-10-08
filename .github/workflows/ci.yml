@@ -8,6 +8,8 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
       - run: npm ci
+      - name: Install OCR acceptance dependencies
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-eng poppler-utils
       - run: npm run typecheck
       - run: npm run build
       - name: Run every suite against a fresh, empty database
@@ -26,6 +28,8 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: npm }
       - run: npm ci
+      - name: Install OCR acceptance dependencies
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr tesseract-ocr-eng poppler-utils
       - run: npm run build
       - name: Run every suite against PostgreSQL (a fresh database per suite)
         run: bash tests/run-all.sh

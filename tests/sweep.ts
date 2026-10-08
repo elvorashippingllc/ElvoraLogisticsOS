@@ -30,6 +30,16 @@ async function main() {
     const l = await get(`/api/e/${e.key}?pageSize=5`)
     await get(`/api/e/${e.key}?pageSize=5&q=a`)
     await get(`/api/e/${e.key}/lookup?q=a`)
+    // Numeric titles/revisions must support the same search and filter UI as
+    // text titles, on SQLite and PostgreSQL. Exercise actual endpoint results.
+    if (['knowledge_versions', 'freight_document_versions', 'document_originals'].includes(e.key)) {
+      const field = e.key === 'document_originals' ? 'original_no' : 'revision'
+      for (const op of ['contains', 'starts', 'ends', 'null', 'notnull']) {
+        const filters = encodeURIComponent(JSON.stringify([{ field, op, value: '1' }]))
+        const r = await get(`/api/e/${e.key}?pageSize=5&filters=${filters}`)
+        if (r.status !== 200 && r.status < 500) bad.push(`${r.status} numeric filter ${e.key}/${op}`)
+      }
+    }
     const first = l.data?.rows?.[0]
     if (first?.id) {
       await get(`/api/e/${e.key}/${first.id}`)

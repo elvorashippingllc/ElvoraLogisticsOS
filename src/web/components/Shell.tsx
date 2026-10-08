@@ -60,7 +60,7 @@ export function Shell() {
   return (
     <div className="workspace-frame h-full flex flex-col">
       <header className="topbar no-print">
-        <Link to="/" className="flex items-center gap-2 mr-2" aria-label="Elvora Logistics OS home"><img src="/brand/logo-primary.svg?v=elvora-e-3" alt="Elvora Shipping LLC" width="132" height="35" className="h-8 w-auto max-w-[132px] object-contain" /><span className="font-display font-extrabold text-[17px] tracking-tight hidden sm:block">Elvora <span className="font-semibold opacity-90">Logistics OS</span></span></Link>
+        <Link to="/" className="flex items-center gap-2 mr-2" aria-label="Elvora Logistics OS home"><img src="/brand/logo-primary.png?v=elvora-website-4" alt="Elvora Shipping LLC" width="132" height="35" className="h-8 w-auto max-w-[132px] object-contain" /><span className="font-display font-extrabold text-[17px] tracking-tight hidden sm:block">Logistics OS</span></Link>
         <nav className="primary-pills" aria-label="Primary navigation">
           <Link to="/dashboard" className={cls('primary-pill', loc.pathname === '/dashboard' && 'active')}><LayoutGrid size={15} />Dashboard</Link>
           <Link to="/" className={cls('primary-pill', (loc.pathname === '/' || loc.pathname.startsWith('/workspace/')) && 'active')}>Workspaces</Link>

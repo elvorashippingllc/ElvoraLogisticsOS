@@ -216,6 +216,10 @@ export interface ListParams { q?: string; page?: number; pageSize?: number; sort
 
 const likeEsc = (s: string) => s.replace(/[\\%_]/g, m => '\\' + m)
 
+// Searchable titles can be numbers (revision/original number). Both dialects
+// support CAST AS TEXT; PostgreSQL cannot apply ILIKE directly to a bigint.
+const searchCol = (name: string) => `CAST(${qi(name)} AS TEXT)`
+
 function refSearchSubquery(f: FieldDef, op: string, value: any): { sql: string; args: any[] } | null {
   const rdef = ENTITIES[f.ref!]
   if (!rdef) return null
@@ -223,7 +227,7 @@ function refSearchSubquery(f: FieldDef, op: string, value: any): { sql: string; 
   if (!cols.length) return null
   const v = likeEsc(String(value))
   const pat = op === 'starts' ? `${v}%` : op === 'ends' ? `%${v}` : op === 'eq' ? v : `%${v}%`
-  return { sql: `${qi(f.name)} IN (SELECT id FROM ${qi(rdef.key)} WHERE ${cols.map(c => `${qi(c)} LIKE ? ESCAPE '\\'`).join(' OR ')})`, args: cols.map(() => pat) }
+  return { sql: `${qi(f.name)} IN (SELECT id FROM ${qi(rdef.key)} WHERE ${cols.map(c => `${searchCol(c)} LIKE ? ESCAPE '\\'`).join(' OR ')})`, args: cols.map(() => pat) }
 }
 
 function buildWhere(def: EntityDef, p: ListParams, ctx: Ctx): { where: string; args: any[] } {
@@ -246,7 +250,7 @@ function buildWhere(def: EntityDef, p: ListParams, ctx: Ctx): { where: string; a
   if (p.q && p.q.trim()) {
     const cols = [...new Set([...def.fields.filter(f => f.search && f.type !== 'ref').map(f => f.name), ...titleCols(def).filter(c => def.fields.find(x => x.name === c)?.type !== 'ref')])]
     const term = `%${likeEsc(p.q.trim())}%`
-    if (cols.length) { cl.push('(' + cols.map(c => `${qi(c)} LIKE ? ESCAPE '\\'`).join(' OR ') + ')'); args.push(...cols.map(() => term)) }
+    if (cols.length) { cl.push('(' + cols.map(c => `${searchCol(c)} LIKE ? ESCAPE '\\'`).join(' OR ') + ')'); args.push(...cols.map(() => term)) }
   }
   for (const flt of p.filters ?? []) {
     const f = def.fields.find(x => x.name === flt.field && !x.secret)
@@ -257,8 +261,8 @@ function buildWhere(def: EntityDef, p: ListParams, ctx: Ctx): { where: string; a
     const raw = flt.value
     const val = (v: any) => (f ? toDb(f, v) : v)
     switch (flt.op) {
-      case 'null': cl.push(`(${col} IS NULL OR ${col} = '')`); break
-      case 'notnull': cl.push(`(${col} IS NOT NULL AND ${col} <> '')`); break
+      case 'null': cl.push(`(${col} IS NULL OR CAST(${col} AS TEXT) = '')`); break
+      case 'notnull': cl.push(`(${col} IS NOT NULL AND CAST(${col} AS TEXT) <> '')`); break
       case 'eq': case '=': case undefined as any:
         if (raw === undefined || raw === '') break
         if (type === 'ref' && typeof raw === 'string' && !/^\d+$/.test(raw)) { const s = refSearchSubquery(f!, 'eq', raw); if (s) { cl.push(s.sql); args.push(...s.args) } }
@@ -269,7 +273,7 @@ function buildWhere(def: EntityDef, p: ListParams, ctx: Ctx): { where: string; a
         if (raw === undefined || raw === '') break
         if (type === 'ref' && f) { const s = refSearchSubquery(f, flt.op, raw); if (s) { cl.push(s.sql); args.push(...s.args) } break }
         const v = likeEsc(String(raw))
-        cl.push(`${col} LIKE ? ESCAPE '\\'`); args.push(flt.op === 'starts' ? `${v}%` : flt.op === 'ends' ? `%${v}` : `%${v}%`)
+        cl.push(`CAST(${col} AS TEXT) LIKE ? ESCAPE '\\'`); args.push(flt.op === 'starts' ? `${v}%` : flt.op === 'ends' ? `%${v}` : `%${v}%`)
         break
       }
       case 'gt': case 'gte': case 'lt': case 'lte': {
