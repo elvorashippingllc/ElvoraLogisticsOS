@@ -146,6 +146,7 @@ export const NAV: NavGroup[] = [
     { label: 'Roles & Permissions', to: '/admin/roles', icon: 'ShieldCheck', module: 'admin' },
     { label: 'Branches', to: '/e/branches', icon: 'Building2', module: 'admin' },
     { label: 'Departments', to: '/e/departments', icon: 'Network', module: 'admin' },
+    { label: 'Enterprise Scope', to: '/admin/scope', icon: 'ClipboardList', module: 'admin' },
     { label: 'Company Settings', to: '/admin/settings', icon: 'Settings', module: 'admin' },
     { label: 'Integrations', to: '/admin/integrations', icon: 'Plug', module: 'admin' },
     { label: 'Integration Log', to: '/e/integration_logs', icon: 'Activity', module: 'admin' },
@@ -158,3 +159,4 @@ export const NAV: NavGroup[] = [
     { label: 'Backup & Data', to: '/admin/backup', icon: 'DatabaseBackup', module: 'admin' },
   ] },
 ]
+

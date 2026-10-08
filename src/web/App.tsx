@@ -16,6 +16,7 @@ import { DocumentsPage } from './pages/DocumentsPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { RolesPage, SettingsPage, AuditPage, BackupPage } from './pages/AdminPages'
 import { CompliancePage } from './pages/CompliancePage'
+import { ScopePage } from './pages/ScopePage'
 import { PublicTrack } from './pages/PublicTrack'
 import { IntegrationsPage } from './pages/IntegrationsPage'
 import { AiPage } from './pages/AiPage'
@@ -69,6 +70,7 @@ export default function App() {
           <Route path="/finance/year-end" element={<Guard module="finance"><YearEndPage /></Guard>} />
           <Route path="/hr/wps" element={<Guard module="hr"><WpsPage /></Guard>} />
           <Route path="/compliance" element={<Guard module="compliance"><CompliancePage /></Guard>} />
+          <Route path="/admin/scope" element={<Guard module="admin"><ScopePage /></Guard>} />
           <Route path="/admin/backup" element={<Guard module="admin"><BackupPage /></Guard>} />
           <Route path="/print/:entity/:id" element={<PrintPage />} />
           <Route path="*" element={<ErrorBox error={new Error('Page not found')} />} />
@@ -78,4 +80,5 @@ export default function App() {
   )
 }
 void lazy
+
 
