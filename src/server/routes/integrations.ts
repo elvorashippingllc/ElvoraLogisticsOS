@@ -160,10 +160,11 @@ export default async function (app: FastifyInstance) {
   app.post('/api/pdf/:entity/:id/email', async (req) => {
     const p = req.params as any, id = idOf(p.id)
     assertCan(req.ctx, ENTITIES[p.entity]?.module ?? 'admin', 'edit')
-    const b = z.object({ to: z.string().email(), cc: z.string().optional(), subject: z.string().min(1), body: z.string().min(1) }).parse(req.body)
+    const b = z.object({ from: z.string().email().optional(), to: z.string().email(), cc: z.string().email().or(z.literal('')).optional(), subject: z.string().min(1).max(200).refine(x => !/[\r\n]/.test(x)), body: z.string().min(1).max(50000) }).parse(req.body)
+    if (b.from) { const { senderAccount } = await import('../mail-accounts'); senderAccount(b.from) }
     const buf = await pdfFor(req, p.entity, id)
     const rec = getRecord(ENTITIES[p.entity], id, req.ctx, { children: false })
-    const mid = queueEmail({ to: b.to, cc: b.cc, subject: b.subject, body: b.body, link_entity: p.entity, link_id: id, userId: req.user!.id, attachments: [{ filename: `${String(rec._title).replace(/[^\w.-]+/g, '_')}.pdf`, contentBase64: buf.toString('base64'), contentType: 'application/pdf' }] })
+    const mid = queueEmail({ from: b.from, to: b.to, cc: b.cc, subject: b.subject, body: b.body, link_entity: p.entity, link_id: id, userId: req.user!.id, attachments: [{ filename: `${String(rec._title).replace(/[^\w.-]+/g, '_')}.pdf`, contentBase64: buf.toString('base64'), contentType: 'application/pdf' }] })
     audit(req.ctx, ENTITIES[p.entity], id, 'emailed', { to: [null, b.to] }, rec._title)
     return { queued: mid }
   })

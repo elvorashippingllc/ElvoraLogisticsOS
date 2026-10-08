@@ -88,7 +88,7 @@ export const platform: EntityDef[] = [
   {
     key: 'email_outbox', label: 'E-mail', plural: 'E-mail outbox', module: 'admin', icon: 'Mail', title: ['subject'], readonlyApi: true,
     fields: [
-      T('to_addr', 'To', { list: true, search: true }), T('cc_addr', 'Cc'), T('subject', 'Subject', { list: true, search: true, span: 3 }),
+      T('from_addr', 'From', { list: true }), T('to_addr', 'To', { list: true, search: true }), T('cc_addr', 'Cc'), T('subject', 'Subject', { list: true, search: true, span: 3 }),
       TA('body', 'Body'), S('status', 'Status', ['Queued', 'Sent', 'Failed', 'Not configured'], { list: true }),
       T('error', 'Error', { span: 3 }), DT('sent_at', 'Sent at', { list: true }),
       T('link_entity', 'Linked entity'), I('link_id', 'Linked id'), J('attachments', 'Attachments'),

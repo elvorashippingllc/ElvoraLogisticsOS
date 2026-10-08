@@ -1,3 +1,4 @@
+import EmailPage from './pages/EmailPage'
 import {ExtractionPage} from './pages/ExtractionPage'
 import {DepositPage} from './pages/DepositPage'
 import {CustodyPage} from './pages/CustodyPage'
@@ -66,6 +67,7 @@ export default function App() {
           <Route path="/competency" element={<Guard module="hr"><CompetencyPage /></Guard>} />
           <Route path="/work/queues" element={<Guard module="projects"><WorkQueuePage /></Guard>} />
           <Route path="/work/handovers" element={<Guard module="projects"><HandoverPage /></Guard>} />
+          <Route path="/email" element={<EmailPage />} />
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/reports" element={<Guard module="reports"><ReportsPage /></Guard>} />
           <Route path="/finance/statements" element={<Guard module="finance"><Statements /></Guard>} />

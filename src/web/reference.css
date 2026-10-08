@@ -167,3 +167,46 @@ table.grid tbody tr:last-child td { border-bottom: 0; }
 }
 @media (prefers-reduced-motion: reduce) { .app-main { scroll-behavior: auto; } }
 @media print { .workspace-rail, .primary-pills { display: none; } .workspace-frame { height: auto; overflow: visible; } .card, .panel { box-shadow: none; } }
+
+
+/* Daily logistics work: readable labels, explicit actions and a manual workflow carousel. */
+body { font-size: 16px; }
+.btn { font-size: 14px; min-height: 40px; }
+.input, .select, .textarea { font-size: 16px; }
+table.grid { font-size: 14px; }
+.primary-pill, .workspace-breadcrumb { font-size: 14px; }
+.dashboard-page .text-xs, .dashboard-page .text-\[13px\], .dashboard-page .text-\[13\.5px\] { font-size: 14px; }
+.dashboard-metrics { margin-bottom: 24px; }
+.dashboard-metrics .kpi { min-width: 0; }
+.dashboard-top { margin-top: 18px; }
+.dashboard-section-title { margin-top: 30px; }
+.workflow-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 24px 0 14px; }
+.workflow-header h2 { font-size: 22px; margin: 0 0 6px; }
+.workflow-header p { margin: 0; color: var(--muted); max-width: 70ch; }
+.workflow-carousel { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 14px; }
+.workflow-step { flex: 0 0 290px; scroll-snap-align: start; display: flex; flex-direction: column; padding: 22px; color: var(--ink); background: var(--card); border: 1px solid var(--line-strong); border-radius: 14px; text-decoration: none; }
+.workflow-step:hover { border-color: var(--emerald); background: var(--hover); }
+.workflow-step-head { display: flex; align-items: center; justify-content: space-between; color: var(--emerald); }
+.workflow-step-head span { font-weight: 700; font-size: 18px; }
+.workflow-step h3 { font-size: 18px; margin: 18px 0 8px; }
+.workflow-step p { color: var(--muted); margin: 0 0 18px; font-size: 15px; line-height: 1.55; }
+.workflow-step strong { margin-top: auto; font-size: 15px; }
+.workflow-open { display: flex; align-items: center; gap: 6px; color: var(--emerald); margin-top: 18px; font-weight: 600; }
+.daily-schedule { padding: 18px 0 8px; }
+.daily-schedule h3 { font-size: 18px; margin: 0 0 12px; }
+.daily-schedule > div { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 20px; }
+.daily-schedule a { display: flex; gap: 12px; align-items: center; color: var(--ink); text-decoration: none; padding: 12px 0; border-bottom: 1px solid var(--line-strong); }
+.daily-schedule a span { flex: 1; }
+.daily-schedule small { display: block; font-size: 14px; color: var(--muted); margin-top: 4px; }
+.quick-work > div { flex-wrap: wrap; }
+.quick-work > div a { width: auto; height: auto; padding: 10px; gap: 8px; font-size: 14px; }
+.workspace-menu-links { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 6px 20px; }
+.workspace-menu-links a { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 8px; color: var(--ink); border-bottom: 1px solid var(--line); text-decoration: none; }
+.workspace-menu-links a:hover { background: var(--hover); }
+.email-compose { max-width: 850px; padding: 28px; }
+.email-compose > .label { margin-top: 16px; }
+.email-compose p { max-width: 70ch; line-height: 1.6; }
+@media (max-width: 700px) { .workflow-header { align-items: flex-start; } .workflow-header > div:last-child { flex-shrink: 0; } .workflow-step { flex-basis: 85%; } .daily-schedule > div, .workspace-menu-links { grid-template-columns: 1fr; } .email-compose { padding: 18px; } }
+
+table.grid th, .overview-ledger dt, .overview-mix header > span, .dashboard-metrics .kpi .l { font-size: 14px; }
+.quick-work > div a { display: flex; border-radius: 10px; }

@@ -133,6 +133,7 @@ export const NAV: NavGroup[] = [
     { label: 'Jarvis & Employees', to: '/ai', icon: 'Bot', module: 'ai' },
     { label: 'Approvals', to: '/ai?tab=approvals', icon: 'ShieldCheck', module: 'ai' },
     { label: 'AI Activity', to: '/e/ai_runs', icon: 'Activity', module: 'ai' },
+    { label: 'Email', to: '/email', icon: 'Mail', module: 'crm' },
     { label: 'WhatsApp', to: '/whatsapp', icon: 'MessageCircle', module: 'crm' },
   ] },
   { label: 'Compliance (UAE)', icon: 'BadgeCheck', items: [
@@ -175,6 +176,7 @@ export const NAV: NavGroup[] = [
     { label: 'Workflow Runs', to: '/e/workflow_runs', icon: 'Activity', module: 'admin' },
     { label: 'SLA Policies', to: '/e/sla_policies', icon: 'Timer', module: 'admin' },
     { label: 'Automation Rules', to: '/e/automation_rules', icon: 'Workflow', module: 'admin' },
+    { label: 'Email', to: '/email', icon: 'Mail', module: 'admin' },
     { label: 'E-mail Outbox', to: '/e/email_outbox', icon: 'Mail', module: 'admin' },
     { label: 'Webhooks', to: '/e/webhooks', icon: 'Webhook', module: 'admin' },
     { label: 'API Keys', to: '/e/api_keys', icon: 'KeyRound', module: 'admin' },
