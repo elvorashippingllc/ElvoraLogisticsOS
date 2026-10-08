@@ -41,11 +41,11 @@ try {
     const failures = await page.evaluate(() => {
       const rgb = value => value.match(/[\d.]+/g)?.slice(0, 3).map(Number)
       const luminance = color => rgb(color).map(v => { v /= 255; return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4 }).reduce((sum, v, i) => sum + v * [.2126, .7152, .0722][i], 0)
-      const selectors = '.recharts-cartesian-axis-tick-value,.recharts-legend-item-text,.control-welcome h1,.control-welcome .text-muted,.control-welcome .btn,.desk-heading h2,.desk-heading p,.desk-summary,.movement-kind,.movement-client,.movement-action,.movement-ticket strong,.dashboard-alert,.dashboard-brief > div:first-child,.quick-work a,.workflow-step h3,.workflow-step p,.workflow-step strong,.workflow-step-head,.workflow-open,.dashboard-metrics .kpi .l,.dashboard-metrics .kpi .v,.dashboard-metrics .kpi .text-muted,.overview-ledger dt,.overview-ledger dd,.overview-ledger h2,.overview-mix h2,.overview-mix header > span,.mode-legend li,.mode-legend strong,.daily-schedule b,.daily-schedule small'
+      const selectors = '.recharts-line .recharts-curve,.recharts-cartesian-axis-tick-value,.recharts-legend-item-text,.control-welcome h1,.control-welcome .text-muted,.control-welcome .btn,.desk-heading h2,.desk-heading p,.desk-summary,.movement-kind,.movement-client,.movement-action,.movement-ticket strong,.dashboard-alert,.dashboard-brief > div:first-child,.quick-work a,.workflow-step h3,.workflow-step p,.workflow-step strong,.workflow-step-head,.workflow-open,.dashboard-metrics .kpi .l,.dashboard-metrics .kpi .v,.dashboard-metrics .kpi .text-muted,.overview-ledger dt,.overview-ledger dd,.overview-ledger h2,.overview-mix h2,.overview-mix header > span,.mode-legend li,.mode-legend strong,.daily-schedule b,.daily-schedule small'
       return [...document.querySelectorAll(selectors)].filter(n => n.getClientRects().length).flatMap(n => {
         let surface = n
         while (surface && getComputedStyle(surface).backgroundColor === 'rgba(0, 0, 0, 0)') surface = surface.parentElement
-        const bg = getComputedStyle(surface).backgroundColor, fg = n.matches('.recharts-cartesian-axis-tick-value') ? getComputedStyle(n).fill : getComputedStyle(n).color
+        const bg = getComputedStyle(surface).backgroundColor, fg = n.matches('.recharts-line .recharts-curve') ? getComputedStyle(n).stroke : n.matches('.recharts-cartesian-axis-tick-value') ? getComputedStyle(n).fill : getComputedStyle(n).color
         const a = luminance(bg), b = luminance(fg), ratio = (Math.max(a, b) + .05) / (Math.min(a, b) + .05)
         return ratio >= 4.5 ? [] : [{ text: n.textContent.slice(0, 60), ratio, bg, fg }]
       })
