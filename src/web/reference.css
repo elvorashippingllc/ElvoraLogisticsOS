@@ -358,3 +358,10 @@ table.grid td { font-size: 14px; }
 :root[data-theme='dark'] .dashboard-page .movement-ticket { color: #eef3ef; }
 :root[data-theme='dark'] .dashboard-page :is(.movement-kind,.movement-client) { color: #c4d0c7; }
 :root[data-theme='dark'] .dashboard-page .movement-action { color: #b9dec9; }
+.dashboard-page .recharts-cartesian-axis-tick-value { fill: var(--muted); }
+.dashboard-page .recharts-cartesian-grid line { stroke: var(--line-strong); }
+.dashboard-page .recharts-legend-item-text { color: var(--body) !important; }
+.dashboard-page .recharts-default-tooltip { background-color: var(--card) !important; border-color: var(--line-strong) !important; }
+.dashboard-page .recharts-tooltip-label { color: var(--ink); }
+.dashboard-page .recharts-tooltip-item { color: var(--body) !important; }
+:root[data-theme='dark'] .demo-notice :is(strong,summary) { color: #b9dec9; }
