@@ -47,7 +47,7 @@ export default function App() {
   return (
     <Suspense fallback={<Loading />}>
       <Routes>
-        <Route path="/login" element={<Navigate to="/" replace />} />
+        <Route path="/login" element={<Navigate to="/dashboard" replace />} />
         <Route element={<Shell />}>
           <Route index element={<Workspaces />} />
           <Route path="/dashboard" element={<Dashboard />} />

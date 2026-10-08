@@ -16,7 +16,7 @@ export function Login() {
     try {
       const r = await post<any>('/api/auth/login', { email: em, password: pass, totp: needTotp ? totp : undefined })
       if (r.needsTotp) { setNeedTotp(true); return }
-      await reload(); nav('/', { replace: true })
+      await reload(); nav('/dashboard', { replace: true })
     } catch (e: any) { setErr(e.message) } finally { setBusy(false) }
   }
   const submit = async (e: React.FormEvent) => {
@@ -24,7 +24,7 @@ export function Login() {
     try {
       const r = await post<any>('/api/auth/login', { email, password: pw, totp: needTotp ? totp : undefined })
       if (r.needsTotp) { setNeedTotp(true); return }
-      await reload(); nav('/', { replace: true })
+      await reload(); nav('/dashboard', { replace: true })
     } catch (e: any) { setErr(e.message) } finally { setBusy(false) }
   }
   return (
