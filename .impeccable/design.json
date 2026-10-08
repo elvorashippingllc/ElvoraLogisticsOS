@@ -13,11 +13,6 @@
         "name": "workspace-card",
         "value": "0 10px 28px -22px #193b2b60",
         "purpose": "Workspace entry lift."
-      },
-      {
-        "name": "frame",
-        "value": "0 18px 60px -36px #0e382b70",
-        "purpose": "Desktop frame separation."
       }
     ],
     "motion": [
@@ -47,6 +42,10 @@
       },
       {
         "name": "form-three-column",
+        "value": "1280px"
+      },
+      {
+        "name": "workspace-four-column",
         "value": "1280px"
       }
     ],
@@ -523,7 +522,7 @@
     }
   ],
   "narrative": {
-    "overview": "Elvora uses a light framed workspace with emerald accents, generous card spacing and dense, readable operating surfaces. The approved navigation moves from workspace cards to feature cards to the existing task screens. Preserve all record types, routes, permission checks, workflow actions, labels, document content and brand assets.\n\nThe invoice-dashboard reference informs composition only. It does not replace Elvora's identity or supply business data. Keep existing module colours and real account records; do not invent metrics, decorative charts, stock imagery or payment credentials.",
+    "overview": "Elvora uses a light full-width workspace with emerald accents, generous card spacing and dense, readable operating surfaces. The approved navigation moves from workspace cards to feature cards to the existing task screens. Preserve all record types, routes, permission checks, workflow actions, labels, document content and brand assets.\n\nThe invoice-dashboard reference informs composition only. It does not replace Elvora's identity or supply business data. Keep existing module colours and real account records; do not invent metrics, decorative charts, stock imagery or payment credentials.",
     "keyCharacteristics": [
       "Permission-filtered workspace and feature discovery.",
       "Quiet neutral surfaces with Elvora emerald for navigation and actions.",
