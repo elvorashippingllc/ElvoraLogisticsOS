@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { Link, useOutletContext, useParams } from 'react-router-dom'
-import { ArrowLeft, ArrowUpRight, LayoutDashboard, LayoutGrid, Search, GalleryHorizontalEnd, User, CircleHelp, Calculator, BookOpen, Languages, ExternalLink, Power } from 'lucide-react'
+import { ArrowLeft, ArrowUpRight, LayoutDashboard, Search, User, CircleHelp, Calculator, BookOpen, Languages, ExternalLink, Power } from 'lucide-react'
 import type { NavGroup } from '@shared/types'
 import { useMeta } from '../lib/meta'
 import { iconByName } from '../lib/icons'
 import { tr, lang, setLang } from '../lib/i18n'
 import { Empty, PageHeader } from '../ui/kit'
-import { WorkspaceCarousel } from '../components/ui/workspace-carousel'
 
 // Group icon keys are stable across languages and permission-filtered item lists.
 export const workspaceId = (g: NavGroup) => g.icon.toLowerCase()
@@ -17,7 +16,6 @@ export function Workspaces() {
   const { meta } = useMeta()
   const { workspace } = useParams()
   const [query, setQuery] = useState('')
-  const [grid, setGrid] = useState(false)
   const groups = [...(meta?.nav ?? [])].filter(g => g.items.length).sort((a, b) => {
     const rank = (g: NavGroup) => { const n = flowOrder.indexOf(g.icon); return n < 0 ? flowOrder.length : n }
     return rank(a) - rank(b)
@@ -33,8 +31,8 @@ export function Workspaces() {
   if (workspace && !selected) return <Empty title="Workspace unavailable" hint="Choose a workspace available to your account." action={<Link className="btn green" to="/">Workspaces</Link>} />
   return <div className="workspace-page">
     <PageHeader title={selected?.label ?? 'Workspaces'} subtitle={selected ? 'Choose the work you want to do.' : 'Choose a workspace, then select your task.'} actions={!selected && <Link to="/dashboard" className="btn dark"><LayoutDashboard />{tr('Dashboard')}</Link>} />
-    <div className="workspace-heading-tools"><label className="workspace-search"><Search size={18} /><input className="input" type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder={selected ? `Search ${selected.label}` : 'Find a workspace or feature'} aria-label={selected ? `Search ${selected.label}` : 'Find a workspace or feature'} /></label>{!selected && !needle && <button className="btn outline" aria-pressed={grid} onClick={() => setGrid(v => !v)}>{grid ? <GalleryHorizontalEnd /> : <LayoutGrid />}{grid ? 'Carousel view' : 'View all workspaces'}</button>}</div>
-    {selected ? <><div className="workspace-feature-grid">{selected.items.filter(i => i.label.toLocaleLowerCase().includes(needle)).map(i => featureCard(i))}</div>{!selected.items.some(i => i.label.toLocaleLowerCase().includes(needle)) && <Empty title="No matching features" action={<button className="btn outline" onClick={() => setQuery('')}>Clear search</button>} />}<Link to="/" className="workspace-return"><ArrowLeft size={16} />All workspaces</Link></> : needle ? <><div className="workspace-feature-grid">{matches.map(i => featureCard(i, i.group))}</div>{!matches.length && !cards.length && <Empty title="No matching workspaces or features" action={<button className="btn outline" onClick={() => setQuery('')}>Clear search</button>} />}{cards.length > 0 && <div className="workspace-card-grid mt-6">{cards.map(g => <WorkspaceCard key={workspaceId(g)} group={g} />)}</div>}</> : <>{grid ? <div className="workspace-card-grid">{cards.map(g => <WorkspaceCard key={workspaceId(g)} group={g} />)}</div> : <WorkspaceCarousel count={cards.length} label="Workspaces">{cards.map((g, i) => <div className="workspace-carousel-slide" key={workspaceId(g)} role="group" aria-roledescription="slide" aria-label={`${i + 1} of ${cards.length}`}><WorkspaceCard group={g} /></div>)}</WorkspaceCarousel>}<nav className="workspace-flow" aria-label="From quote to cash">{[['Quotation', '/e/quotations'], ['Job', '/e/jobs'], ['Invoice', '/e/invoices'], ['Receipt', '/e/receipts']].filter(([, to]) => groups.some(g => g.items.some(i => i.to === to))).map(([label, to]) => <Link to={to} key={to}>{label}<ArrowUpRight size={15} /></Link>)}</nav></>}
+    <div className="workspace-heading-tools"><label className="workspace-search"><Search size={18} /><input className="input" type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder={selected ? `Search ${selected.label}` : 'Find a workspace or feature'} aria-label={selected ? `Search ${selected.label}` : 'Find a workspace or feature'} /></label></div>
+    {selected ? <><div className="workspace-feature-grid">{selected.items.filter(i => i.label.toLocaleLowerCase().includes(needle)).map(i => featureCard(i))}</div>{!selected.items.some(i => i.label.toLocaleLowerCase().includes(needle)) && <Empty title="No matching features" action={<button className="btn outline" onClick={() => setQuery('')}>Clear search</button>} />}<Link to="/" className="workspace-return"><ArrowLeft size={16} />All workspaces</Link></> : needle ? <><div className="workspace-feature-grid">{matches.map(i => featureCard(i, i.group))}</div>{!matches.length && !cards.length && <Empty title="No matching workspaces or features" action={<button className="btn outline" onClick={() => setQuery('')}>Clear search</button>} />}{cards.length > 0 && <div className="workspace-card-grid mt-6">{cards.map(g => <WorkspaceCard key={workspaceId(g)} group={g} />)}</div>}</> : <><div className="workspace-card-grid">{cards.map(g => <WorkspaceCard key={workspaceId(g)} group={g} />)}</div><nav className="workspace-flow" aria-label="From quote to cash">{[['Quotation', '/e/quotations'], ['Job', '/e/jobs'], ['Invoice', '/e/invoices'], ['Receipt', '/e/receipts']].filter(([, to]) => groups.some(g => g.items.some(i => i.to === to))).map(([label, to]) => <Link to={to} key={to}>{label}<ArrowUpRight size={15} /></Link>)}</nav></>}
   </div>
 }
 

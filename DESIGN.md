@@ -98,7 +98,7 @@ components:
 
 ## Overview
 
-Elvora uses a light framed workspace with emerald accents, generous card spacing and dense, readable operating surfaces. The approved navigation moves from workspace cards to feature cards to the existing task screens. Preserve all record types, routes, permission checks, workflow actions, labels, document content and brand assets.
+Elvora uses a light full-width workspace with emerald accents, generous card spacing and dense, readable operating surfaces. The approved navigation moves from workspace cards to feature cards to the existing task screens. Preserve all record types, routes, permission checks, workflow actions, labels, document content and brand assets.
 
 The invoice-dashboard reference informs composition only. It does not replace Elvora's identity or supply business data. Keep existing module colours and real account records; do not invent metrics, decorative charts, stock imagery or payment credentials.
 
@@ -112,7 +112,7 @@ The invoice-dashboard reference informs composition only. It does not replace El
 
 The frontmatter records the effective light-theme palette from `src/web/index.css`, including later overrides. Emerald is the primary action accent; deep green supports emphasis and signal red communicates errors and destructive actions. Graphite supports dark backing and detailed operating surfaces. Ocean, teal, aviation, copper and violet retain their existing module roles; mint, sky, sand, lilac, blush and gold support status treatments.
 
-Neutral ground separates the outer frame from the content background, white cards and subdued borders. Ink, body and muted colours establish reading hierarchy. Dark navigation links and icons use the dedicated dark-navigation tint. Dark mode retains the CSS custom-property overrides; do not replace semantic variables with fixed light colours in new components.
+Neutral ground supports the content background, white cards and subdued borders. Ink, body and muted colours establish reading hierarchy. Dark navigation links and icons use the dedicated dark-navigation tint. Dark mode retains the CSS custom-property overrides; do not replace semantic variables with fixed light colours in new components.
 
 ## Typography
 
@@ -122,23 +122,23 @@ Page headings use the frontmatter headline role; workspace titles use the title 
 
 ## Layout
 
-The desktop frame has (14px) outside space and fills the remaining viewport height. The light header holds the brand link, notifications, search and account access. The main pane scrolls vertically; the status footer remains a separate flex item. At widths below (768px), the frame becomes edge-to-edge and the header uses a (62px) height. Main mobile padding is (20px 14px 28px).
+The application fills the viewport edge-to-edge without an inset border, rounded frame or ambient frame shadow. The light header holds the brand link, notifications, search and account access. The main pane scrolls vertically; the status footer remains a separate flex item. At widths below (768px), the header uses a (62px) height. Main mobile padding is (20px 14px 28px).
 
 The root route `/` presents metadata-derived workspace cards in business-flow order. `/workspace/:workspace` presents every permitted feature in the selected group. `/dashboard` remains separate and directly accessible. `/workspace-tools` contains profile, help, search, freight tools, blog, website, language and sign-out cards. No sidebar or duplicate module strip is rendered by the shell. Breadcrumbs lead back to Workspaces and the current metadata group.
 
-Workspace pages have a maximum width of (1440px). Cards and feature grids use three columns, two below (1024px), and one below (640px). The carousel shows three desktop cards, two at medium widths and an (88%) slide on small screens. Workspace gaps are (20px); feature gaps are (16px), reducing to (12px) on mobile. Card heights are minimums, allowing content to grow.
+Workspace and dashboard pages use the full available content width. Workspace cards use four columns from (1280px), three from (1024px), two from (640px), and one below (640px). Feature grids retain three, two and one columns at their existing breakpoints. Workspace gaps are (20px); feature gaps are (16px), reducing to (12px) on mobile. Card heights are minimums, allowing content to grow.
 
 Dashboard metrics retain all items; the first four receive emphasis. Metrics use two columns on mobile and one below (360px). Tables scroll inside their work surfaces; numeric cells retain unbroken figures. Forms use one column, two from (768px), and three from (1280px). Modal field content scrolls independently of its action footer. Job routes wrap, then stack origin, direction indicator and destination below (640px).
 
 ## Elevation & Depth
 
-Use tonal layering and modest diffuse shadows rather than heavy borders. General cards and panels are flat; workspace and feature cards carry restrained lift. The frame uses its own ambient shadow, while detailed record workspaces retain dark backing. Shadow values and motion extensions are recorded in the sidecar.
+Use tonal layering and modest diffuse shadows rather than heavy borders. General cards and panels are flat; workspace and feature cards carry restrained lift. Detailed record workspaces retain dark backing. Shadow values and motion extensions are recorded in the sidecar.
 
 State transitions use the existing fast motion and easing. Reduced-motion CSS shortens transitions and animations, removes account-card tilt and disables printer-paper motion. PDF printer motion follows real loading states without artificial delays.
 
 ## Shapes
 
-Use the frontmatter control, card, record and frame radii according to their roles. Status badges remain capsules. Maintain clipping on the outer frame and carousel viewport, with scrolling inside data surfaces. Do not use fixed card heights to clip labels or values.
+Use the frontmatter control, card and record radii according to their roles; the application frame has no rounding. Status badges remain capsules. Maintain clipping on the application frame and account carousel viewport, with scrolling inside data surfaces. Do not use fixed card heights to clip labels or values.
 
 ## Components
 
@@ -148,11 +148,9 @@ Primary buttons use emerald and white text; outlined buttons use card, ink and s
 
 Inputs, selects and textareas use card surfaces and strong borders. Focus changes the border to emerald with a translucent ring; invalid fields use signal red. Read-only and disabled fields use soft surfaces and muted text. Keep visible labels and required-field markers.
 
-### Workspace cards and carousel
+### Workspace card grid
 
-Each workspace card is one link with a group icon, label, up to three feature previews, a total feature count and an Open workspace cue. Previews are summaries; the destination grid exposes the complete permitted list. The carousel uses Embla with start alignment and trimmed snaps, explicit previous/next controls, a live position indicator and viewport arrow-key browsing. RTL reverses browsing direction; carousel arrow transforms override the inherited RTL icon flip. There is no autoplay. View all workspaces switches to a full grid.
-
-Reference: https://21st.dev/@larsen66/components/carousel/carousel-with-spacing (Embla/shadcn spacing pattern).
+Each workspace card is one link with a group icon, label, up to three feature previews, a total feature count and an Open workspace cue. Previews are summaries; the destination grid exposes the complete permitted list. All permitted workspace cards are displayed in a responsive grid, with no carousel or view toggle. Cards have a minimum height of (220px) and grow to fit their content.
 
 ### Feature cards and search
 
