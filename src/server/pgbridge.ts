@@ -37,13 +37,30 @@ port.on('message', async (m) => {
     if (e && (e.code === 'ECONNRESET' || e.code === 'EPIPE' || /terminat|closed|timeout/i.test(String(e.message)))) client = null
     out = { ok: false, message: String(e && e.message || e), code: e && e.code, detail: e && e.detail, constraint: e && e.constraint, table: e && e.table }
   }
-  port.postMessage(out)
+  port.postMessage({ ...out, requestId: m.requestId })
   Atomics.store(sig, 0, 1)
   Atomics.notify(sig, 0)
 })
 `
 
 export interface PgResult { rows: any[]; rowCount: number }
+
+/** A shared-memory wake does not guarantee that the port message has arrived yet. */
+export function waitForPgReply(port: MessagePort, sig: Int32Array, requestId: number, timeoutMs: number): any {
+  const deadline = performance.now() + timeoutMs
+  for (;;) {
+    const got = receiveMessageOnPort(port)
+    if (got) {
+      if (got.message.requestId !== requestId) throw new Error('Database bridge response does not match the request')
+      return got.message
+    }
+    const remaining = deadline - performance.now()
+    if (remaining <= 0) throw new Error(`Database did not answer within ${timeoutMs / 1000}s`)
+    // Once signalled, poll briefly for the separately delivered message without spinning.
+    const signalled = Atomics.load(sig, 0)
+    Atomics.wait(sig, 0, signalled, signalled ? Math.min(1, remaining) : remaining)
+  }
+}
 
 export function pgConnectionOptions(url: string, ca = process.env.PG_CA_CERT) {
   const parsed = new URL(url)
@@ -59,6 +76,8 @@ export class PgConn {
   private worker: Worker
   private port: MessagePort
   private sig: Int32Array
+  private requestId = 0
+  private closed = false
   activeSchema = ''
   depth = 0
   txSchema = ''
@@ -75,15 +94,20 @@ export class PgConn {
   }
   /** Run one statement and wait for the answer. Throws an Error carrying the Postgres error code. */
   call(sql: string, params: any[] = [], simple = false): PgResult {
+    if (this.closed) throw new Error('Database connection is closed; reconnect before issuing another statement')
+    const requestId = ++this.requestId
     Atomics.store(this.sig, 0, 0)
-    this.port.postMessage({ sql, params, simple })
-    const w = Atomics.wait(this.sig, 0, 0, this.timeoutMs)
-    if (w === 'timed-out') throw new Error(`Database did not answer within ${this.timeoutMs / 1000}s`)
-    const got = receiveMessageOnPort(this.port)
-    if (!got) throw new Error('Database bridge returned no result')
-    const r = got.message
+    let r: any
+    try {
+      this.port.postMessage({ sql, params, simple, requestId })
+      r = waitForPgReply(this.port, this.sig, requestId, this.timeoutMs)
+    } catch (e) {
+      // A timed-out statement may still be running. Never reuse its transaction or late reply.
+      this.close()
+      throw e
+    }
     if (!r.ok) { const e: any = new Error(r.message); e.code = r.code; e.detail = r.detail; e.constraint = r.constraint; throw e }
     return r
   }
-  close() { void this.worker.terminate() }
+  close() { this.closed = true; this.port.close(); void this.worker.terminate() }
 }
