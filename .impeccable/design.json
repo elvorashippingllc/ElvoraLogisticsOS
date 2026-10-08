@@ -1,0 +1,547 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-08T00:37:34.497891+00:00",
+  "title": "Design System: Elvora Logistics OS",
+  "extensions": {
+    "shadows": [
+      {
+        "name": "surface-raised",
+        "value": "0 12px 36px -24px #193b2b50",
+        "purpose": "Operating surfaces."
+      },
+      {
+        "name": "workspace-card",
+        "value": "0 10px 28px -22px #193b2b60",
+        "purpose": "Workspace entry lift."
+      },
+      {
+        "name": "frame",
+        "value": "0 18px 60px -36px #0e382b70",
+        "purpose": "Desktop frame separation."
+      }
+    ],
+    "motion": [
+      {
+        "name": "motion-fast",
+        "value": "180ms",
+        "purpose": "State transitions."
+      },
+      {
+        "name": "ease",
+        "value": "cubic-bezier(.16,1,.3,1)",
+        "purpose": "Existing state easing."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "single-column",
+        "value": "640px"
+      },
+      {
+        "name": "edge-to-edge",
+        "value": "768px"
+      },
+      {
+        "name": "three-column",
+        "value": "1024px"
+      },
+      {
+        "name": "form-three-column",
+        "value": "1280px"
+      }
+    ],
+    "colorMeta": {
+      "emerald": {
+        "displayName": "Emerald",
+        "role": "primary",
+        "tonalRamp": [
+          "oklch(15% 0.11398 161.39)",
+          "oklch(26% 0.11398 161.39)",
+          "oklch(38% 0.11398 161.39)",
+          "oklch(49% 0.11398 161.39)",
+          "oklch(61% 0.11398 161.39)",
+          "oklch(72% 0.11398 161.39)",
+          "oklch(84% 0.11398 161.39)",
+          "oklch(95% 0.11398 161.39)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "fold": {
+        "displayName": "Fold",
+        "role": "primary",
+        "tonalRamp": [
+          "oklch(15% 0.09441 160.75)",
+          "oklch(26% 0.09441 160.75)",
+          "oklch(38% 0.09441 160.75)",
+          "oklch(49% 0.09441 160.75)",
+          "oklch(61% 0.09441 160.75)",
+          "oklch(72% 0.09441 160.75)",
+          "oklch(84% 0.09441 160.75)",
+          "oklch(95% 0.09441 160.75)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "signal": {
+        "displayName": "Signal",
+        "role": "semantic",
+        "tonalRamp": [
+          "oklch(15% 0.19438 21.57)",
+          "oklch(26% 0.19438 21.57)",
+          "oklch(38% 0.19438 21.57)",
+          "oklch(49% 0.19438 21.57)",
+          "oklch(61% 0.19438 21.57)",
+          "oklch(72% 0.19438 21.57)",
+          "oklch(84% 0.19438 21.57)",
+          "oklch(95% 0.19438 21.57)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "graphite": {
+        "displayName": "Graphite",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.01185 167.41)",
+          "oklch(26% 0.01185 167.41)",
+          "oklch(38% 0.01185 167.41)",
+          "oklch(49% 0.01185 167.41)",
+          "oklch(61% 0.01185 167.41)",
+          "oklch(72% 0.01185 167.41)",
+          "oklch(84% 0.01185 167.41)",
+          "oklch(95% 0.01185 167.41)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "workspace-ground": {
+        "displayName": "Workspace Ground",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.00584 153.77)",
+          "oklch(26% 0.00584 153.77)",
+          "oklch(38% 0.00584 153.77)",
+          "oklch(49% 0.00584 153.77)",
+          "oklch(61% 0.00584 153.77)",
+          "oklch(72% 0.00584 153.77)",
+          "oklch(84% 0.00584 153.77)",
+          "oklch(95% 0.00584 153.77)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "bg": {
+        "displayName": "Bg",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.00169 145.56)",
+          "oklch(26% 0.00169 145.56)",
+          "oklch(38% 0.00169 145.56)",
+          "oklch(49% 0.00169 145.56)",
+          "oklch(61% 0.00169 145.56)",
+          "oklch(72% 0.00169 145.56)",
+          "oklch(84% 0.00169 145.56)",
+          "oklch(95% 0.00169 145.56)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "card": {
+        "displayName": "Card",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.00000 89.88)",
+          "oklch(26% 0.00000 89.88)",
+          "oklch(38% 0.00000 89.88)",
+          "oklch(49% 0.00000 89.88)",
+          "oklch(61% 0.00000 89.88)",
+          "oklch(72% 0.00000 89.88)",
+          "oklch(84% 0.00000 89.88)",
+          "oklch(95% 0.00000 89.88)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "ink": {
+        "displayName": "Ink",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.01185 167.41)",
+          "oklch(26% 0.01185 167.41)",
+          "oklch(38% 0.01185 167.41)",
+          "oklch(49% 0.01185 167.41)",
+          "oklch(61% 0.01185 167.41)",
+          "oklch(72% 0.01185 167.41)",
+          "oklch(84% 0.01185 167.41)",
+          "oklch(95% 0.01185 167.41)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "body": {
+        "displayName": "Body",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.02417 163.50)",
+          "oklch(26% 0.02417 163.50)",
+          "oklch(38% 0.02417 163.50)",
+          "oklch(49% 0.02417 163.50)",
+          "oklch(61% 0.02417 163.50)",
+          "oklch(72% 0.02417 163.50)",
+          "oklch(84% 0.02417 163.50)",
+          "oklch(95% 0.02417 163.50)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "muted": {
+        "displayName": "Muted",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.02701 160.91)",
+          "oklch(26% 0.02701 160.91)",
+          "oklch(38% 0.02701 160.91)",
+          "oklch(49% 0.02701 160.91)",
+          "oklch(61% 0.02701 160.91)",
+          "oklch(72% 0.02701 160.91)",
+          "oklch(84% 0.02701 160.91)",
+          "oklch(95% 0.02701 160.91)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "line": {
+        "displayName": "Line",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.00667 160.07)",
+          "oklch(26% 0.00667 160.07)",
+          "oklch(38% 0.00667 160.07)",
+          "oklch(49% 0.00667 160.07)",
+          "oklch(61% 0.00667 160.07)",
+          "oklch(72% 0.00667 160.07)",
+          "oklch(84% 0.00667 160.07)",
+          "oklch(95% 0.00667 160.07)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "line-strong": {
+        "displayName": "Line Strong",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.01971 157.78)",
+          "oklch(26% 0.01971 157.78)",
+          "oklch(38% 0.01971 157.78)",
+          "oklch(49% 0.01971 157.78)",
+          "oklch(61% 0.01971 157.78)",
+          "oklch(72% 0.01971 157.78)",
+          "oklch(84% 0.01971 157.78)",
+          "oklch(95% 0.01971 157.78)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "soft": {
+        "displayName": "Soft",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.00413 157.18)",
+          "oklch(26% 0.00413 157.18)",
+          "oklch(38% 0.00413 157.18)",
+          "oklch(49% 0.00413 157.18)",
+          "oklch(61% 0.00413 157.18)",
+          "oklch(72% 0.00413 157.18)",
+          "oklch(84% 0.00413 157.18)",
+          "oklch(95% 0.00413 157.18)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "hover": {
+        "displayName": "Hover",
+        "role": "neutral",
+        "tonalRamp": [
+          "oklch(15% 0.01073 158.85)",
+          "oklch(26% 0.01073 158.85)",
+          "oklch(38% 0.01073 158.85)",
+          "oklch(49% 0.01073 158.85)",
+          "oklch(61% 0.01073 158.85)",
+          "oklch(72% 0.01073 158.85)",
+          "oklch(84% 0.01073 158.85)",
+          "oklch(95% 0.01073 158.85)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "focus": {
+        "displayName": "Focus",
+        "role": "semantic",
+        "tonalRamp": [
+          "oklch(15% 0.13384 159.77)",
+          "oklch(26% 0.13384 159.77)",
+          "oklch(38% 0.13384 159.77)",
+          "oklch(49% 0.13384 159.77)",
+          "oklch(61% 0.13384 159.77)",
+          "oklch(72% 0.13384 159.77)",
+          "oklch(84% 0.13384 159.77)",
+          "oklch(95% 0.13384 159.77)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "ocean": {
+        "displayName": "Ocean",
+        "role": "semantic",
+        "tonalRamp": [
+          "oklch(15% 0.07271 230.18)",
+          "oklch(26% 0.07271 230.18)",
+          "oklch(38% 0.07271 230.18)",
+          "oklch(49% 0.07271 230.18)",
+          "oklch(61% 0.07271 230.18)",
+          "oklch(72% 0.07271 230.18)",
+          "oklch(84% 0.07271 230.18)",
+          "oklch(95% 0.07271 230.18)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "teal": {
+        "displayName": "Teal",
+        "role": "semantic",
+        "tonalRamp": [
+          "oklch(15% 0.09095 207.76)",
+          "oklch(26% 0.09095 207.76)",
+          "oklch(38% 0.09095 207.76)",
+          "oklch(49% 0.09095 207.76)",
+          "oklch(61% 0.09095 207.76)",
+          "oklch(72% 0.09095 207.76)",
+          "oklch(84% 0.09095 207.76)",
+          "oklch(95% 0.09095 207.76)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "aviation": {
+        "displayName": "Aviation",
+        "role": "semantic",
+        "tonalRamp": [
+          "oklch(15% 0.07693 260.33)",
+          "oklch(26% 0.07693 260.33)",
+          "oklch(38% 0.07693 260.33)",
+          "oklch(49% 0.07693 260.33)",
+          "oklch(61% 0.07693 260.33)",
+          "oklch(72% 0.07693 260.33)",
+          "oklch(84% 0.07693 260.33)",
+          "oklch(95% 0.07693 260.33)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "copper": {
+        "displayName": "Copper",
+        "role": "semantic",
+        "tonalRamp": [
+          "oklch(15% 0.10681 39.82)",
+          "oklch(26% 0.10681 39.82)",
+          "oklch(38% 0.10681 39.82)",
+          "oklch(49% 0.10681 39.82)",
+          "oklch(61% 0.10681 39.82)",
+          "oklch(72% 0.10681 39.82)",
+          "oklch(84% 0.10681 39.82)",
+          "oklch(95% 0.10681 39.82)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "violet": {
+        "displayName": "Violet",
+        "role": "semantic",
+        "tonalRamp": [
+          "oklch(15% 0.08774 292.37)",
+          "oklch(26% 0.08774 292.37)",
+          "oklch(38% 0.08774 292.37)",
+          "oklch(49% 0.08774 292.37)",
+          "oklch(61% 0.08774 292.37)",
+          "oklch(72% 0.08774 292.37)",
+          "oklch(84% 0.08774 292.37)",
+          "oklch(95% 0.08774 292.37)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "mint": {
+        "displayName": "Mint",
+        "role": "semantic",
+        "tonalRamp": [
+          "oklch(15% 0.02654 163.18)",
+          "oklch(26% 0.02654 163.18)",
+          "oklch(38% 0.02654 163.18)",
+          "oklch(49% 0.02654 163.18)",
+          "oklch(61% 0.02654 163.18)",
+          "oklch(72% 0.02654 163.18)",
+          "oklch(84% 0.02654 163.18)",
+          "oklch(95% 0.02654 163.18)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "sky": {
+        "displayName": "Sky",
+        "role": "semantic",
+        "tonalRamp": [
+          "oklch(15% 0.02353 250.08)",
+          "oklch(26% 0.02353 250.08)",
+          "oklch(38% 0.02353 250.08)",
+          "oklch(49% 0.02353 250.08)",
+          "oklch(61% 0.02353 250.08)",
+          "oklch(72% 0.02353 250.08)",
+          "oklch(84% 0.02353 250.08)",
+          "oklch(95% 0.02353 250.08)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "sand": {
+        "displayName": "Sand",
+        "role": "semantic",
+        "tonalRamp": [
+          "oklch(15% 0.02774 76.21)",
+          "oklch(26% 0.02774 76.21)",
+          "oklch(38% 0.02774 76.21)",
+          "oklch(49% 0.02774 76.21)",
+          "oklch(61% 0.02774 76.21)",
+          "oklch(72% 0.02774 76.21)",
+          "oklch(84% 0.02774 76.21)",
+          "oklch(95% 0.02774 76.21)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "lilac": {
+        "displayName": "Lilac",
+        "role": "semantic",
+        "tonalRamp": [
+          "oklch(15% 0.02737 297.30)",
+          "oklch(26% 0.02737 297.30)",
+          "oklch(38% 0.02737 297.30)",
+          "oklch(49% 0.02737 297.30)",
+          "oklch(61% 0.02737 297.30)",
+          "oklch(72% 0.02737 297.30)",
+          "oklch(84% 0.02737 297.30)",
+          "oklch(95% 0.02737 297.30)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "blush": {
+        "displayName": "Blush",
+        "role": "semantic",
+        "tonalRamp": [
+          "oklch(15% 0.02886 9.73)",
+          "oklch(26% 0.02886 9.73)",
+          "oklch(38% 0.02886 9.73)",
+          "oklch(49% 0.02886 9.73)",
+          "oklch(61% 0.02886 9.73)",
+          "oklch(72% 0.02886 9.73)",
+          "oklch(84% 0.02886 9.73)",
+          "oklch(95% 0.02886 9.73)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "gold": {
+        "displayName": "Gold",
+        "role": "semantic",
+        "tonalRamp": [
+          "oklch(15% 0.05155 91.38)",
+          "oklch(26% 0.05155 91.38)",
+          "oklch(38% 0.05155 91.38)",
+          "oklch(49% 0.05155 91.38)",
+          "oklch(61% 0.05155 91.38)",
+          "oklch(72% 0.05155 91.38)",
+          "oklch(84% 0.05155 91.38)",
+          "oklch(95% 0.05155 91.38)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      },
+      "dark-navigation": {
+        "displayName": "Dark Navigation",
+        "role": "semantic",
+        "tonalRamp": [
+          "oklch(15% .11 160)",
+          "oklch(26% .11 160)",
+          "oklch(38% .11 160)",
+          "oklch(49% .11 160)",
+          "oklch(61% .11 160)",
+          "oklch(72% .11 160)",
+          "oklch(84% .11 160)",
+          "oklch(95% .11 160)"
+        ],
+        "rampPurpose": "Synthesized display ramp; not an implementation token."
+      }
+    }
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Existing operating button variant.",
+      "html": "<button class=\"ds-button-primary\">Save changes</button>",
+      "css": ".ds-button-primary{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:7px 14px;border-radius:10px;font:600 13.5px/1.35 var(--font-sans);cursor:pointer;transition:background 180ms,transform 180ms var(--ease);background:var(--emerald);color:#fff;border:1px solid transparent;}.ds-button-primary:hover:not(:disabled){filter:brightness(.93);}.ds-button-primary:active:not(:disabled){transform:translateY(1px);}.ds-button-primary:disabled{opacity:.5;cursor:not-allowed;}.ds-button-primary:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Existing operating button variant.",
+      "html": "<button class=\"ds-button-outline\">Save changes</button>",
+      "css": ".ds-button-outline{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:7px 14px;border-radius:10px;font:600 13.5px/1.35 var(--font-sans);cursor:pointer;transition:background 180ms,transform 180ms var(--ease);background:var(--card);color:var(--ink);border:1px solid var(--line-strong);}.ds-button-outline:hover:not(:disabled){background:var(--hover);}.ds-button-outline:active:not(:disabled){transform:translateY(1px);}.ds-button-outline:disabled{opacity:.5;cursor:not-allowed;}.ds-button-outline:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Existing operating button variant.",
+      "html": "<button class=\"ds-button-ghost\">Save changes</button>",
+      "css": ".ds-button-ghost{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:7px 14px;border-radius:10px;font:600 13.5px/1.35 var(--font-sans);cursor:pointer;transition:background 180ms,transform 180ms var(--ease);background:transparent;color:var(--body);border:1px solid transparent;}.ds-button-ghost:hover:not(:disabled){background:var(--hover);}.ds-button-ghost:active:not(:disabled){transform:translateY(1px);}.ds-button-ghost:disabled{opacity:.5;cursor:not-allowed;}.ds-button-ghost:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}"
+    },
+    {
+      "name": "Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Labelled record field.",
+      "html": "<label class=\"ds-label\" for=\"ds-field\">Reference</label><input id=\"ds-field\" class=\"ds-input\" placeholder=\"Reference\">",
+      "css": ".ds-label{display:block;font:600 12px var(--font-sans);color:var(--muted);margin-bottom:4px;letter-spacing:.01em}.ds-input{width:100%;min-height:40px;padding:6px 10px;border-radius:10px;border:1px solid var(--line-strong);background:var(--card);color:var(--ink);font:14px var(--font-sans);transition:border-color .15s,box-shadow .15s}.ds-input:hover{border-color:#9fb3a7}.ds-input:focus{outline:none;border-color:var(--emerald);box-shadow:0 0 0 3px #007b5226}"
+    },
+    {
+      "name": "Workspace Card",
+      "kind": "card",
+      "refersTo": "workspace-card",
+      "description": "Metadata group entry with previews and complete feature count.",
+      "html": "<a class=\"ds-workspace\" href=\"#workspace\"><h2>Workspace</h2><span>Feature preview</span><strong>Open workspace</strong></a>",
+      "css": ".ds-workspace{display:flex;flex-direction:column;gap:24px;min-height:290px;padding:24px;border-radius:16px;background:var(--card);color:var(--ink);text-decoration:none;box-shadow:0 10px 28px -22px #193b2b60;transition:background 180ms var(--ease),box-shadow 180ms var(--ease)}.ds-workspace h2{font:700 24px/1.2 var(--font-display);letter-spacing:-.025em;overflow-wrap:anywhere;margin:0}.ds-workspace span{font:13px var(--font-sans);color:var(--muted)}.ds-workspace strong{margin-top:auto;color:var(--emerald);font:700 12px var(--font-sans)}.ds-workspace:hover{background:var(--hover);box-shadow:0 16px 30px -22px #193b2b80}.ds-workspace:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}"
+    },
+    {
+      "name": "Feature Card",
+      "kind": "card",
+      "refersTo": "feature-card",
+      "description": "Direct link to an existing permitted task route.",
+      "html": "<a class=\"ds-feature\" href=\"#feature\"><strong>Feature</strong><svg width=\"17\" height=\"17\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\"><path d=\"M7 17 17 7M7 7h10v10\"/></svg></a>",
+      "css": ".ds-feature{display:flex;align-items:center;gap:16px;min-height:104px;padding:22px;border-radius:16px;background:var(--card);color:var(--ink);text-decoration:none;font:15px var(--font-sans);box-shadow:0 10px 28px -22px #193b2b50;transition:background 180ms var(--ease)}.ds-feature strong{flex:1;min-width:0;overflow-wrap:anywhere;line-height:1.45}.ds-feature svg{color:var(--emerald);flex:none}.ds-feature:hover{background:var(--hover)}.ds-feature:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}"
+    },
+    {
+      "name": "Breadcrumb",
+      "kind": "nav",
+      "description": "Wrapping route back to Workspaces and the current group.",
+      "html": "<nav class=\"ds-breadcrumb\" aria-label=\"Breadcrumb\"><a href=\"#workspaces\">Workspaces</a><span aria-hidden=\"true\">/</span><a href=\"#workspace\">Workspace</a></nav>",
+      "css": ".ds-breadcrumb{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font:13px var(--font-sans);color:var(--muted)}.ds-breadcrumb a{display:inline-flex;align-items:center;gap:7px;min-height:32px;color:var(--body);text-decoration:none;overflow-wrap:anywhere}.ds-breadcrumb a:hover{color:var(--emerald)}.ds-breadcrumb a:focus-visible{outline:3px solid var(--focus);outline-offset:2px;}"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "description": "Existing semantic status capsule.",
+      "html": "<span class=\"ds-badge\">Status</span>",
+      "css": ".ds-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:99px;font:700 11.5px/1.6 var(--font-sans);letter-spacing:.01em;background:#dcf1e6;color:#02563a;border:1px solid #b7e0cb;max-width:100%;overflow-wrap:anywhere}"
+    }
+  ],
+  "narrative": {
+    "overview": "Elvora uses a light framed workspace with emerald accents, generous card spacing and dense, readable operating surfaces. The approved navigation moves from workspace cards to feature cards to the existing task screens. Preserve all record types, routes, permission checks, workflow actions, labels, document content and brand assets.\n\nThe invoice-dashboard reference informs composition only. It does not replace Elvora's identity or supply business data. Keep existing module colours and real account records; do not invent metrics, decorative charts, stock imagery or payment credentials.",
+    "keyCharacteristics": [
+      "Permission-filtered workspace and feature discovery.",
+      "Quiet neutral surfaces with Elvora emerald for navigation and actions.",
+      "Self-hosted brand typography and the existing curved E mark.",
+      "Wrapping content and contained table scrolling on narrow screens."
+    ],
+    "rules": [],
+    "dos": [
+      "**Do** derive workspace and feature access from permission-filtered navigation metadata.",
+      "**Do** preserve Elvora fonts, module colours, logo assets and existing task routes.",
+      "**Do** wrap long labels and contain table scrolling within operating surfaces.",
+      "**Do** keep task actions visible outside scrolling modal field content."
+    ],
+    "donts": [
+      "**Don't** reintroduce the sidebar or crowded duplicate module strip into the approved shell.",
+      "**Don't** hide permitted features behind the three-item workspace preview.",
+      "**Don't** replace business content with fictional metrics, decorative charts or stock imagery.",
+      "**Don't** redraw the verified curved E or substitute the older SVG favicon."
+    ]
+  }
+}

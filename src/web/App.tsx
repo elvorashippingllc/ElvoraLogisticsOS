@@ -4,6 +4,7 @@ import { useMeta } from './lib/meta'
 import { Shell } from './components/Shell'
 import { Login } from './pages/Login'
 import { Dashboard } from './pages/Dashboard'
+import { Workspaces, WorkspaceUtilities } from './pages/Workspaces'
 import { EntityListPage, EntityRecordPage } from './pages/EntityPages'
 import { JobPage } from './pages/JobPage'
 import { JobSearch, TrackingPage } from './pages/SearchPages'
@@ -41,7 +42,10 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Navigate to="/" replace />} />
         <Route element={<Shell />}>
-          <Route index element={<Dashboard />} />
+          <Route index element={<Workspaces />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/workspace/:workspace" element={<Workspaces key={loc.pathname} />} />
+          <Route path="/workspace-tools" element={<WorkspaceUtilities />} />
           <Route path="/jobs/:id" element={<Guard module="jobs"><JobPage /></Guard>} />
           <Route path="/e/:entity" element={<EntityListPage />} />
           <Route path="/e/:entity/:id" element={<EntityRecordPage />} />
@@ -74,3 +78,4 @@ export default function App() {
   )
 }
 void lazy
+

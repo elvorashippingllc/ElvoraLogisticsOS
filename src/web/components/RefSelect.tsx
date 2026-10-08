@@ -41,7 +41,7 @@ export function RefSelect({ entity, value, label, onChange, filter, disabled, in
 
   const pick = (o: Opt) => { onChange(o.id, o.label); setShown(o.label); setOpen(false); setText('') }
   return (
-    <div className="relative" ref={ref}>
+    <div className="ref-select relative" ref={ref}>
       <div className="relative">
         <input className={cls('input pr-14', invalid && 'invalid')} disabled={disabled} placeholder={shown ? '' : placeholder} value={open ? text : shown} title={shown}
           onFocus={() => { setOpen(true); setText('') }} onChange={e => { setText(e.target.value); setOpen(true) }}
@@ -51,13 +51,13 @@ export function RefSelect({ entity, value, label, onChange, filter, disabled, in
             else if (e.key === 'Enter' && open && opts[hi]) { e.preventDefault(); pick(opts[hi]) }
             else if (e.key === 'Escape') setOpen(false)
           }} autoComplete="off" role="combobox" aria-expanded={open} />
-        <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
+        <div className="ref-select-actions absolute top-1/2 -translate-y-1/2 flex items-center gap-0.5">
           {allowClear && value && !disabled ? <button type="button" className="btn ghost icon sm" style={{ width: 22, minHeight: 22 }} onClick={() => { onChange(null); setShown('') }} aria-label="Clear"><X size={13} /></button> : null}
           <ChevronDown size={15} className="text-muted pointer-events-none" />
         </div>
       </div>
       {open && !disabled && (
-        <div className="absolute z-50 left-0 right-0 mt-1 bg-card border border-line rounded-xl shadow-xl max-h-64 overflow-auto fade-in" role="listbox" style={{ minWidth: 220 }}>
+        <div className="absolute z-50 left-0 right-0 mt-1 bg-card border border-line rounded-xl shadow-xl max-h-64 overflow-auto fade-in" role="listbox">
           {busy && !opts.length && <div className="px-3 py-2 text-sm text-muted">Searching…</div>}
           {!busy && !opts.length && <div className="px-3 py-2 text-sm text-muted">No matches</div>}
           {opts.map((o, i) => <div key={o.id} role="option" aria-selected={o.id === value} className={cls('px-3 py-2 text-[13.5px] cursor-pointer flex justify-between gap-2', i === hi ? 'bg-mint text-fold' : 'hover:bg-hover', o.id === value && 'font-bold')} onMouseEnter={() => setHi(i)} onMouseDown={e => { e.preventDefault(); pick(o) }}><span className="truncate">{o.label}</span>{o.sub && <span className="text-xs text-muted flex-none">{o.sub}</span>}</div>)}
@@ -67,3 +67,4 @@ export function RefSelect({ entity, value, label, onChange, filter, disabled, in
   )
 }
 export const clearRefCache = () => cache.clear()
+
