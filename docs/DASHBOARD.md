@@ -15,6 +15,8 @@ The staff dashboard at `/dashboard` refreshes its business data every two minute
 7. **Detailed activity:** sales by branch, recent customer calls, latest jobs and house shipments, revenue/cost/profit by job month, departures and arrivals over the next seven days, top customers over the last 90 days, receivables ageing and tasks. Individual panels appear only when their data is available.
 8. **More business figures:** remaining available figures, including payables, cash and bank, unbilled work, quotations, leads, tickets, tasks and low-stock items.
 
+Dashboard status labels stay on one line. Narrow tables scroll within their panels rather than splitting status words or widening the page.
+
 The customer portal instead shows Your shipments, three shipment/balance figures and a recent shipments table.
 
 ## Manual workflow carousel

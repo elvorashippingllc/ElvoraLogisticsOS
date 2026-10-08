@@ -40,6 +40,8 @@ try {
   await page.setViewportSize({ width: 390, height: 844 }); await page.goto(base + '/dashboard')
   await page.getByRole('heading', { name: 'Move each shipment forward' }).waitFor(); await page.waitForTimeout(300)
   assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'mobile page fits viewport')
+  const badges = await page.locator('.dashboard-page .badge').evaluateAll(nodes => nodes.map(n => ({ text: n.textContent, height: n.getBoundingClientRect().height, line: parseFloat(getComputedStyle(n).lineHeight) })))
+  assert.ok(badges.every(b => b.height < b.line * 2), 'mobile status words remain on one line')
   await capture('mobile')
   await page.goto(base + '/email'); await page.getByRole('button', { name: 'Write email', exact: true }).waitFor()
   await capture('email')

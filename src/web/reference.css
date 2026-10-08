@@ -218,3 +218,8 @@ table.grid td { font-size: 14px; }
 .panel-head, .overview-ledger h2, .overview-mix h2, .overview-account h2 { font-size: 16px; }
 .mode-legend li, .cash-card > header { font-size: 14px; }
 .badge { font-size: 12px; }
+
+.dashboard-page .badge, .email-page .badge { max-width: none; white-space: nowrap; overflow-wrap: normal; }
+.dashboard-page .panel { min-width: 0; }
+.dashboard-page .panel > div:not(.panel-head) { overflow-x: auto; }
+.dashboard-page table.grid { min-width: 520px; }
