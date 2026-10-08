@@ -99,6 +99,7 @@ export const ops: EntityDef[] = [
   {
     key: 'job_charges', label: 'Job charge', plural: 'Job charges', module: 'jobs', icon: 'Calculator', title: ['description'], child: true,
     fields: [
+      R('vendor_service_id', 'Vendor service', 'vendor_services', { readonly: true, hidden: true }),
       R('job_id', 'Job', 'jobs', { hidden: true }), S('kind', 'Type', ['Revenue', 'Cost'], { required: true, default: 'Revenue', list: true }), R('charge_code_id', 'Charge', 'charge_codes', { required: true, list: true }),
       T('description', 'Description', { list: true }), R('party_id', 'Bill to / vendor', 'parties', { list: true }), T('basis', 'Basis'), N('qty', 'Qty', { default: 1, list: true }), M('rate', 'Rate', { list: true }),
       S('currency', 'Cur', ['AED', 'USD', 'EUR', 'GBP', 'SAR', 'INR', 'CNY', 'ZAR'], { default: 'AED', list: true }), N('ex_rate', 'Ex. rate', { default: 1 }), R('vat_code_id', 'Tax', 'vat_codes'), P('vat_pct', 'VAT %', { hidden: true }),

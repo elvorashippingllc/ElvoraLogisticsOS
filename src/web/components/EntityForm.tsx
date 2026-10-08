@@ -10,6 +10,8 @@ import { useToast } from '../lib/toast'
 import { cls, fmtMoney, nowIsoLocal, todayIso } from '../lib/format'
 import { useVatRates } from '../lib/lookups'
 
+import { VENDOR_SERVICE_COMMERCIAL } from '@shared/entities/vendor-services'
+
 function initial(def: MetaEntity, record: Row | null, presets: Row | undefined, meId: number | undefined): Row {
   const v: Row = {}
   for (const f of def.fields) {
@@ -87,7 +89,7 @@ export function EntityForm({ def, record, presets, onSaved, onCancel, lockedOnEd
   }
 
   const customDefs = def.customFieldDefs ?? []
-  const locked = (f: FieldDef) => edit && lockedOnEdit.includes(f.name)
+  const locked = (f: FieldDef) => edit && (lockedOnEdit.includes(f.name) || (def.key === 'vendor_services' && record?.charges_created && VENDOR_SERVICE_COMMERCIAL.includes(f.name)))
 
   return (
     <form className="entity-form" onSubmit={e => { e.preventDefault(); void submit() }}>

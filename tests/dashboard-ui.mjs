@@ -74,7 +74,18 @@ try {
   await page.goto(base + '/email'); await page.getByRole('button', { name: 'Write email', exact: true }).waitFor()
   await capture('email')
   assert.equal(await page.getByRole('button', { name: 'Send email', exact: true }).isEnabled(), false, 'unconnected sender cannot send')
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 })
+    await page.goto(base + '/e/vendor_services?new=1')
+    const serviceForm = page.getByRole('dialog', { name: 'New Vendor service', exact: true })
+    await serviceForm.waitFor()
+    await serviceForm.getByText('Vendor buying price', { exact: true }).waitFor()
+    assert.ok(await serviceForm.getByText('Customer selling price', { exact: true }).count())
+    assert.ok(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), 'vendor-service page fits viewport')
+    assert.ok(await serviceForm.evaluate(el => el.scrollWidth <= el.clientWidth + 1), 'vendor-service form has no horizontal overflow')
+    await serviceForm.getByRole('button', { name: 'Cancel', exact: true }).click()
+  }
   assert.deepEqual(errors, [])
-  console.log('PASS: dashboard desktop, mobile, carousel, sidebar popup, focus return and email empty state')
+  console.log('PASS: dashboard desktop/mobile, carousel, sidebar popup, focus return, email empty state and vendor-service forms')
   if (process.env.UI_CAPTURE_PRINT === 'true') for (const name of ['desktop', 'mobile', 'dark', 'sidebar', 'email']) console.log(`UI_CAPTURE:${name}:${fs.readFileSync(`${out}/${name}.jpg`).toString('base64')}`)
 } finally { await browser?.close(); server.kill('SIGTERM'); fs.rmSync(data, { recursive: true, force: true }) }

@@ -10,7 +10,7 @@ function fingerprint(id: number) {
   for(const field of ['job_status','closed_at','updated_at','updated_by','version']) delete job[field]
   const originals=q.all('SELECT o.* FROM document_originals o JOIN freight_documents d ON d.id=o.document_id WHERE d.job_id=? AND o.deleted_at IS NULL ORDER BY o.id',id)
   const custody=q.all('SELECT e.* FROM document_custody_events e JOIN document_originals o ON o.id=e.original_id JOIN freight_documents d ON d.id=o.document_id WHERE d.job_id=? AND e.deleted_at IS NULL ORDER BY e.id',id)
-  const snapshot = [job,originals,custody, ...['shipments','job_containers','job_charges','customs_declarations','invoices','freight_documents'].map(table=>q.all(`SELECT * FROM ${table} WHERE job_id=? AND deleted_at IS NULL ORDER BY id`,id)),q.all(`SELECT * FROM attachments WHERE link_entity='jobs' AND link_id=? AND deleted_at IS NULL ORDER BY id`,id)]
+  const snapshot = [job,originals,custody, ...['shipments','job_containers','job_charges','customs_declarations','invoices','freight_documents','vendor_services'].map(table=>q.all(`SELECT * FROM ${table} WHERE job_id=? AND deleted_at IS NULL ORDER BY id`,id)),q.all(`SELECT * FROM attachments WHERE link_entity='jobs' AND link_id=? AND deleted_at IS NULL ORDER BY id`,id)]
   return createHash('sha256').update(JSON.stringify(snapshot)).digest('hex')
 }
 export function closureReadiness(id: number, ctx: Ctx) {
@@ -24,6 +24,7 @@ export function closureReadiness(id: number, ctx: Ctx) {
   const customs = n(`SELECT COUNT(*) FROM customs_declarations WHERE job_id=? AND deleted_at IS NULL`)
   const pod = shipments > 0 && n(`SELECT COUNT(*) FROM shipments WHERE job_id=? AND deleted_at IS NULL AND (COALESCE(pod_received,0)=0 OR status<>'Delivered')`) === 0
   const checks = [
+    { key:'vendor_services', label:'Vendor services completed and hired equipment returned', passed:n(`SELECT COUNT(*) FROM vendor_services WHERE job_id=? AND deleted_at IS NULL AND status<>'Cancelled' AND (charges_created=0 OR (return_required=1 AND status<>'Returned') OR (return_required=0 AND status NOT IN ('Completed','Returned')))`)===0 },
     { key:'delivery', label:'Delivery complete', passed: ['DELIVERED','EMPTY RETURNED'].includes(job.operational_status) || job.job_status === 'DELIVERED' || job.job_status === 'CLOSED' },
     { key:'pod', label:'Proof of delivery', passed: pod || n(`SELECT COUNT(*) FROM attachments WHERE link_entity='jobs' AND link_id=? AND category='POD' AND deleted_at IS NULL`) > 0 || verified('POD not applicable') },
     { key:'documents', label:'Documents reviewed', passed:verified('Documents verified') && n(`SELECT COUNT(*) FROM freight_documents WHERE job_id=? AND status='Draft' AND deleted_at IS NULL`)===0 },

@@ -12,6 +12,7 @@ Odoo (CRM/Sales/Accounting/Inventory/HR/Helpdesk), CargoWise-style forwarding wo
 | Sales | Quotations with margin approval -> convert to job, rate cards, e-mail/print |
 | Operations | Sea/air/road/project jobs, sub-jobs, containers, cargo, milestones, public tracking links, carrier bookings, delivery orders, customs declarations |
 | Transport | Vehicles, drivers, trips, dispatch |
+| Vendor services & hired equipment | Supplier container/truck/trailer hire and subcontracted services linked to customer jobs; separate buying/selling prices and taxes, paired job charges, bill/invoice workflow, completion and return controls. See [workflow guide](VENDOR_SERVICES.md). |
 | Warehouse | Items, bins, GRN, dispatch (FEFO), stock ledger, adjust/transfer, barcode scan |
 | Accounting | Invoices, bills, receipts, payments, expenses, double-entry ledger, VAT codes, FX gain/loss, lock date, statements |
 | People | Employees, attendance, leave, payroll records |

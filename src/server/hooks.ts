@@ -1,4 +1,5 @@
 import {depositHooks} from './domain/deposits'
+import { vendorServiceHooks } from './domain/vendor-services'
 import {freightDocumentHooks} from './domain/cargo-docs'
 import {rfqHooks,offerHooks,knowledgeHooks,qualificationHooks,skillRuleHooks} from './domain/enterprise'
 import {slaHooks,workHooks} from './domain/work'
@@ -24,6 +25,7 @@ export interface Hooks {
 
 // Lazy registry: domain modules import the engine, the engine imports this file.
 const registry: Record<string, () => Hooks> = {
+  vendor_services: () => vendorServiceHooks,
   container_deposits:()=>depositHooks,
   freight_documents:()=>freightDocumentHooks,
   carrier_rfqs:()=>rfqHooks,rfq_offers:()=>offerHooks,knowledge_articles:()=>knowledgeHooks,staff_qualifications:()=>qualificationHooks,activity_skill_rules:()=>skillRuleHooks,

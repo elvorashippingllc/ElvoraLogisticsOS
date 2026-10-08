@@ -28,7 +28,7 @@ export const transportWarehouse: EntityDef[] = [
       T('pickup_location', 'Pick-up location', { list: true, span: 2 }), DT('pickup_at', 'Pick-up time', { list: true }), T('delivery_location', 'Delivery location', { list: true, span: 2 }), DT('delivery_at', 'Delivery time'),
       R('vehicle_id', 'Vehicle', 'vehicles', { list: true }), R('driver_id', 'Driver', 'drivers', { list: true }), R('subcontractor_id', 'Subcontractor', 'parties', { refFilter: { is_transporter: 1 } }),
       T('container_no', 'Container no.'), T('cargo_description', 'Cargo', { span: 2 }), N('weight_kg', 'Weight (kg)'), N('distance_km', 'Distance (km)'),
-      M('rate', 'Customer rate'), M('cost', 'Transport cost'), T('pod_signed_by', 'POD signed by'), DT('pod_at', 'POD time'), TA('pod_signature', 'Signature (image data)', { hidden: true }), TA('instructions', 'Instructions'),
+      M('rate', 'Customer rate', { help: 'Trip reference only. Use Vendor services & hired equipment to add selling revenue to job accounting.' }), M('cost', 'Transport cost', { help: 'Trip reference only. Use Vendor services & hired equipment to add supplier costs to job accounting.' }), T('pod_signed_by', 'POD signed by'), DT('pod_at', 'POD time'), TA('pod_signature', 'Signature (image data)', { hidden: true }), TA('instructions', 'Instructions'),
     ],
     defaultSort: { field: 'id', dir: 'desc' },
   },

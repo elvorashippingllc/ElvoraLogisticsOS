@@ -12,7 +12,7 @@ export interface SessionUser {
   id: number; name: string; email: string; role_id: number | null; role_name: string; permissions: Perms
   branch_id: number | null; party_id: number | null; apiKey?: boolean
 }
-export interface Ctx { jobTransition?: 'close' | 'reopen'; user: SessionUser | null; ip?: string; system?: boolean; after?: (() => void)[] }
+export interface Ctx { vendorServiceTransition?: 'confirm' | 'reset'; jobTransition?: 'close' | 'reopen'; user: SessionUser | null; ip?: string; system?: boolean; after?: (() => void)[] }
 export const SYSTEM_CTX: Ctx = { user: null, system: true }
 
 export type Rec = Record<string, any>

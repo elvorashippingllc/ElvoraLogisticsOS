@@ -14,6 +14,11 @@ const run = async (h: ActionHelpers, fn: () => Promise<any>, ok: string) => { tr
 const fin = (h: ActionHelpers) => h.can('finance', 'edit')
 
 export const ACTIONS: Record<string, ActionDef[]> = {
+  vendor_services: [
+    { key: 'confirm', label: 'Confirm and add job charges', tone: 'green', show: (r,h) => r.status === 'Draft' && h.can('jobs','edit') && h.can('finance','create'), run: async h => { if (await h.dlg.confirm({ title: 'Confirm vendor service?', message: 'Adds the buying cost and selling revenue to the job. Check quantities, rates and tax codes first. This does not post a bill, invoice or payment.' })) await run(h, () => post(`/api/vendor-services/${h.rec.id}/confirm`), 'Vendor cost and customer revenue added to the job') } },
+    { key: 'reset', label: 'Reset unbilled service to draft', tone: 'outline', show: (r,h) => r.status === 'Confirmed' && h.can('jobs','edit') && h.can('finance','edit'), run: async h => { if (await h.dlg.confirm({ title: 'Reset to draft?', message: 'Removes this service’s job charges so you can correct the agreement. Blocked once any invoice or bill references the charges.' })) await run(h, () => post(`/api/vendor-services/${h.rec.id}/reset`), 'Service returned to draft') } },
+    { key: 'job', label: 'Open job accounting', tone: 'outline', show: () => true, run: h => h.nav(`/jobs/${h.rec.job_id}?tab=accounting`) },
+  ],
   attachments:[{key:'download',label:'Open source file',tone:'outline',show:()=>true,run:h=>{window.open(`/api/files/${h.rec.id}/download`,'_blank','noopener')}},{key:'extract',label:'Extract text and match job',tone:'outline',show:(r,h)=>h.can('documents','edit')&&h.can('jobs','view'),run:async h=>{try{const r=await post<any>(`/api/files/${h.rec.id}/extract`);h.nav(`/extractions/${r.id}`)}catch(e:any){h.toast.error(e.message)}}}],
   document_extractions:[{key:'review',label:'Review extraction',tone:'outline',show:()=>true,run:h=>h.nav(`/extractions/${h.rec.id}`)}],
   container_deposits:[{key:'transactions',label:'Manage deposit transactions',tone:'outline',show:()=>true,run:h=>h.nav(`/container-deposits/${h.rec.id}`)}],
@@ -138,12 +143,15 @@ export const ACTIONS: Record<string, ActionDef[]> = {
 export const PRINTABLE = new Set(['freight_documents', 'invoices', 'quotations', 'delivery_orders', 'receipts', 'payments', 'grns', 'dispatches', 'transport_orders', 'shipments', 'customs_declarations', 'payslips', 'purchase_orders', 'insurance_certs', 'parties'])
 export const RELATED: Record<string, { key: string; label: string; entity: string; field: string }[]> = {
   parties: [
+    { key: 'services', label: 'Services supplied', entity: 'vendor_services', field: 'vendor_id' },
     { key: 'contacts', label: 'Contacts', entity: 'contacts', field: 'party_id' }, { key: 'jobs', label: 'Jobs', entity: 'jobs', field: 'client_id' }, { key: 'quotes', label: 'Quotations', entity: 'quotations', field: 'customer_id' },
     { key: 'invoices', label: 'Invoices', entity: 'invoices', field: 'party_id' }, { key: 'receipts', label: 'Receipts', entity: 'receipts', field: 'party_id' }, { key: 'bills', label: 'Vendor bills', entity: 'bills', field: 'vendor_id' },
     { key: 'opps', label: 'Opportunities', entity: 'opportunities', field: 'party_id' }, { key: 'acts', label: 'Calls & activities', entity: 'activities', field: 'party_id' }, { key: 'tickets', label: 'Tickets', entity: 'tickets', field: 'customer_id' },
     { key: 'contracts', label: 'Contracts', entity: 'contracts', field: 'party_id' }, { key: 'items', label: 'Stock items', entity: 'items', field: 'customer_id' },
   ],
   vehicles: [{ key: 'trips', label: 'Trips', entity: 'transport_orders', field: 'vehicle_id' }, { key: 'fuel', label: 'Fuel', entity: 'fuel_logs', field: 'vehicle_id' }, { key: 'svc', label: 'Maintenance', entity: 'vehicle_services', field: 'vehicle_id' }],
+  transport_orders: [{ key: 'vendor-services', label: 'Vendor services', entity: 'vendor_services', field: 'transport_order_id' }],
+  purchase_orders: [{ key: 'vendor-services', label: 'Vendor services', entity: 'vendor_services', field: 'purchase_order_id' }],
   drivers: [{ key: 'trips', label: 'Trips', entity: 'transport_orders', field: 'driver_id' }],
   employees: [{ key: 'leave', label: 'Leave', entity: 'leave_requests', field: 'employee_id' }, { key: 'att', label: 'Attendance', entity: 'attendance', field: 'employee_id' }, { key: 'pay', label: 'Payslips', entity: 'payslips', field: 'employee_id' }, { key: 'exp', label: 'Expense claims', entity: 'expenses', field: 'employee_id' }],
   warehouses: [{ key: 'bins', label: 'Bins', entity: 'wh_locations', field: 'warehouse_id' }, { key: 'grns', label: 'Receipts', entity: 'grns', field: 'warehouse_id' }, { key: 'dsp', label: 'Dispatches', entity: 'dispatches', field: 'warehouse_id' }],

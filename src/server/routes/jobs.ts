@@ -9,8 +9,11 @@ import { addJobEvent, convertProforma, createBillFromJobCosts, duplicateJob, ens
 import { queueEmail } from '../mailer'
 import { getSetting } from '../settings'
 import { postInvoice } from '../domain/finance'
+import { confirmVendorService, resetVendorService } from '../domain/vendor-services'
 
 export default async function (app: FastifyInstance) {
+  app.post('/api/vendor-services/:id/confirm', async req => confirmVendorService(idOf((req.params as any).id), req.ctx))
+  app.post('/api/vendor-services/:id/reset', async req => resetVendorService(idOf((req.params as any).id), req.ctx))
   const jobDef = () => getDef('jobs')
   const loadJob = (req: any, edit = false) => {
     const id = idOf(req.params.id)

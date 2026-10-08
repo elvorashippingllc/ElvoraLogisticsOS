@@ -42,6 +42,7 @@ export function JobPage() {
     try { await put(`/api/e/jobs/${jid}`, { [field]: value, version: j.version }); toast.ok('Updated'); reload() } catch (e: any) { toast.error(e.message) }
   }
   const createMenu = [
+    { label: 'Vendor service / hired equipment', onClick: () => nav(`/e/vendor_services?new=1&job_id=${jid}`) },
     { label: 'Sub-Job / Shipment', onClick: () => nav(`/e/shipments?new=1&job_id=${jid}`) },
     { label: 'Container (add on Containers tab)', onClick: () => setTab('containers') },
     { label: 'Carrier booking', onClick: () => nav(`/e/bookings?new=1&job_id=${jid}&carrier_id=${j.carrier_id ?? ''}`) },
@@ -58,6 +59,7 @@ export function JobPage() {
     { label: 'Duplicate this job', onClick: async () => { if (!(await dlg.confirm({ title: 'Duplicate job?', message: 'Copies parties, route, cargo, legs and charges into a new OPENED job (dates, B/L and carrier references are not copied).', ok: 'Duplicate' }))) return; try { const n = await post<any>(`/api/jobs/${jid}/duplicate`); toast.ok(`Job ${n.job_no} created`); nav(`/jobs/${n.id}`) } catch (e: any) { toast.error(e.message) } } },
   ]
   const tabs = [
+    { key: 'vendor-services', label: 'Vendor services' },
     { key: 'info', label: 'Job Info' }, { key: 'routing', label: 'Routing', count: j.children.legs.length }, { key: 'containers', label: 'Containers', count: j.children.containers.length }, { key: 'cargo', label: 'Cargo', count: j.children.cargo.length },
     { key: 'track', label: 'Track & Trace', count: j.children.events.length }, { key: 'accounting', label: 'Accounting', count: j.children.charges.length }, { key: 'sbboe', label: 'SB No/BOE No' }, { key: 'customs', label: 'Customs' },
     { key: 'shipments', label: 'Shipments' }, { key: 'inventory', label: 'Inventory' }, { key: 'transport', label: 'Transport' }, { key: 'docs', label: 'Documents' },
@@ -112,6 +114,7 @@ export function JobPage() {
             <Tabs tabs={tabs} value={tab} onChange={setTab} />
             <div className="p-4 md:p-5">
               {tab === 'info' && <RecordView def={jobDef} rec={j} />}
+              {tab === 'vendor-services' && <><p className="text-sm text-muted mb-4">Record containers, trucks, trailers and other services bought from suppliers for this customer. Confirm each agreement to include its cost and selling price in job profit. Complete the service and record equipment returns before closing the job.</p><EntityList entity="vendor_services" embedded preset={[{ field: 'job_id', op: 'eq', value: jid }]} createPresets={{ job_id: jid }} /></>}
               {tab === 'routing' && <ChildTab job={j} childKey="legs" reload={reload} />}
               {tab === 'containers' && <ChildTab job={j} childKey="containers" reload={reload} />}
               {tab === 'cargo' && <ChildTab job={j} childKey="cargo" reload={reload} />}
