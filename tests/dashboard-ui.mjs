@@ -25,7 +25,7 @@ try {
   assert.equal(auth.status(), 200)
   await page.goto(base + '/dashboard'); await page.getByRole('heading', { name: 'Move each shipment forward' }).waitFor()
   await page.evaluate(() => document.fonts.ready)
-  const capture = async name => { const style = await page.addStyleTag({ content: '.workspace-frame { height:auto; min-height:100dvh; overflow:visible; } .app-main { overflow:visible; }' }); await page.screenshot({ path: `${out}/${name}.png`, fullPage: true }); await style.evaluate(el => el.remove()) }
+  const capture = async name => { const style = await page.addStyleTag({ content: '.workspace-frame { height:auto; min-height:100dvh; overflow:visible; } .app-main { overflow:visible; }' }); await page.screenshot({ path: `${out}/${name}.png`, fullPage: true }); await page.screenshot({ path: `${out}/${name}.jpg`, type: 'jpeg', quality: 65, fullPage: true }); await style.evaluate(el => el.remove()) }
   await capture('desktop')
   const carousel = page.getByLabel('Shipment workflow steps')
   await page.getByRole('button', { name: 'Next workflow steps' }).click()
@@ -34,7 +34,7 @@ try {
   await page.getByRole('button', { name: 'Operations', exact: true }).click()
   const dialog = page.getByRole('dialog', { name: 'Operations' })
   await dialog.waitFor(); assert.ok(await dialog.getByRole('link', { name: 'Master Jobs', exact: true }).isVisible())
-  await page.screenshot({ path: `${out}/sidebar.png` })
+  await page.screenshot({ path: `${out}/sidebar.png` }); await page.screenshot({ path: `${out}/sidebar.jpg`, type: 'jpeg', quality: 65 })
   await page.keyboard.press('Escape'); assert.equal(await dialog.count(), 0)
   assert.equal(await page.evaluate(() => document.activeElement.getAttribute('aria-label')), 'Operations', 'focus returns to sidebar')
   await page.setViewportSize({ width: 390, height: 844 }); await page.goto(base + '/dashboard')
@@ -46,5 +46,5 @@ try {
   assert.equal(await page.getByRole('button', { name: 'Send email', exact: true }).isEnabled(), false, 'unconnected sender cannot send')
   assert.deepEqual(errors, [])
   console.log('PASS: dashboard desktop, mobile, carousel, sidebar popup, focus return and email empty state')
-  if (process.env.UI_CAPTURE_PRINT === 'true') for (const name of ['desktop', 'mobile', 'sidebar', 'email']) { const image = await browser.newPage({ viewport: { width: 900, height: 700 } }); await image.goto('file://' + path.resolve(`${out}/${name}.png`)); const preview = await image.locator('img').screenshot({ type: 'jpeg', quality: 45 }); console.log(`UI_CAPTURE:${name}:${preview.toString('base64')}`); await image.close() }
+  if (process.env.UI_CAPTURE_PRINT === 'true') for (const name of ['desktop', 'mobile', 'sidebar', 'email']) console.log(`UI_CAPTURE:${name}:${fs.readFileSync(`${out}/${name}.jpg`).toString('base64')}`)
 } finally { await browser?.close(); server.kill('SIGTERM'); fs.rmSync(data, { recursive: true, force: true }) }
