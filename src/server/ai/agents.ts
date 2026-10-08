@@ -1,3 +1,4 @@
+import { toolPolicy } from './policy'
 import { q } from '../db'
 import { getSetting } from '../settings'
 import { chat, aiConfigured, type ChatMsg, type ToolDef } from './llm'
@@ -52,8 +53,9 @@ async function execTool(agent: any, runId: number | null, name: string, args: an
   const tool = tools.find(t => t.name === name)
   if (!tool) return JSON.stringify({ error: `Unknown or not permitted tool "${name}"` })
   const lvl = autonomyLevel(agent.autonomy)
-  const needsApproval = tool.risk !== 'read' && (lvl === 0 || (lvl === 1 && tool.risk === 'external'))
-  if (needsApproval) return queueAction(agent, runId, tool, args)
+  const policy=toolPolicy(tool.name,tool.risk,lvl)
+  if(policy==='deny') return JSON.stringify({error:'This capability is prohibited for AI execution'})
+  if (policy === 'approve') return queueAction(agent, runId, tool, args)
   try { const out = await tool.run(args ?? {}, { agent: agent.name }); return JSON.stringify(out ?? { ok: true }).slice(0, 7000) } catch (e: any) { return JSON.stringify({ error: String(e?.message ?? e).slice(0, 300) }) }
 }
 
@@ -123,8 +125,10 @@ export async function decideAction(id: number, approve: boolean, userId: number)
   if (a.status !== 'Pending') throw bad(`Already ${a.status.toLowerCase()}`)
   if (!approve) { q.run(`UPDATE ai_actions SET status='Rejected', decided_at=?, decided_by=? WHERE id=?`, nowLocal(), userId, id); return { status: 'Rejected' } }
   const tool = toolByName(a.tool)
-  const agent = q.get(`SELECT name FROM ai_agents WHERE id = ?`, a.agent_id)
-  if (!tool) { q.run(`UPDATE ai_actions SET status='Failed', result='Unknown tool', decided_at=?, decided_by=? WHERE id=?`, nowLocal(), userId, id); return { status: 'Failed' } }
+  const agent = q.get(`SELECT * FROM ai_agents WHERE id = ? AND deleted_at IS NULL`, a.agent_id)
+  if (!tool || !agent || !allowed(agent).some(t=>t.name===a.tool) || toolPolicy(tool.name,tool.risk,autonomyLevel(agent.autonomy))==='deny') { q.run(`UPDATE ai_actions SET status='Failed', result='Unknown tool', decided_at=?, decided_by=? WHERE id=?`, nowLocal(), userId, id); return { status: 'Failed' } }
+  const claim=q.run(`UPDATE ai_actions SET status='Executing',decided_at=?,decided_by=? WHERE id=? AND status='Pending'`,nowLocal(),userId,id)
+  if(!claim.changes) throw bad('Action has already been claimed by another approver')
   try {
     let args: any = safeJson(a.args, {}); if (typeof args === 'string') args = safeJson(args, {})
     const out = await tool.run(args, { agent: agent?.name ?? 'AI' })
@@ -147,3 +151,4 @@ export async function runDueAgents() {
   }
 }
 export const latestBrief = () => q.get(`SELECT r.output, r.started_at, a.name FROM ai_runs r JOIN ai_agents a ON a.id = r.agent_id WHERE r.status = 'ok' AND r.trigger = 'schedule' AND a.role_key = 'jarvis' ORDER BY r.id DESC LIMIT 1`) ?? { output: businessSnapshot().text, started_at: nowLocal(), name: 'Snapshot' }
+

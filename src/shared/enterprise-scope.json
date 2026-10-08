@@ -1,0 +1,1883 @@
+{
+  "product": "ELVORA CONTROL",
+  "reviewedCommit": "d6ed04293dc1e363cc9978e317749e9a3eaece57",
+  "reviewedAt": "2026-10-08",
+  "sourceSha256": "eb95b567b549d269346eba5d04ca3c4227cc98e4a981050509faa634f49e9377",
+  "notice": "Source-based coverage assessment, not production certification. Partial means an implementation foundation exists; remaining requirements are not complete. All original scope is retained verbatim. Go-live needs company policies, authority matrices, credentials and external validation.",
+  "areas": [
+    "SELL",
+    "MOVE",
+    "CONTROL",
+    "MONEY",
+    "CONNECT",
+    "MANAGE"
+  ],
+  "sections": [
+    {
+      "id": 1,
+      "title": "Corporate Administration",
+      "status": "Partial",
+      "evidence": "Organisation, roles and master records exist.",
+      "sources": [
+        "src/shared/entities/platform.ts",
+        "src/shared/entities/masters.ts",
+        "src/shared/entities/automation.ts"
+      ],
+      "gap": "Complete group/team hierarchy, cost/profit centres, delegated entity administration and per-company fiscal/registration policies.",
+      "specification": "## 1. Corporate Administration\n\nSupport the complete organisation hierarchy:\n\n```text\nGroup\n└── Legal Entity\n    └── Branch\n        └── Department\n            └── Team\n                └── Employee\n```\n\nIncluding:\n\n- multi-company\n- multi-branch\n- multiple departments\n- cost centres\n- profit centres\n- business units\n- currencies\n- languages\n- time zones\n- financial years\n- numbering sequences\n- custom fields\n- custom statuses\n- document templates\n- company branding\n- tax registrations\n- UAE TRN\n- trade licence records\n- customs registrations\n- bank accounts\n- branches\n- warehouses\n\n---"
+    },
+    {
+      "id": 2,
+      "title": "Enterprise Identity & Security",
+      "status": "Partial",
+      "evidence": "Password authentication, TOTP, sessions, module/action permissions and customer record scoping exist.",
+      "sources": [
+        "src/server/auth.ts",
+        "src/server/engine.ts",
+        "src/web/pages/ProfilePage.tsx"
+      ],
+      "gap": "SSO, passkeys, department/branch/field scopes, delegation, temporary access, segregation of duties and export/IP policies.",
+      "specification": "# 2. Enterprise Identity & Security\n\n### Authentication\n\n- username/password\n- MFA\n- Microsoft SSO\n- Google SSO\n- passkeys\n- session/device management\n- password policies\n- login history\n- account lockout\n\n### Authorization\n\n- role permissions\n- department permissions\n- branch permissions\n- record-level permissions\n- field-level permissions\n- action permissions\n- temporary permissions\n- delegation\n- substitute user\n\n### Security\n\n- maker/checker\n- segregation of duties\n- privileged-user monitoring\n- API permissions\n- IP policies\n- session timeout\n- download/export restrictions\n- security events\n- audit history\n\n---"
+    },
+    {
+      "id": 3,
+      "title": "Enterprise User Roles",
+      "status": "Partial",
+      "evidence": "Organisation, roles and master records exist.",
+      "sources": [
+        "src/shared/entities/platform.ts",
+        "src/shared/entities/masters.ts",
+        "src/shared/entities/automation.ts"
+      ],
+      "gap": "Validate every listed role, permission matrix and substitute/delegated authority against workflows.",
+      "specification": "# 3. Enterprise User Roles\n\nExamples:\n\n### Management\n\n- Owner\n- CEO\n- General Manager\n- Branch Manager\n- Department Head\n\n### Commercial\n\n- Sales Manager\n- Sales Executive\n- Key Account Manager\n- Pricing Manager\n- Pricing Executive\n\n### Operations\n\n- Ocean Import\n- Ocean Export\n- FCL\n- LCL\n- Air Import\n- Air Export\n- Road Freight\n- Cross Trade\n- Project Cargo\n- Documentation\n- Customer Service\n\n### Customs\n\n- Customs Manager\n- Clearance Executive\n\n### Warehouse\n\n- Warehouse Manager\n- Supervisor\n- Operator\n\n### Transport\n\n- Transport Manager\n- Dispatcher\n- Driver\n\n### Finance\n\n- CFO\n- Finance Manager\n- Accountant\n- AR\n- AP\n- Credit Controller\n- Treasury\n\n### Corporate\n\n- HR\n- Payroll\n- Admin\n- Compliance\n- Quality\n- Internal Audit\n- IT\n\n---"
+    },
+    {
+      "id": 4,
+      "title": "Owner / CEO Command Center",
+      "status": "Partial",
+      "evidence": "Dashboard aggregates and selected operational alerts exist.",
+      "sources": [
+        "src/server/routes/insights.ts",
+        "src/web/pages/Dashboard.tsx"
+      ],
+      "gap": "Full owner KPI set including DSO, forecasts, exposure and role/branch visibility.",
+      "specification": "# 4. Owner / CEO Command Center\n\nThis should be the most powerful screen in the system.\n\n## Today\n\n- revenue\n- gross profit\n- cash position\n- expected receipts\n- payments due\n- bookings\n- jobs created\n- jobs completed\n- deliveries\n- arrivals\n- customs pending\n- quotes pending\n- approvals\n- exceptions\n\n## Financial health\n\n- AR\n- AP\n- DSO\n- overdue percentage\n- cash forecast\n- bank balances\n- GP%\n- operating expenses\n- P&L\n- working capital\n\n## Operational health\n\n- shipments delayed\n- customs holds\n- documents missing\n- BL pending\n- POD pending\n- containers approaching free-time expiry\n- SLA failures\n\n## Commercial health\n\n- leads\n- quotations\n- conversion\n- lost business\n- dormant customers\n- pipeline\n- customer profitability\n\n---"
+    },
+    {
+      "id": 5,
+      "title": "Executive Exception Center",
+      "status": "Partial",
+      "evidence": "Dashboard aggregates and selected operational alerts exist.",
+      "sources": [
+        "src/server/routes/insights.ts",
+        "src/web/pages/Dashboard.tsx"
+      ],
+      "gap": "Central prioritised exception lifecycle, accountable owner, escalation and resolution evidence.",
+      "specification": "# 5. Executive Exception Center\n\nManagement should not need to search reports.\n\nShow only what needs action.\n\nExamples:\n\n> 7 shipments require intervention.\n\n> 4 containers may incur detention.\n\n> AED 420,000 overdue.\n\n> 3 supplier invoices exceed expected costs.\n\n> 12 quotations worth AED 310K have no follow-up.\n\n> 2 key customers show declining shipment volume.\n\n---"
+    },
+    {
+      "id": 6,
+      "title": "CRM",
+      "status": "Partial",
+      "evidence": "CRM, parties, contracts, rate cards, quotations and a margin approval threshold provide a commercial foundation.",
+      "sources": [
+        "src/shared/entities/crm.ts",
+        "src/server/domain/sales.ts"
+      ],
+      "gap": "Complete enquiry, assignment and sales stage rules with required communication history.",
+      "specification": "# 6. CRM\n\nComplete customer lifecycle.\n\n### Leads\n\n- website\n- email\n- WhatsApp\n- phone\n- referral\n- campaigns\n- manual entry\n- API\n\n### Pipeline\n\n```text\nNew\nQualified\nRate Requested\nPricing\nQuote Sent\nNegotiation\nWon\nLost\nDormant\n```\n\n### CRM functionality\n\n- lead scoring\n- lead assignment\n- round-robin\n- territories\n- activities\n- calls\n- meetings\n- tasks\n- reminders\n- follow-ups\n- notes\n- tags\n- attachments\n- duplicate detection\n- lost reasons\n- source attribution\n- sales forecasting\n\n---"
+    },
+    {
+      "id": 7,
+      "title": "Customer 360°",
+      "status": "Partial",
+      "evidence": "CRM, parties, contracts, rate cards, quotations and a margin approval threshold provide a commercial foundation.",
+      "sources": [
+        "src/shared/entities/crm.ts",
+        "src/server/domain/sales.ts"
+      ],
+      "gap": "Unified customer financial, operational, document, risk and communication view.",
+      "specification": "# 7. Customer 360°\n\nOne customer record contains:\n\n- company\n- branches\n- contacts\n- TRN\n- licence\n- credit limit\n- payment terms\n- contracts\n- SOP\n- rates\n- quotations\n- bookings\n- shipments\n- BL/AWB\n- documents\n- invoices\n- statements\n- payments\n- emails\n- WhatsApp\n- complaints\n- claims\n- support tickets\n\nNo disconnected customer records.\n\n---"
+    },
+    {
+      "id": 8,
+      "title": "Customer Onboarding",
+      "status": "Partial",
+      "evidence": "CRM, parties, contracts, rate cards, quotations and a margin approval threshold provide a commercial foundation.",
+      "sources": [
+        "src/shared/entities/crm.ts",
+        "src/server/domain/sales.ts"
+      ],
+      "gap": "Enforced onboarding checklist, approval gates and customer-specific operating setup.",
+      "specification": "# 8. Customer Onboarding\n\nWorkflow:\n\n```text\nLead\n→ Company Verification\n→ KYC\n→ Trade Licence\n→ TRN\n→ Credit Application\n→ Credit Approval\n→ Contract\n→ SOP Approval\n→ Pricing\n→ Portal Activation\n→ Active Customer\n```\n\n---"
+    },
+    {
+      "id": 9,
+      "title": "KYC / Compliance",
+      "status": "Partial",
+      "evidence": "CRM, parties, contracts, rate cards, quotations and a margin approval threshold provide a commercial foundation.",
+      "sources": [
+        "src/shared/entities/crm.ts",
+        "src/server/domain/sales.ts"
+      ],
+      "gap": "KYC verification, sanctions screening, expiry gates and evidence review.",
+      "specification": "# 9. KYC / Compliance\n\nSupport:\n\n- trade licence\n- owner/UBO information\n- business activity\n- TRN\n- sanctions checks\n- restricted-party checks\n- country-risk flags\n- compliance review\n- approvals\n- expiry/review schedule\n\n---"
+    },
+    {
+      "id": 10,
+      "title": "Key Account Management",
+      "status": "Partial",
+      "evidence": "CRM, parties, contracts, rate cards, quotations and a margin approval threshold provide a commercial foundation.",
+      "sources": [
+        "src/shared/entities/crm.ts",
+        "src/server/domain/sales.ts"
+      ],
+      "gap": "Account plans, review cadence, retention targets and relationship ownership.",
+      "specification": "# 10. Key Account Management\n\nFor important customers:\n\n- account hierarchy\n- global contacts\n- contracts\n- SOP\n- SLA\n- shipment statistics\n- revenue\n- GP\n- DSO\n- outstanding\n- complaints\n- quote conversion\n- lane distribution\n- performance dashboard\n\n---"
+    },
+    {
+      "id": 11,
+      "title": "Pricing Department",
+      "status": "Partial",
+      "evidence": "CRM, parties, contracts, rate cards, quotations and a margin approval threshold provide a commercial foundation.",
+      "sources": [
+        "src/shared/entities/crm.ts",
+        "src/server/domain/sales.ts"
+      ],
+      "gap": "Dedicated pricing work queues, procurement lifecycle and SLA controls.",
+      "specification": "# 11. Pricing Department\n\nDedicated pricing workspace.\n\n```text\nRFQ\n→ Rate Procurement\n→ Carrier Comparison\n→ Cost Sheet\n→ Markup\n→ Approval\n→ Sales Quote\n```\n\n---"
+    },
+    {
+      "id": 12,
+      "title": "Tariff Management",
+      "status": "Partial",
+      "evidence": "CRM, parties, contracts, rate cards, quotations and a margin approval threshold provide a commercial foundation.",
+      "sources": [
+        "src/shared/entities/crm.ts",
+        "src/server/domain/sales.ts"
+      ],
+      "gap": "Full tariff validity, contract versions, surcharges and lane-specific pricing rules.",
+      "specification": "# 12. Tariff Management\n\nBuying and selling tariffs by:\n\n- customer\n- carrier\n- agent\n- origin\n- destination\n- port\n- airport\n- service\n- container\n- weight band\n- commodity\n- validity\n- currency\n\nSupport:\n\n- contract rates\n- spot rates\n- named-account rates\n- surcharges\n- seasonal charges\n- customer tariffs\n- markup formulas\n- minimum margin\n\n---"
+    },
+    {
+      "id": 13,
+      "title": "Carrier RFQ",
+      "status": "Missing",
+      "evidence": "No dedicated implementation identified for this capability in the reviewed source.",
+      "sources": [],
+      "gap": "Carrier RFQ issuance, response capture, comparison and award workflow.",
+      "specification": "# 13. Carrier RFQ\n\nRequest rates from multiple providers.\n\nCompare:\n\n| Provider | Freight | Local Charges | Transit | Free Days | Total |\n|---|---:|---:|---:|---:|---:|\n\nStore historical responses.\n\n---"
+    },
+    {
+      "id": 14,
+      "title": "Rate Intelligence",
+      "status": "Partial",
+      "evidence": "CRM, parties, contracts, rate cards, quotations and a margin approval threshold provide a commercial foundation.",
+      "sources": [
+        "src/shared/entities/crm.ts",
+        "src/server/domain/sales.ts"
+      ],
+      "gap": "Rate history, benchmarks and actionable pricing intelligence.",
+      "specification": "# 14. Rate Intelligence\n\nShow:\n\n- previous buying rate\n- previous selling rate\n- average lane cost\n- GP history\n- rate trend\n- last vendor\n- last customer quote\n- winning rates\n\n---"
+    },
+    {
+      "id": 15,
+      "title": "Quotations",
+      "status": "Partial",
+      "evidence": "CRM, parties, contracts, rate cards, quotations and a margin approval threshold provide a commercial foundation.",
+      "sources": [
+        "src/shared/entities/crm.ts",
+        "src/server/domain/sales.ts"
+      ],
+      "gap": "Complete versions, alternatives, terms and approval/sign-off requirements.",
+      "specification": "# 15. Quotations\n\nSupport:\n\n- ocean\n- air\n- road\n- customs\n- warehouse\n- multimodal\n\nFeatures:\n\n- cost sheet\n- selling charges\n- margin\n- GP\n- versions\n- validity\n- transit time\n- terms\n- exclusions\n- optional charges\n- approval\n- e-sign acceptance\n- customer portal acceptance\n\n---"
+    },
+    {
+      "id": 16,
+      "title": "Margin Controls",
+      "status": "Partial",
+      "evidence": "CRM, parties, contracts, rate cards, quotations and a margin approval threshold provide a commercial foundation.",
+      "sources": [
+        "src/shared/entities/crm.ts",
+        "src/server/domain/sales.ts"
+      ],
+      "gap": "Configurable margin bands and escalation tiers, controlled overrides and approval history.",
+      "specification": "# 16. Margin Controls\n\nExamples:\n\n```text\nGP < 15%\n→ Sales Manager\n\nGP < 10%\n→ Branch Manager\n\nGP < 5%\n→ CEO\n```\n\nConfigurable.\n\n---"
+    },
+    {
+      "id": 17,
+      "title": "Booking Management",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Capacity confirmation, cut-off checks and all booking approval/document gates.",
+      "specification": "# 17. Booking Management\n\nStatuses:\n\n```text\nDraft\nRequested\nSubmitted\nConfirmed\nAmended\nRolled\nCancelled\nConverted\n```\n\nSupport:\n\n- carrier booking\n- allocation\n- equipment request\n- booking confirmation\n- amendment\n- rollover\n- cancellation\n\n---"
+    },
+    {
+      "id": 18,
+      "title": "Master Job / House Job",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Validate full master/house allocation, consolidation and cross-record lifecycle, beyond parent linking.",
+      "specification": "# 18. Master Job / House Job\n\nCritical Fresa-style architecture.\n\n```text\nMaster Job\n├── House Job\n├── House Job\n├── House Job\n└── House Job\n```\n\nOcean:\n\n```text\nMBL\n├── HBL\n├── HBL\n└── HBL\n```\n\nAir:\n\n```text\nMAWB\n├── HAWB\n├── HAWB\n└── HAWB\n```\n\n---"
+    },
+    {
+      "id": 19,
+      "title": "Freight Departments",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Department-specific workflow, authority, queues and KPI acceptance.",
+      "specification": "# 19. Freight Departments\n\nNative workflows for:\n\n- FCL Export\n- FCL Import\n- LCL Export\n- LCL Import\n- Air Export\n- Air Import\n- Road Export\n- Road Import\n- Cross Trade\n- Customs\n- Project Cargo\n- Warehousing\n- Transportation\n\n---"
+    },
+    {
+      "id": 20,
+      "title": "Shipment / Job Record",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Verify every requested job field, document and linked record, not just base CRUD.",
+      "specification": "# 20. Shipment / Job Record\n\nSingle operational truth.\n\n### Commercial\n\n- customer\n- quotation\n- sales owner\n- pricing owner\n\n### Operational\n\n- department\n- mode\n- job number\n- master job\n- booking\n- carrier\n- route\n\n### Cargo\n\n- packages\n- commodity\n- weights\n- volume\n- dimensions\n- HS code\n- DG\n\n### Finance\n\n- selling\n- costs\n- invoices\n- supplier bills\n- GP\n\n### Documents\n\nEverything belonging to the job.\n\n---"
+    },
+    {
+      "id": 21,
+      "title": "Separate Status Models",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Independent operational, documentation, customs and financial state machines with transition guards.",
+      "specification": "# 21. Separate Status Models\n\n### Job Status\n\n- Draft\n- Open\n- On Hold\n- Completed\n- Closed\n- Cancelled\n\n### Operational Status\n\n- Booking\n- Cargo Pending\n- Cargo Received\n- Ready\n- Loaded\n- Departed\n- In Transit\n- Arrived\n- Clearance\n- Delivery\n- Delivered\n\n### BL Status\n\n- Pending\n- Draft\n- Approval\n- Approved\n- Issued\n- Surrendered\n- Telex\n- Released\n\n---"
+    },
+    {
+      "id": 22,
+      "title": "Routing Engine",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Multi-leg constraints, routing changes, exception propagation and handover controls.",
+      "specification": "# 22. Routing Engine\n\nSupport multiple legs.\n\n```text\nPlace of Receipt\n→ Pre-carriage\n→ POL\n→ Vessel 1\n→ Transshipment\n→ Vessel 2\n→ POD\n→ On-carriage\n→ Place of Delivery\n```\n\nEach leg:\n\n- mode\n- vendor\n- vessel/flight\n- voyage\n- ETD\n- ATD\n- ETA\n- ATA\n- status\n\n---"
+    },
+    {
+      "id": 23,
+      "title": "Ocean Freight",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Full ocean carrier lifecycle, manifest, releases, cut-offs and equipment controls.",
+      "specification": "# 23. Ocean Freight\n\nEverything for:\n\n- FCL\n- LCL\n- consolidation\n- NVOCC\n- import/export\n- transshipment\n- cross trade\n- RoRo\n- breakbulk\n\n---"
+    },
+    {
+      "id": 24,
+      "title": "Air Freight",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Full air execution, capacity, AWB handling and airline-specific acceptance.",
+      "specification": "# 24. Air Freight\n\nSupport:\n\n- direct\n- consolidation\n- import/export\n- door-door\n- airport-airport\n\nIncluding:\n\n- MAWB\n- HAWB\n- airline\n- flight\n- actual weight\n- volumetric\n- chargeable weight\n- routing\n\n---"
+    },
+    {
+      "id": 25,
+      "title": "Road Freight",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Full road permits, border events, vehicle assignment and delivery/POD workflow.",
+      "specification": "# 25. Road Freight\n\nSupport:\n\n- FTL\n- LTL\n- UAE\n- GCC\n- cross-border\n- multimodal\n\nWith:\n\n- truck\n- driver\n- trailer\n- border\n- permits\n- tolls\n- waiting\n- POD\n\n---"
+    },
+    {
+      "id": 26,
+      "title": "NVOCC / Consolidation",
+      "status": "Missing",
+      "evidence": "No dedicated implementation identified for this capability in the reviewed source.",
+      "sources": [],
+      "gap": "NVOCC consolidation planning, deconsolidation, manifest and cost allocations.",
+      "specification": "# 26. NVOCC / Consolidation\n\nInclude:\n\n- master consolidation\n- houses\n- stuffing\n- allocation\n- CBM utilization\n- weight utilization\n- deconsolidation\n- manifest\n- profitability allocation\n\n---"
+    },
+    {
+      "id": 27,
+      "title": "Containers",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Equipment interchange, movement lifecycle, releases and return validation.",
+      "specification": "# 27. Containers\n\nFull container lifecycle:\n\n```text\nRequested\nReleased\nPicked Up\nStuffed\nGate-In\nLoaded\nDeparted\nArrived\nDischarged\nGate-Out\nDelivered\nEmpty Returned\nClosed\n```\n\nStore:\n\n- container\n- type\n- seal\n- free days\n- depot\n- terminal\n\n---"
+    },
+    {
+      "id": 28,
+      "title": "Detention / Demurrage",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Contract free-time rules, charge computation, liability and alerts across all equipment events.",
+      "specification": "# 28. Detention / Demurrage\n\nCalculate:\n\n- discharge date\n- free days\n- last free day\n- daily tariff\n- estimated exposure\n\nAlerts:\n\n- 5 days\n- 3 days\n- 1 day\n- expired\n\n---"
+    },
+    {
+      "id": 29,
+      "title": "Container Deposit",
+      "status": "Missing",
+      "evidence": "No dedicated implementation identified for this capability in the reviewed source.",
+      "sources": [],
+      "gap": "Container deposit collection, settlement, refund and reconciliation ledger.",
+      "specification": "# 29. Container Deposit\n\nTrack:\n\n- amount\n- paid\n- refund due\n- refund received\n- damage deduction\n- balance\n\n---"
+    },
+    {
+      "id": 30,
+      "title": "BL / AWB Engine",
+      "status": "Missing",
+      "evidence": "No dedicated implementation identified for this capability in the reviewed source.",
+      "sources": [],
+      "gap": "Controlled BL/AWB numbering, amendments, approvals, versions and releases.",
+      "specification": "# 30. BL / AWB Engine\n\nGenerate:\n\n- MBL information\n- HBL\n- MAWB\n- HAWB\n\nSupport:\n\n- revision\n- approval\n- amendment\n- original count\n- copies\n- surrender\n- telex\n- sea waybill\n\n---"
+    },
+    {
+      "id": 31,
+      "title": "Original Document Custody",
+      "status": "Missing",
+      "evidence": "No dedicated implementation identified for this capability in the reviewed source.",
+      "sources": [],
+      "gap": "Original document custody chain, handovers, release authority and acknowledgements.",
+      "specification": "# 31. Original Document Custody\n\nTrack each original:\n\n- original number\n- office\n- employee\n- customer\n- bank\n- courier\n- tracking\n- release date\n\n---"
+    },
+    {
+      "id": 32,
+      "title": "Documentation Department",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Document checklists, verification, release gates and departmental work queues.",
+      "specification": "# 32. Documentation Department\n\nQueues for:\n\n- shipping instruction\n- BL draft\n- BL approval\n- manifest\n- pre-alert\n- arrival notice\n- COO\n- DO\n- VGM\n- customs documents\n\n---"
+    },
+    {
+      "id": 33,
+      "title": "Manifest Management",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Controlled manifest generation, versions, submission and reconciliation.",
+      "specification": "# 33. Manifest Management\n\nSupport:\n\n- master manifest\n- house manifest\n- consol manifest\n- export manifest\n- import manifest\n- amendments\n- EDI\n\n---"
+    },
+    {
+      "id": 34,
+      "title": "Customs",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Full declaration lifecycle, validation, duty reconciliation and release gating.",
+      "specification": "# 34. Customs\n\nComplete UAE customs workspace:\n\n- BOE\n- declaration\n- declaration type\n- customs code\n- importer\n- exporter\n- HS codes\n- CIF\n- duty\n- VAT\n- deposits\n- permits\n- inspection\n- clearance\n- release\n\n---"
+    },
+    {
+      "id": 35,
+      "title": "Customs Integration Layer",
+      "status": "External validation",
+      "evidence": "Generic customs/EDI transport exists; certified gateway behaviour is unverified.",
+      "sources": [
+        "src/server/integrations/edi.ts"
+      ],
+      "gap": "Real gateway credentials, supported message schema, acknowledgement/rejection, sandbox and live acceptance.",
+      "specification": "# 35. Customs Integration Layer\n\nProvider adapters for:\n\n- Dubai Customs\n- Mirsal-compatible flows\n- customs brokers\n- other emirate systems\n\nTrack:\n\n- submission\n- response\n- rejection\n- correction\n- resubmission\n\n---"
+    },
+    {
+      "id": 36,
+      "title": "MPCI / Future Compliance Requirements",
+      "status": "Missing",
+      "evidence": "No dedicated implementation identified for this capability in the reviewed source.",
+      "sources": [],
+      "gap": "Versioned MPCI/future regulatory rules and effective-date compliance checks.",
+      "specification": "# 36. MPCI / Future Compliance Requirements\n\nCreate compliance-rule engine rather than hard-code one scheme.\n\n```text\nShipment\n→ Rule Evaluation\n→ Required Filing\n→ Validation\n→ Submission\n→ Confirmation\n```\n\nThis allows UAE regulatory requirements to change without rebuilding the system.\n\n---"
+    },
+    {
+      "id": 37,
+      "title": "Dangerous Goods",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "DG classification, segregation, approvals, certificates and operating restrictions.",
+      "specification": "# 37. Dangerous Goods\n\nInclude:\n\n- UN number\n- class\n- packing group\n- proper shipping name\n- SDS\n- DG declaration\n- acceptance\n- trained employee\n- carrier approval\n\n---"
+    },
+    {
+      "id": 38,
+      "title": "Reefer / Cold Chain",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Temperature events, excursion response, evidence and cold-chain handling controls.",
+      "specification": "# 38. Reefer / Cold Chain\n\nTrack:\n\n- set temperature\n- actual temperature\n- tolerance\n- ventilation\n- humidity\n- alerts\n- logger\n- excursion incidents\n\n---"
+    },
+    {
+      "id": 39,
+      "title": "Project Cargo",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Project cargo engineering, route surveys, lift planning and execution controls.",
+      "specification": "# 39. Project Cargo\n\nFor oversized/special cargo:\n\n- equipment\n- dimensions\n- heavy lift\n- permits\n- route survey\n- crane\n- escort\n- engineering\n- milestones\n\n---"
+    },
+    {
+      "id": 40,
+      "title": "Insurance",
+      "status": "Partial",
+      "evidence": "Employee, leave, attendance, payslip, insurance, claims, ticket, asset and purchase-order records exist; record availability is not a complete departmental workflow.",
+      "sources": [
+        "src/shared/entities/people.ts",
+        "src/server/domain/misc.ts"
+      ],
+      "gap": "Coverage validation, policy limits, certificate workflows and insurer integration.",
+      "specification": "# 40. Insurance\n\n- insured value\n- insurer\n- certificate\n- premium\n- claim\n- recovery\n\n---"
+    },
+    {
+      "id": 41,
+      "title": "Claims",
+      "status": "Partial",
+      "evidence": "Employee, leave, attendance, payslip, insurance, claims, ticket, asset and purchase-order records exist; record availability is not a complete departmental workflow.",
+      "sources": [
+        "src/shared/entities/people.ts",
+        "src/server/domain/misc.ts"
+      ],
+      "gap": "Claim reserves, liability, recovery, insurer correspondence and financial settlement.",
+      "specification": "# 41. Claims\n\n```text\nIncident\n→ Claim\n→ Evidence\n→ Reserve\n→ Carrier/Insurance\n→ Settlement\n→ Recovery\n→ Close\n```\n\n---"
+    },
+    {
+      "id": 42,
+      "title": "Transport Management",
+      "status": "Partial",
+      "evidence": "Transport orders, drivers, fleet, warehouses, stock movements, GRNs and dispatch records exist; warehouse posting includes stock controls.",
+      "sources": [
+        "src/shared/entities/operations2.ts",
+        "src/server/domain/warehouse.ts"
+      ],
+      "gap": "Complete assignment, permits, driver communication and POD controls.",
+      "specification": "# 42. Transport Management\n\nComplete TMS:\n\n- transport orders\n- planning\n- dispatch\n- vehicles\n- drivers\n- subcontractors\n- pickup\n- delivery\n- route\n- POD\n\n---"
+    },
+    {
+      "id": 43,
+      "title": "Dispatch Board",
+      "status": "Partial",
+      "evidence": "Transport orders, drivers, fleet, warehouses, stock movements, GRNs and dispatch records exist; warehouse posting includes stock controls.",
+      "sources": [
+        "src/shared/entities/operations2.ts",
+        "src/server/domain/warehouse.ts"
+      ],
+      "gap": "Live dispatch board with capacity, conflicts and reassignment handling.",
+      "specification": "# 43. Dispatch Board\n\nVisual scheduler:\n\n```text\nTruck\nDriver\nPickup\nTime\nDelivery\nCapacity\nStatus\n```\n\n---"
+    },
+    {
+      "id": 44,
+      "title": "Driver Application",
+      "status": "Missing",
+      "evidence": "No dedicated implementation identified for this capability in the reviewed source.",
+      "sources": [],
+      "gap": "Dedicated driver workflow, mobile POD, signatures/photos and offline synchronisation.",
+      "specification": "# 44. Driver Application\n\nDriver sees:\n\n- assigned jobs\n- route\n- contacts\n- pickup\n- delivery\n- signature\n- photos\n- POD\n- incidents\n\n---"
+    },
+    {
+      "id": 45,
+      "title": "Fleet",
+      "status": "Partial",
+      "evidence": "Transport orders, drivers, fleet, warehouses, stock movements, GRNs and dispatch records exist; warehouse posting includes stock controls.",
+      "sources": [
+        "src/shared/entities/operations2.ts",
+        "src/server/domain/warehouse.ts"
+      ],
+      "gap": "Fleet availability, licensing, planned maintenance and operating cost controls.",
+      "specification": "# 45. Fleet\n\n- vehicles\n- registration\n- insurance\n- maintenance\n- tyres\n- fuel\n- Salik\n- fines\n- GPS\n- documents\n\n---"
+    },
+    {
+      "id": 46,
+      "title": "Warehouse Management",
+      "status": "Partial",
+      "evidence": "Transport orders, drivers, fleet, warehouses, stock movements, GRNs and dispatch records exist; warehouse posting includes stock controls.",
+      "sources": [
+        "src/shared/entities/operations2.ts",
+        "src/server/domain/warehouse.ts"
+      ],
+      "gap": "Complete receiving, putaway, pick/pack and stock reconciliation lifecycle.",
+      "specification": "# 46. Warehouse Management\n\nFull WMS:\n\n- warehouses\n- zones\n- aisles\n- racks\n- bins\n- receipts\n- putaway\n- reservations\n- picking\n- packing\n- dispatch\n- cross-dock\n\n---"
+    },
+    {
+      "id": 47,
+      "title": "Advanced Warehouse",
+      "status": "Partial",
+      "evidence": "Transport orders, drivers, fleet, warehouses, stock movements, GRNs and dispatch records exist; warehouse posting includes stock controls.",
+      "sources": [
+        "src/shared/entities/operations2.ts",
+        "src/server/domain/warehouse.ts"
+      ],
+      "gap": "Replenishment, quarantine, serials, slotting and all advanced warehouse rules.",
+      "specification": "# 47. Advanced Warehouse\n\n- pallets\n- packages\n- batches\n- serial numbers\n- expiry\n- FIFO\n- FEFO\n- LIFO\n- quarantine\n- damaged stock\n- cycle counting\n- replenishment\n\n---"
+    },
+    {
+      "id": 48,
+      "title": "Barcode / QR",
+      "status": "Partial",
+      "evidence": "Transport orders, drivers, fleet, warehouses, stock movements, GRNs and dispatch records exist; warehouse posting includes stock controls.",
+      "sources": [
+        "src/shared/entities/operations2.ts",
+        "src/server/domain/warehouse.ts"
+      ],
+      "gap": "Scanning workflows and barcode/QR identity validation across operations.",
+      "specification": "# 48. Barcode / QR\n\nMobile scan for:\n\n- receiving\n- putaway\n- picking\n- packing\n- transfer\n- dispatch\n- inventory count\n\n---"
+    },
+    {
+      "id": 49,
+      "title": "Warehouse Billing",
+      "status": "Partial",
+      "evidence": "Transport orders, drivers, fleet, warehouses, stock movements, GRNs and dispatch records exist; warehouse posting includes stock controls.",
+      "sources": [
+        "src/shared/entities/operations2.ts",
+        "src/server/domain/warehouse.ts"
+      ],
+      "gap": "Storage/handling tariffs, automated accrual and warehouse invoice generation.",
+      "specification": "# 49. Warehouse Billing\n\nAutomatic charges for:\n\n- receiving\n- handling\n- storage\n- pallet/day\n- CBM/day\n- loading\n- unloading\n- repacking\n- labelling\n- forklift\n\n---"
+    },
+    {
+      "id": 50,
+      "title": "Vendor / Carrier / Agent Management",
+      "status": "Partial",
+      "evidence": "Party records include business counterparties; selected profitability reports are available.",
+      "sources": [
+        "src/shared/entities/crm.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "Counterparty contracts, compliance, terms, risk and complete lifecycle.",
+      "specification": "# 50. Vendor / Carrier / Agent Management\n\nMaster profiles:\n\n- carriers\n- airlines\n- NVOCC\n- agents\n- trucking\n- warehouse\n- customs broker\n- couriers\n- inspectors\n\nInclude contracts and performance.\n\n---"
+    },
+    {
+      "id": 51,
+      "title": "Vendor Onboarding",
+      "status": "Partial",
+      "evidence": "Party records include business counterparties; selected profitability reports are available.",
+      "sources": [
+        "src/shared/entities/crm.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "Vendor approval checks, banking verification and purchasing/payment gates.",
+      "specification": "# 51. Vendor Onboarding\n\n- KYC\n- licence\n- bank\n- tax\n- insurance\n- contract\n- rates\n- approval\n\n---"
+    },
+    {
+      "id": 52,
+      "title": "Vendor Performance",
+      "status": "Partial",
+      "evidence": "Party records include business counterparties; selected profitability reports are available.",
+      "sources": [
+        "src/shared/entities/crm.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "Vendor scorecards, service measurements and corrective action.",
+      "specification": "# 52. Vendor Performance\n\nScore:\n\n- price\n- transit\n- reliability\n- response\n- documentation\n- invoice accuracy\n- claims\n\n---"
+    },
+    {
+      "id": 53,
+      "title": "Overseas Agent Management",
+      "status": "Partial",
+      "evidence": "Party records include business counterparties; selected profitability reports are available.",
+      "sources": [
+        "src/shared/entities/crm.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "Agent agreements, settlements, overseas agency controls and permissions.",
+      "specification": "# 53. Overseas Agent Management\n\nInclude:\n\n- agent references\n- shipment instructions\n- debit note\n- credit note\n- commission\n- profit share\n- settlement\n- outstanding\n\n---"
+    },
+    {
+      "id": 54,
+      "title": "Job Costing",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Final GP validation, complete cost capture, accruals and variance review.",
+      "specification": "# 54. Job Costing\n\nPer shipment:\n\n```text\nExpected Revenue\nExpected Cost\nExpected GP\n\nActual Revenue\nActual Cost\nActual GP\n```\n\n---"
+    },
+    {
+      "id": 55,
+      "title": "Cost Allocation",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Controlled shared-cost allocation methods, audit and reversals.",
+      "specification": "# 55. Cost Allocation\n\nFor consolidated shipments allocate by:\n\n- CBM\n- weight\n- revenue\n- house count\n- custom percentage\n\n---"
+    },
+    {
+      "id": 56,
+      "title": "Accrual Accounting",
+      "status": "Partial",
+      "evidence": "Accounts, balanced posting, invoices, bills, allocations, banks, FX, tax and selected approvals/reports provide a finance foundation.",
+      "sources": [
+        "src/shared/entities/finance.ts",
+        "src/server/domain/accounting.ts",
+        "src/server/domain/finance.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "Accrual creation, reversal, matching, approvals and ledger reconciliation.",
+      "specification": "# 56. Accrual Accounting\n\nExpected supplier costs become accruals before invoice arrival.\n\nReverse automatically when actual bill arrives.\n\n---"
+    },
+    {
+      "id": 57,
+      "title": "WIP / Revenue Recognition",
+      "status": "Partial",
+      "evidence": "Accounts, balanced posting, invoices, bills, allocations, banks, FX, tax and selected approvals/reports provide a finance foundation.",
+      "sources": [
+        "src/shared/entities/finance.ts",
+        "src/server/domain/accounting.ts",
+        "src/server/domain/finance.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "WIP and revenue-recognition policies, schedules and approved ledger postings.",
+      "specification": "# 57. WIP / Revenue Recognition\n\nSupport shipments crossing financial periods.\n\n- work in progress\n- accrued revenue\n- accrued expense\n- deferred revenue\n- deferred expenses\n\n---"
+    },
+    {
+      "id": 58,
+      "title": "Double-Entry Accounting",
+      "status": "Partial",
+      "evidence": "Accounts, balanced posting, invoices, bills, allocations, banks, FX, tax and selected approvals/reports provide a finance foundation.",
+      "sources": [
+        "src/shared/entities/finance.ts",
+        "src/server/domain/accounting.ts",
+        "src/server/domain/finance.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "Verify complete accounting policies, control accounts and fiscal close against company COA.",
+      "specification": "# 58. Double-Entry Accounting\n\nFull financial core:\n\n- COA\n- GL\n- journals\n- AR\n- AP\n- cash\n- bank\n- adjustments\n- closing\n- reversals\n\n---"
+    },
+    {
+      "id": 59,
+      "title": "Accounts Receivable",
+      "status": "Partial",
+      "evidence": "Accounts, balanced posting, invoices, bills, allocations, banks, FX, tax and selected approvals/reports provide a finance foundation.",
+      "sources": [
+        "src/shared/entities/finance.ts",
+        "src/server/domain/accounting.ts",
+        "src/server/domain/finance.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "Complete collections, disputes, reminders, statements and authority controls.",
+      "specification": "# 59. Accounts Receivable\n\n- invoices\n- advances\n- deposits\n- credit notes\n- partial payments\n- allocations\n- statements\n- ageing\n\n---"
+    },
+    {
+      "id": 60,
+      "title": "Accounts Payable",
+      "status": "Partial",
+      "evidence": "Accounts, balanced posting, invoices, bills, allocations, banks, FX, tax and selected approvals/reports provide a finance foundation.",
+      "sources": [
+        "src/shared/entities/finance.ts",
+        "src/server/domain/accounting.ts",
+        "src/server/domain/finance.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "Three-way matching, vendor disputes, payment authority and reconciliation.",
+      "specification": "# 60. Accounts Payable\n\n- vendor bills\n- expected costs\n- duplicate detection\n- PO/job matching\n- approvals\n- settlement\n\n---"
+    },
+    {
+      "id": 61,
+      "title": "Credit Control",
+      "status": "Partial",
+      "evidence": "Accounts, balanced posting, invoices, bills, allocations, banks, FX, tax and selected approvals/reports provide a finance foundation.",
+      "sources": [
+        "src/shared/entities/finance.ts",
+        "src/server/domain/accounting.ts",
+        "src/server/domain/finance.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "Credit risk workflow, holds, overrides and approval evidence.",
+      "specification": "# 61. Credit Control\n\nBuckets:\n\n```text\nCurrent\n1–7\n8–30\n31–60\n61–90\n90+\n```\n\nTrack:\n\n- calls\n- emails\n- WhatsApp\n- disputes\n- promise to pay\n- escalation\n\n---"
+    },
+    {
+      "id": 62,
+      "title": "Credit Limits",
+      "status": "Partial",
+      "evidence": "Accounts, balanced posting, invoices, bills, allocations, banks, FX, tax and selected approvals/reports provide a finance foundation.",
+      "sources": [
+        "src/shared/entities/finance.ts",
+        "src/server/domain/accounting.ts",
+        "src/server/domain/finance.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "Exposure calculations across jobs, unbilled work, invoices and guarantees.",
+      "specification": "# 62. Credit Limits\n\nBlock or approve shipment based on:\n\n```text\nCredit Limit\n-\nOutstanding\n-\nUnbilled Exposure\n-\nNew Job Exposure\n```\n\n---"
+    },
+    {
+      "id": 63,
+      "title": "Treasury",
+      "status": "Partial",
+      "evidence": "Accounts, balanced posting, invoices, bills, allocations, banks, FX, tax and selected approvals/reports provide a finance foundation.",
+      "sources": [
+        "src/shared/entities/finance.ts",
+        "src/server/domain/accounting.ts",
+        "src/server/domain/finance.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "Cash forecasts, bank/cash controls, guarantees and treasury authorisation.",
+      "specification": "# 63. Treasury\n\n- banks\n- cash\n- payment runs\n- liquidity\n- payment approvals\n- transfers\n- FX purchases\n- forecast\n\n---"
+    },
+    {
+      "id": 64,
+      "title": "Cheque / PDC",
+      "status": "Partial",
+      "evidence": "Accounts, balanced posting, invoices, bills, allocations, banks, FX, tax and selected approvals/reports provide a finance foundation.",
+      "sources": [
+        "src/shared/entities/finance.ts",
+        "src/server/domain/accounting.ts",
+        "src/server/domain/finance.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "Cheque custody, PDC maturity, deposit, clearance and bounced-cheque lifecycle.",
+      "specification": "# 64. Cheque / PDC\n\nUAE-relevant:\n\n- cheque number\n- bank\n- date\n- deposit\n- clearing\n- bounce\n- replacement\n- PDC calendar\n\n---"
+    },
+    {
+      "id": 65,
+      "title": "Bank Reconciliation",
+      "status": "Partial",
+      "evidence": "Accounts, balanced posting, invoices, bills, allocations, banks, FX, tax and selected approvals/reports provide a finance foundation.",
+      "sources": [
+        "src/shared/entities/finance.ts",
+        "src/server/domain/accounting.ts",
+        "src/server/domain/finance.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "Complete bank reconciliation review, adjustments and sign-off, beyond import/matching.",
+      "specification": "# 65. Bank Reconciliation\n\nAutomatic matching with:\n\n- invoices\n- payments\n- bills\n- expenses\n\n---"
+    },
+    {
+      "id": 66,
+      "title": "Multicurrency",
+      "status": "Partial",
+      "evidence": "Accounts, balanced posting, invoices, bills, allocations, banks, FX, tax and selected approvals/reports provide a finance foundation.",
+      "sources": [
+        "src/shared/entities/finance.ts",
+        "src/server/domain/accounting.ts",
+        "src/server/domain/finance.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "FX revaluation, realised/unrealised differences and consolidation policies.",
+      "specification": "# 66. Multicurrency\n\nStore:\n\n- operational rate\n- invoice rate\n- settlement rate\n- realized FX\n- unrealized FX\n\n---"
+    },
+    {
+      "id": 67,
+      "title": "UAE VAT",
+      "status": "Partial",
+      "evidence": "Accounts, balanced posting, invoices, bills, allocations, banks, FX, tax and selected approvals/reports provide a finance foundation.",
+      "sources": [
+        "src/shared/entities/finance.ts",
+        "src/server/domain/accounting.ts",
+        "src/server/domain/finance.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "Company tax mapping, validations, filing review and regulatory acceptance.",
+      "specification": "# 67. UAE VAT\n\nComplete:\n\n- standard\n- zero-rated\n- exempt\n- out-of-scope\n- reverse charge where applicable\n- imports\n- VAT invoices\n- tax credit notes\n- reconciliation\n- VAT reports\n\n---"
+    },
+    {
+      "id": 68,
+      "title": "UAE e-Invoicing",
+      "status": "External validation",
+      "evidence": "UBL/PINT-style export and configurable provider transport exist; provider/regulatory acceptance is unverified.",
+      "sources": [
+        "src/server/integrations/einvoice.ts"
+      ],
+      "gap": "Provider onboarding, accepted schema, response handling, sandbox/live validation and mandated record retention.",
+      "specification": "# 68. UAE e-Invoicing\n\nArchitecture-ready for accredited provider integration:\n\n```text\nERP Invoice\n→ Structured Invoice\n→ Validation\n→ ASP\n→ Peppol\n→ Buyer / Reporting\n```\n\nInclude:\n\n- status\n- acknowledgement\n- rejection\n- retry\n- archive\n\n---"
+    },
+    {
+      "id": 69,
+      "title": "Corporate Tax Support",
+      "status": "Partial",
+      "evidence": "Accounts, balanced posting, invoices, bills, allocations, banks, FX, tax and selected approvals/reports provide a finance foundation.",
+      "sources": [
+        "src/shared/entities/finance.ts",
+        "src/server/domain/accounting.ts",
+        "src/server/domain/finance.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "Corporate-tax schedules, adjustments, supporting records and approved compliance review.",
+      "specification": "# 69. Corporate Tax Support\n\n- accounting books\n- supporting documents\n- adjustments\n- related parties\n- fixed assets\n- tax records\n- retention\n\n---"
+    },
+    {
+      "id": 70,
+      "title": "Fixed Assets",
+      "status": "Partial",
+      "evidence": "Employee, leave, attendance, payslip, insurance, claims, ticket, asset and purchase-order records exist; record availability is not a complete departmental workflow.",
+      "sources": [
+        "src/shared/entities/people.ts",
+        "src/server/domain/misc.ts"
+      ],
+      "gap": "Depreciation engine, disposal posting, transfers and asset reconciliation.",
+      "specification": "# 70. Fixed Assets\n\n- acquisition\n- category\n- depreciation\n- transfer\n- disposal\n\n---"
+    },
+    {
+      "id": 71,
+      "title": "Budgeting",
+      "status": "Partial",
+      "evidence": "Accounts, balanced posting, invoices, bills, allocations, banks, FX, tax and selected approvals/reports provide a finance foundation.",
+      "sources": [
+        "src/shared/entities/finance.ts",
+        "src/server/domain/accounting.ts",
+        "src/server/domain/finance.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "Budgets, scenarios, ownership, revisions and variance approvals.",
+      "specification": "# 71. Budgeting\n\nBudget by:\n\n- company\n- branch\n- department\n- cost centre\n\nCompare:\n\n- budget\n- actual\n- forecast\n\n---"
+    },
+    {
+      "id": 72,
+      "title": "Financial Consolidation",
+      "status": "Partial",
+      "evidence": "Accounts, balanced posting, invoices, bills, allocations, banks, FX, tax and selected approvals/reports provide a finance foundation.",
+      "sources": [
+        "src/shared/entities/finance.ts",
+        "src/server/domain/accounting.ts",
+        "src/server/domain/finance.ts",
+        "src/server/reports.ts"
+      ],
+      "gap": "Intercompany eliminations, consolidations and group currency reporting.",
+      "specification": "# 72. Financial Consolidation\n\nFor future multi-company group:\n\n- intercompany\n- eliminations\n- group accounts\n- consolidated reporting\n\n---"
+    },
+    {
+      "id": 73,
+      "title": "Procurement",
+      "status": "Partial",
+      "evidence": "Employee, leave, attendance, payslip, insurance, claims, ticket, asset and purchase-order records exist; record availability is not a complete departmental workflow.",
+      "sources": [
+        "src/shared/entities/people.ts",
+        "src/server/domain/misc.ts"
+      ],
+      "gap": "Purchase requisitions, RFQs, comparisons, award, receipt matching and approvals.",
+      "specification": "# 73. Procurement\n\n```text\nRequest\n→ Approval\n→ RFQ\n→ Comparison\n→ PO\n→ Receipt\n→ Bill\n→ Payment\n```\n\n---"
+    },
+    {
+      "id": 74,
+      "title": "Operational Advances",
+      "status": "Partial",
+      "evidence": "Employee, leave, attendance, payslip, insurance, claims, ticket, asset and purchase-order records exist; record availability is not a complete departmental workflow.",
+      "sources": [
+        "src/shared/entities/people.ts",
+        "src/server/domain/misc.ts"
+      ],
+      "gap": "Advance issuance, settlement, ageing and accountable-party reconciliation.",
+      "specification": "# 74. Operational Advances\n\nFor staff/customs/transport:\n\n```text\nAdvance Request\n→ Approval\n→ Payment\n→ Expense Evidence\n→ Reconciliation\n→ Balance Return\n```\n\n---"
+    },
+    {
+      "id": 75,
+      "title": "Approval Engine",
+      "status": "Partial",
+      "evidence": "Independent maker/checker requests and decisions now cover bills, payments, quotations and purchase orders. Threshold posting bypass is removed; edited or pending documents invalidate approval.",
+      "sources": [
+        "src/shared/entities/finance.ts",
+        "src/server/domain/accounting.ts",
+        "src/server/domain/finance.ts",
+        "src/server/reports.ts",
+        "src/server/engine.ts"
+      ],
+      "gap": "Configurable multi-level authority matrices, delegation, temporary substitutes, escalation, budget and credit approvals remain.",
+      "specification": "# 75. Approval Engine\n\nOne engine for everything:\n\n- quote\n- discount\n- credit\n- purchase\n- supplier bill\n- payment\n- refund\n- journal\n- expenses\n- leave\n- HR\n- vendor creation\n\n---"
+    },
+    {
+      "id": 76,
+      "title": "Workflow Engine",
+      "status": "Partial",
+      "evidence": "Workflow events now enqueue atomically with source changes. Durable runs support delays, event deduplication, transaction-safe internal retries, attempt history, edited/disabled-rule cancellation, failed-run handling and independent database processing for the demo. Uncertain external outcomes require review and are not replayed automatically.",
+      "sources": [
+        "src/server/automation.ts",
+        "src/shared/entities/platform.ts",
+        "src/shared/entities/people.ts",
+        "src/server/routes/admin.ts",
+        "src/shared/entities/automation.ts",
+        "src/server/scheduler.ts"
+      ],
+      "gap": "Multi-step workflow templates, branching, business calendars, approval escalation, department/shift queues, SLA policies and company acceptance remain.",
+      "specification": "# 76. Workflow Engine\n\nConfigurable:\n\n```text\nTrigger\nCondition\nAction\nDelay\nEscalation\nRetry\nApproval\nAudit\n```\n\n---"
+    },
+    {
+      "id": 77,
+      "title": "SLA Engine",
+      "status": "Partial",
+      "evidence": "Event-triggered rules, tasks and notifications exist; they do not establish a full enterprise workflow engine.",
+      "sources": [
+        "src/server/automation.ts",
+        "src/shared/entities/platform.ts",
+        "src/shared/entities/people.ts"
+      ],
+      "gap": "Business calendars, SLA timers, breach ownership and escalation.",
+      "specification": "# 77. SLA Engine\n\nSLA by:\n\n- customer\n- service\n- department\n- activity\n\nExamples:\n\n- quote ≤ 2 hours\n- booking confirmation ≤ 4 hours\n- BL draft ≤ 8 hours\n- POD ≤ 4 hours\n\n---"
+    },
+    {
+      "id": 78,
+      "title": "Department Work Queues",
+      "status": "Partial",
+      "evidence": "Event-triggered rules, tasks and notifications exist; they do not establish a full enterprise workflow engine.",
+      "sources": [
+        "src/server/automation.ts",
+        "src/shared/entities/platform.ts",
+        "src/shared/entities/people.ts"
+      ],
+      "gap": "Department queues, assignment rules and handover/visibility controls.",
+      "specification": "# 78. Department Work Queues\n\n### Pricing\n\nRates awaiting action.\n\n### Operations\n\nJobs requiring intervention.\n\n### Documentation\n\nBL/documents.\n\n### Accounts\n\nBilling/costing.\n\n### Credit\n\nCollections.\n\n---"
+    },
+    {
+      "id": 79,
+      "title": "Workload Management",
+      "status": "Partial",
+      "evidence": "Event-triggered rules, tasks and notifications exist; they do not establish a full enterprise workflow engine.",
+      "sources": [
+        "src/server/automation.ts",
+        "src/shared/entities/platform.ts",
+        "src/shared/entities/people.ts"
+      ],
+      "gap": "Capacity planning, skill-based assignment and workload balancing.",
+      "specification": "# 79. Workload Management\n\nTrack:\n\n- workload/person\n- jobs\n- tasks\n- overdue\n- complexity\n- utilization\n\nRecommend reassignment.\n\n---"
+    },
+    {
+      "id": 80,
+      "title": "Shift Handover",
+      "status": "Partial",
+      "evidence": "Event-triggered rules, tasks and notifications exist; they do not establish a full enterprise workflow engine.",
+      "sources": [
+        "src/server/automation.ts",
+        "src/shared/entities/platform.ts",
+        "src/shared/entities/people.ts"
+      ],
+      "gap": "Structured shift handover, outstanding exception acceptance and continuity tracking.",
+      "specification": "# 80. Shift Handover\n\nAutomatic:\n\n```text\nEmployee Ending Shift\n→ Outstanding Jobs\n→ Critical Issues\n→ Pending Communications\n→ Handover\n→ Recipient Acknowledges\n```\n\n---"
+    },
+    {
+      "id": 81,
+      "title": "Customer SOP Engine",
+      "status": "Partial",
+      "evidence": "CRM, parties, contracts, rate cards, quotations and a margin approval threshold provide a commercial foundation.",
+      "sources": [
+        "src/shared/entities/crm.ts",
+        "src/server/domain/sales.ts"
+      ],
+      "gap": "Versioned customer SOPs enforced in job/document/approval workflows.",
+      "specification": "# 81. Customer SOP Engine\n\nCustomer-specific rules applied automatically.\n\nExample:\n\n> Always send pre-alert 48 hours before ETA.\n\nSystem creates that task automatically.\n\n---"
+    },
+    {
+      "id": 82,
+      "title": "Route / Lane SOP",
+      "status": "Partial",
+      "evidence": "Event-triggered rules, tasks and notifications exist; they do not establish a full enterprise workflow engine.",
+      "sources": [
+        "src/server/automation.ts",
+        "src/shared/entities/platform.ts",
+        "src/shared/entities/people.ts"
+      ],
+      "gap": "Versioned lane SOPs with mandatory operational and customs steps.",
+      "specification": "# 82. Route / Lane SOP\n\nCountry/lane-specific instructions.\n\n---"
+    },
+    {
+      "id": 83,
+      "title": "Workflow Templates",
+      "status": "Partial",
+      "evidence": "Event-triggered rules, tasks and notifications exist; they do not establish a full enterprise workflow engine.",
+      "sources": [
+        "src/server/automation.ts",
+        "src/shared/entities/platform.ts",
+        "src/shared/entities/people.ts"
+      ],
+      "gap": "Configurable workflow templates with conditions, approvals and validated transitions.",
+      "specification": "# 83. Workflow Templates\n\nPer operation:\n\n- FCL export\n- FCL import\n- LCL\n- air\n- road\n- customs\n- warehouse\n\n---"
+    },
+    {
+      "id": 84,
+      "title": "Cut-Off Management",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Enforced cut-off calendar, dependencies, alerts and overrides.",
+      "specification": "# 84. Cut-Off Management\n\nTrack:\n\n- SI\n- VGM\n- gate-in\n- cargo\n- documents\n- airline acceptance\n\nCountdown alerts.\n\n---"
+    },
+    {
+      "id": 85,
+      "title": "Pre-Alert Automation",
+      "status": "Partial",
+      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx"
+      ],
+      "gap": "Automated validated pre-alert bundles, delivery tracking and exceptions.",
+      "specification": "# 85. Pre-Alert Automation\n\nAutomatically compile documents and send.\n\n---"
+    },
+    {
+      "id": 86,
+      "title": "Unified Inbox",
+      "status": "Missing",
+      "evidence": "No dedicated implementation identified for this capability in the reviewed source.",
+      "sources": [],
+      "gap": "Unified inbound email/WhatsApp inbox with ownership and message threading.",
+      "specification": "# 86. Unified Inbox\n\nSingle interface for:\n\n- WhatsApp\n- email\n- website\n- customer portal\n- internal notes\n\n---"
+    },
+    {
+      "id": 87,
+      "title": "WhatsApp Business",
+      "status": "Partial",
+      "evidence": "WhatsApp messaging/webhooks and selected scheduled notifications exist; email supports outbound delivery.",
+      "sources": [
+        "src/server/integrations/whatsapp.ts",
+        "src/server/mailer.ts",
+        "src/server/scheduler.ts",
+        "src/web/pages/WhatsAppPage.tsx"
+      ],
+      "gap": "Verify complete requested WhatsApp staff/customer flows and consent/template policy using live provider.",
+      "specification": "# 87. WhatsApp Business\n\nFull operational channel, not a button.\n\n### Customer\n\n- enquiries\n- quotes\n- booking\n- tracking\n- documents\n- invoices\n- payment reminders\n\n### Internal\n\n- approval\n- owner brief\n- alerts\n- exceptions\n\n---"
+    },
+    {
+      "id": 88,
+      "title": "WhatsApp Automation",
+      "status": "Partial",
+      "evidence": "WhatsApp messaging/webhooks and selected scheduled notifications exist; email supports outbound delivery.",
+      "sources": [
+        "src/server/integrations/whatsapp.ts",
+        "src/server/mailer.ts",
+        "src/server/scheduler.ts",
+        "src/web/pages/WhatsAppPage.tsx"
+      ],
+      "gap": "Durable triggers, retry/escalation and full template/message lifecycle.",
+      "specification": "# 88. WhatsApp Automation\n\nExamples:\n\n- booking confirmed\n- shipment departed\n- ETA change\n- customs clearance\n- documents missing\n- delivery\n- POD\n- invoice\n- overdue\n\n---"
+    },
+    {
+      "id": 89,
+      "title": "Daily Owner WhatsApp Brief",
+      "status": "Partial",
+      "evidence": "WhatsApp messaging/webhooks and selected scheduled notifications exist; email supports outbound delivery.",
+      "sources": [
+        "src/server/integrations/whatsapp.ts",
+        "src/server/mailer.ts",
+        "src/server/scheduler.ts",
+        "src/web/pages/WhatsAppPage.tsx"
+      ],
+      "gap": "Validate complete owner briefing metrics, schedule, authorised recipients and successful delivery.",
+      "specification": "# 89. Daily Owner WhatsApp Brief\n\nAutomatically send:\n\n```text\nActive Jobs\nArrivals\nDeliveries\nCustoms Pending\nCritical Exceptions\nOutstanding AR\nCollections Expected\nCash Position\nGP MTD\nApprovals\n```\n\n---"
+    },
+    {
+      "id": 90,
+      "title": "Email Automation",
+      "status": "Partial",
+      "evidence": "WhatsApp messaging/webhooks and selected scheduled notifications exist; email supports outbound delivery.",
+      "sources": [
+        "src/server/integrations/whatsapp.ts",
+        "src/server/mailer.ts",
+        "src/server/scheduler.ts",
+        "src/web/pages/WhatsAppPage.tsx"
+      ],
+      "gap": "Inbound capture, threading, parsing and complete event-triggered email rules.",
+      "specification": "# 90. Email Automation\n\nShared addresses:\n\n- sales@\n- pricing@\n- operations@\n- imports@\n- exports@\n- accounts@\n\nAutomatically link incoming email to:\n\n- customer\n- job\n- invoice\n- booking\n\n---"
+    },
+    {
+      "id": 91,
+      "title": "Communication Timeline",
+      "status": "Partial",
+      "evidence": "WhatsApp messaging/webhooks and selected scheduled notifications exist; email supports outbound delivery.",
+      "sources": [
+        "src/server/integrations/whatsapp.ts",
+        "src/server/mailer.ts",
+        "src/server/scheduler.ts",
+        "src/web/pages/WhatsAppPage.tsx"
+      ],
+      "gap": "Unified permission-scoped communication timeline across channels and entities.",
+      "specification": "# 91. Communication Timeline\n\nEvery record has:\n\n- email\n- WhatsApp\n- call\n- comments\n- notes\n- tasks\n- activity\n\n---"
+    },
+    {
+      "id": 92,
+      "title": "Universal Side Panel",
+      "status": "Partial",
+      "evidence": "Shared navigation, document screens, search, task records and responsive layouts exist.",
+      "sources": [
+        "src/web/components/Shell.tsx",
+        "src/web/pages/DocumentsPage.tsx",
+        "src/web/pages/SearchPages.tsx",
+        "src/web/pages/Workspaces.tsx",
+        "src/web/reference.css"
+      ],
+      "gap": "Consistent contextual side panel across all requested records and communication actions.",
+      "specification": "# 92. Universal Side Panel\n\nLike the good part of Fresa:\n\n```text\nComments\nFollow-ups\nAttachments\nReferences\nTags\nLinks\nComplaints\nHistory\n```\n\n---"
+    },
+    {
+      "id": 93,
+      "title": "Document Management",
+      "status": "Partial",
+      "evidence": "Shared navigation, document screens, search, task records and responsive layouts exist.",
+      "sources": [
+        "src/web/components/Shell.tsx",
+        "src/web/pages/DocumentsPage.tsx",
+        "src/web/pages/SearchPages.tsx",
+        "src/web/pages/Workspaces.tsx",
+        "src/web/reference.css"
+      ],
+      "gap": "Version control, retention, access restrictions, verification and release gates.",
+      "specification": "# 93. Document Management\n\n- versioning\n- permission\n- secure links\n- OCR\n- AI extraction\n- expiry\n- retention\n- audit\n\n---"
+    },
+    {
+      "id": 94,
+      "title": "OCR",
+      "status": "Missing",
+      "evidence": "No dedicated implementation identified for this capability in the reviewed source.",
+      "sources": [],
+      "gap": "OCR extraction, confidence review and validated structured field ingestion.",
+      "specification": "# 94. OCR\n\nExtract:\n\n- BL\n- AWB\n- invoices\n- packing lists\n- COO\n- customs documents\n- receipts\n\n---"
+    },
+    {
+      "id": 95,
+      "title": "Document Matching",
+      "status": "Missing",
+      "evidence": "No dedicated implementation identified for this capability in the reviewed source.",
+      "sources": [],
+      "gap": "Document-to-job matching with confidence, conflict handling and human verification.",
+      "specification": "# 95. Document Matching\n\nAutomatically attach uploaded files to the correct job.\n\n---"
+    },
+    {
+      "id": 96,
+      "title": "Customer Portal",
+      "status": "Partial",
+      "evidence": "Password authentication, TOTP, sessions, module/action permissions and customer record scoping exist.",
+      "sources": [
+        "src/server/auth.ts",
+        "src/server/engine.ts",
+        "src/web/pages/ProfilePage.tsx"
+      ],
+      "gap": "Complete scoped portal workflows, upload/approval/statement and customer acceptance tests.",
+      "specification": "# 96. Customer Portal\n\nComplete self-service:\n\n```text\nDashboard\nQuotes\nBookings\nShipments\nTracking\nDocuments\nInvoices\nStatements\nPayments\nInventory\nClaims\nSupport\nReports\n```\n\n---"
+    },
+    {
+      "id": 97,
+      "title": "Agent Portal",
+      "status": "Missing",
+      "evidence": "No dedicated implementation identified for this capability in the reviewed source.",
+      "sources": [],
+      "gap": "Dedicated agent portal with scoped access, handovers, billing and settlement.",
+      "specification": "# 97. Agent Portal\n\n- jobs\n- pre-alert\n- documents\n- charges\n- settlements\n- communication\n\n---"
+    },
+    {
+      "id": 98,
+      "title": "Vendor Portal",
+      "status": "Missing",
+      "evidence": "No dedicated implementation identified for this capability in the reviewed source.",
+      "sources": [],
+      "gap": "Dedicated vendor portal with onboarding, invoices, approvals and remittance.",
+      "specification": "# 98. Vendor Portal\n\n- jobs\n- acceptance\n- status\n- POD\n- invoices\n- payment status\n\n---"
+    },
+    {
+      "id": 99,
+      "title": "Employee Portal",
+      "status": "Partial",
+      "evidence": "Password authentication, TOTP, sessions, module/action permissions and customer record scoping exist.",
+      "sources": [
+        "src/server/auth.ts",
+        "src/server/engine.ts",
+        "src/web/pages/ProfilePage.tsx"
+      ],
+      "gap": "Complete employee self-service for HR, approvals and requested records.",
+      "specification": "# 99. Employee Portal\n\n- profile\n- documents\n- attendance\n- leave\n- salary\n- expenses\n- tasks\n- training\n\n---"
+    },
+    {
+      "id": 100,
+      "title": "HRMS",
+      "status": "Partial",
+      "evidence": "Employee, leave, attendance, payslip, insurance, claims, ticket, asset and purchase-order records exist; record availability is not a complete departmental workflow.",
+      "sources": [
+        "src/shared/entities/people.ts",
+        "src/server/domain/misc.ts"
+      ],
+      "gap": "Recruitment, onboarding, performance, training and full HR lifecycle.",
+      "specification": "# 100. HRMS\n\nFor 80 staff:\n\n- workforce planning\n- recruitment\n- applicant tracking\n- onboarding\n- employee file\n- probation\n- attendance\n- leave\n- appraisal\n- training\n- discipline\n- promotion\n- transfer\n- resignation\n- offboarding\n\n---"
+    },
+    {
+      "id": 101,
+      "title": "UAE Payroll",
+      "status": "Partial",
+      "evidence": "Employee, leave, attendance, payslip, insurance, claims, ticket, asset and purchase-order records exist; record availability is not a complete departmental workflow.",
+      "sources": [
+        "src/shared/entities/people.ts",
+        "src/server/domain/misc.ts"
+      ],
+      "gap": "Complete payroll calculations, approvals, deductions and ledger reconciliation.",
+      "specification": "# 101. UAE Payroll\n\n- salary\n- allowances\n- deductions\n- overtime\n- commissions\n- leave\n- payslip\n- payroll journal\n- payment\n\n---"
+    },
+    {
+      "id": 102,
+      "title": "WPS",
+      "status": "External validation",
+      "evidence": "WPS SIF export exists; employer/bank submission acceptance is unverified.",
+      "sources": [
+        "src/server/integrations/wps.ts"
+      ],
+      "gap": "Employer/company configuration, validated SIF content and bank/WPS acceptance with rejection handling.",
+      "specification": "# 102. WPS\n\nPrepare applicable salary files and controls.\n\n---"
+    },
+    {
+      "id": 103,
+      "title": "EOSB",
+      "status": "Partial",
+      "evidence": "Employee, leave, attendance, payslip, insurance, claims, ticket, asset and purchase-order records exist; record availability is not a complete departmental workflow.",
+      "sources": [
+        "src/shared/entities/people.ts",
+        "src/server/domain/misc.ts"
+      ],
+      "gap": "Validated EOSB calculations, entitlement policy, approvals and settlement posting.",
+      "specification": "# 103. EOSB\n\nEnd-of-service calculation workflow.\n\n---"
+    },
+    {
+      "id": 104,
+      "title": "Employee Documents",
+      "status": "Partial",
+      "evidence": "Employee, leave, attendance, payslip, insurance, claims, ticket, asset and purchase-order records exist; record availability is not a complete departmental workflow.",
+      "sources": [
+        "src/shared/entities/people.ts",
+        "src/server/domain/misc.ts"
+      ],
+      "gap": "Employee document expiry, renewal evidence and access controls.",
+      "specification": "# 104. Employee Documents\n\nTrack:\n\n- passport\n- visa\n- Emirates ID\n- labour permit\n- insurance\n- licences\n\nExpiry alerts.\n\n---"
+    },
+    {
+      "id": 105,
+      "title": "Training & Competency",
+      "status": "Missing",
+      "evidence": "No dedicated implementation identified for this capability in the reviewed source.",
+      "sources": [],
+      "gap": "Skill/competency framework, qualifications and assignment restrictions.",
+      "specification": "# 105. Training & Competency\n\nCompetency matrix for:\n\n- Ocean\n- Air\n- Customs\n- DG\n- Warehouse\n- Finance\n\n---"
+    },
+    {
+      "id": 106,
+      "title": "Knowledge Base",
+      "status": "Missing",
+      "evidence": "No dedicated implementation identified for this capability in the reviewed source.",
+      "sources": [],
+      "gap": "Versioned searchable knowledge base, ownership, approval and acknowledgement.",
+      "specification": "# 106. Knowledge Base\n\nVersion-controlled:\n\n- SOPs\n- policies\n- manuals\n- customer SOP\n- carrier instructions\n- customs guides\n- training\n\n---"
+    },
+    {
+      "id": 107,
+      "title": "Internal Helpdesk",
+      "status": "Partial",
+      "evidence": "Employee, leave, attendance, payslip, insurance, claims, ticket, asset and purchase-order records exist; record availability is not a complete departmental workflow.",
+      "sources": [
+        "src/shared/entities/people.ts",
+        "src/server/domain/misc.ts"
+      ],
+      "gap": "Internal support categories, SLA, escalation and resolution knowledge.",
+      "specification": "# 107. Internal Helpdesk\n\nCategories:\n\n- IT\n- HR\n- finance\n- system\n- admin\n\n---"
+    },
+    {
+      "id": 108,
+      "title": "Customer Helpdesk",
+      "status": "Partial",
+      "evidence": "Employee, leave, attendance, payslip, insurance, claims, ticket, asset and purchase-order records exist; record availability is not a complete departmental workflow.",
+      "sources": [
+        "src/shared/entities/people.ts",
+        "src/server/domain/misc.ts"
+      ],
+      "gap": "Customer service SLA, channel threading, ownership and portal closure feedback.",
+      "specification": "# 108. Customer Helpdesk\n\nTickets linked to:\n\n- customer\n- shipment\n- invoice\n\nWith SLA.\n\n---"
+    },
+    {
+      "id": 109,
+      "title": "Complaint Management",
+      "status": "Partial",
+      "evidence": "Employee, leave, attendance, payslip, insurance, claims, ticket, asset and purchase-order records exist; record availability is not a complete departmental workflow.",
+      "sources": [
+        "src/shared/entities/people.ts",
+        "src/server/domain/misc.ts"
+      ],
+      "gap": "Complaint investigation, root cause, corrective action and feedback controls.",
+      "specification": "# 109. Complaint Management\n\n- complaint\n- cause\n- severity\n- owner\n- action\n- resolution\n\n---"
+    },
+    {
+      "id": 110,
+      "title": "Quality Management",
+      "status": "Partial",
+      "evidence": "Compliance records, exceptions and change audit history provide a foundation; audit storage is not tamper-evident.",
+      "sources": [
+        "src/shared/entities/compliance.ts",
+        "src/server/domain/compliance.ts",
+        "src/server/engine.ts"
+      ],
+      "gap": "Quality management, CAPA, nonconformance and controlled quality records.",
+      "specification": "# 110. Quality Management\n\n- NCR\n- CAPA\n- internal audits\n- SOP compliance\n- quality objectives\n\n---"
+    },
+    {
+      "id": 111,
+      "title": "HSE",
+      "status": "Partial",
+      "evidence": "Compliance records, exceptions and change audit history provide a foundation; audit storage is not tamper-evident.",
+      "sources": [
+        "src/shared/entities/compliance.ts",
+        "src/server/domain/compliance.ts",
+        "src/server/engine.ts"
+      ],
+      "gap": "HSE incidents, risk assessments, training and corrective action.",
+      "specification": "# 111. HSE\n\nFor warehouse/transport:\n\n- incident\n- accident\n- near miss\n- PPE\n- safety checks\n- investigation\n- corrective action\n\n---"
+    },
+    {
+      "id": 112,
+      "title": "Compliance Calendar",
+      "status": "Partial",
+      "evidence": "Compliance records, exceptions and change audit history provide a foundation; audit storage is not tamper-evident.",
+      "sources": [
+        "src/shared/entities/compliance.ts",
+        "src/server/domain/compliance.ts",
+        "src/server/engine.ts"
+      ],
+      "gap": "Complete recurring compliance obligations, reminders, evidence and escalation.",
+      "specification": "# 112. Compliance Calendar\n\nTrack:\n\n- licences\n- registrations\n- customs\n- VAT\n- corporate tax\n- visas\n- insurance\n- vehicle registrations\n- contracts\n\n---"
+    },
+    {
+      "id": 113,
+      "title": "Risk Register",
+      "status": "Partial",
+      "evidence": "Compliance records, exceptions and change audit history provide a foundation; audit storage is not tamper-evident.",
+      "sources": [
+        "src/shared/entities/compliance.ts",
+        "src/server/domain/compliance.ts",
+        "src/server/engine.ts"
+      ],
+      "gap": "Formal risk register, scoring, mitigation, owner and review history.",
+      "specification": "# 113. Risk Register\n\nRisks:\n\n- financial\n- operational\n- customer\n- carrier\n- compliance\n- security\n- legal\n\n---"
+    },
+    {
+      "id": 114,
+      "title": "Audit Module",
+      "status": "Partial",
+      "evidence": "Compliance records, exceptions and change audit history provide a foundation; audit storage is not tamper-evident.",
+      "sources": [
+        "src/shared/entities/compliance.ts",
+        "src/server/domain/compliance.ts",
+        "src/server/engine.ts"
+      ],
+      "gap": "Audit planning, execution, findings, actions and closure evidence.",
+      "specification": "# 114. Audit Module\n\nInternal audit:\n\n- plan\n- checklist\n- findings\n- severity\n- remediation\n- evidence\n- closure\n\n---"
+    },
+    {
+      "id": 115,
+      "title": "Immutable Audit Trail",
+      "status": "Partial",
+      "evidence": "Compliance records, exceptions and change audit history provide a foundation; audit storage is not tamper-evident.",
+      "sources": [
+        "src/shared/entities/compliance.ts",
+        "src/server/domain/compliance.ts",
+        "src/server/engine.ts"
+      ],
+      "gap": "Tamper-evident append-only audit, integrity verification, retention and privileged-change controls.",
+      "specification": "# 115. Immutable Audit Trail\n\nEvery important transaction records:\n\n```text\nUser\nDate\nDevice\nOld Value\nNew Value\nReason\nApproval\n```\n\n---"
+    },
+    {
+      "id": 116,
+      "title": "Reports",
+      "status": "Partial",
+      "evidence": "Fixed operational, finance and profitability reports and dashboard aggregates exist.",
+      "sources": [
+        "src/server/reports.ts",
+        "src/server/routes/insights.ts"
+      ],
+      "gap": "Validate every specified report, reconciliation and permission scope.",
+      "specification": "# 116. Reports\n\n### Freight\n\n- shipment register\n- container register\n- ETA\n- ETD\n- BL\n- AWB\n- customer\n\n### Commercial\n\n- sales\n- quote\n- conversion\n- pipeline\n\n### Operational\n\n- SLA\n- delay\n- turnaround\n- productivity\n\n### Financial\n\n- P&L\n- BS\n- cash flow\n- trial balance\n- AR\n- AP\n\n---"
+    },
+    {
+      "id": 117,
+      "title": "Profitability Analytics",
+      "status": "Partial",
+      "evidence": "Fixed operational, finance and profitability reports and dashboard aggregates exist.",
+      "sources": [
+        "src/server/reports.ts",
+        "src/server/routes/insights.ts"
+      ],
+      "gap": "Full dimensional profitability, allocation and drilldown acceptance.",
+      "specification": "# 117. Profitability Analytics\n\nProfit by:\n\n- job\n- house\n- master\n- customer\n- salesperson\n- branch\n- department\n- lane\n- carrier\n- agent\n- service\n- container\n- commodity\n\n---"
+    },
+    {
+      "id": 118,
+      "title": "Staff Productivity",
+      "status": "Partial",
+      "evidence": "Fixed operational, finance and profitability reports and dashboard aggregates exist.",
+      "sources": [
+        "src/server/reports.ts",
+        "src/server/routes/insights.ts"
+      ],
+      "gap": "Measured productivity, workload and service metrics with valid attribution.",
+      "specification": "# 118. Staff Productivity\n\nMeasure:\n\n- jobs\n- SLA\n- errors\n- turnaround\n- complaints\n- task completion\n\n---"
+    },
+    {
+      "id": 119,
+      "title": "Carrier Performance",
+      "status": "Partial",
+      "evidence": "Fixed operational, finance and profitability reports and dashboard aggregates exist.",
+      "sources": [
+        "src/server/reports.ts",
+        "src/server/routes/insights.ts"
+      ],
+      "gap": "Carrier reliability, cost/service scorecards and source-event completeness.",
+      "specification": "# 119. Carrier Performance\n\n- on-time\n- rollovers\n- rate competitiveness\n- claims\n- transit\n- response\n\n---"
+    },
+    {
+      "id": 120,
+      "title": "Customer Churn / Growth",
+      "status": "Partial",
+      "evidence": "Fixed operational, finance and profitability reports and dashboard aggregates exist.",
+      "sources": [
+        "src/server/reports.ts",
+        "src/server/routes/insights.ts"
+      ],
+      "gap": "Churn, growth, retention and predictive/account-owner measures.",
+      "specification": "# 120. Customer Churn / Growth\n\nDetect:\n\n- declining volume\n- falling GP\n- increased complaints\n- rate rejection\n- payment deterioration\n\n---"
+    },
+    {
+      "id": 121,
+      "title": "Report Builder",
+      "status": "Partial",
+      "evidence": "Fixed operational, finance and profitability reports and dashboard aggregates exist.",
+      "sources": [
+        "src/server/reports.ts",
+        "src/server/routes/insights.ts"
+      ],
+      "gap": "Custom report datasets, joins, expressions, access control and safe export.",
+      "specification": "# 121. Report Builder\n\nCustom user-defined reporting.\n\nChoose:\n\n- dataset\n- filters\n- columns\n- grouping\n- calculations\n\nSave/share/schedule.\n\n---"
+    },
+    {
+      "id": 122,
+      "title": "Scheduled Reports",
+      "status": "Partial",
+      "evidence": "Fixed operational, finance and profitability reports and dashboard aggregates exist.",
+      "sources": [
+        "src/server/reports.ts",
+        "src/server/routes/insights.ts"
+      ],
+      "gap": "Scheduled report generation, scoped recipients, delivery/retry and audit.",
+      "specification": "# 122. Scheduled Reports\n\nDeliver by:\n\n- dashboard\n- email\n- WhatsApp\n- PDF\n- Excel\n\n---"
+    },
+    {
+      "id": 123,
+      "title": "BI Layer",
+      "status": "Partial",
+      "evidence": "Fixed operational, finance and profitability reports and dashboard aggregates exist.",
+      "sources": [
+        "src/server/reports.ts",
+        "src/server/routes/insights.ts"
+      ],
+      "gap": "Governed historical BI model, dimensions, refresh and reconciliation.",
+      "specification": "# 123. BI Layer\n\nHistorical warehouse for:\n\n- trends\n- management\n- forecasting\n- branch comparison\n- departmental analysis\n\n---"
+    },
+    {
+      "id": 124,
+      "title": "Universal Search",
+      "status": "Partial",
+      "evidence": "Shared navigation, document screens, search, task records and responsive layouts exist.",
+      "sources": [
+        "src/web/components/Shell.tsx",
+        "src/web/pages/DocumentsPage.tsx",
+        "src/web/pages/SearchPages.tsx",
+        "src/web/pages/Workspaces.tsx",
+        "src/web/reference.css"
+      ],
+      "gap": "Cross-module permission-aware search including documents and communication.",
+      "specification": "# 124. Universal Search\n\nOne search box for:\n\n- Job\n- Booking\n- Customer\n- Vendor\n- Agent\n- MBL\n- HBL\n- MAWB\n- HAWB\n- Container\n- BOE\n- invoice\n- payment\n- cheque\n- PO\n- DO\n- declaration\n- employee\n- vehicle\n- document\n\nNo Fresa-style dropdown selection first.\n\n---"
+    },
+    {
+      "id": 125,
+      "title": "EDI",
+      "status": "External validation",
+      "evidence": "HTTP, email and SFTP transport exists; partner-specific message contracts are unverified.",
+      "sources": [
+        "src/server/integrations/edi.ts"
+      ],
+      "gap": "Each trading partner schema, acknowledgements, idempotency, retries and contracted acceptance.",
+      "specification": "# 125. EDI\n\nSupport:\n\n- EDIFACT\n- XML\n- JSON\n- CSV\n- SFTP\n- APIs\n\n---"
+    },
+    {
+      "id": 126,
+      "title": "Integration Hub",
+      "status": "Partial",
+      "evidence": "Integration configuration/logging, webhooks and user-bound API keys exist.",
+      "sources": [
+        "src/server/integrations/catalog.ts",
+        "src/server/integrations/log.ts",
+        "src/server/webhooks.ts",
+        "src/shared/entities/platform.ts"
+      ],
+      "gap": "Connector lifecycle, health, credentials rotation and documented contracts.",
+      "specification": "# 126. Integration Hub\n\nProvider adapters:\n\n```text\nCarrierProvider\nTrackingProvider\nCustomsProvider\nEmailProvider\nWhatsAppProvider\nPaymentProvider\nEInvoiceProvider\nBankProvider\nStorageProvider\nOCRProvider\nAIProvider\n```\n\n---"
+    },
+    {
+      "id": 127,
+      "title": "Integration Monitoring",
+      "status": "Partial",
+      "evidence": "Integration configuration/logging, webhooks and user-bound API keys exist.",
+      "sources": [
+        "src/server/integrations/catalog.ts",
+        "src/server/integrations/log.ts",
+        "src/server/webhooks.ts",
+        "src/shared/entities/platform.ts"
+      ],
+      "gap": "Alerting, replay, dead-letter/retry and integration health ownership.",
+      "specification": "# 127. Integration Monitoring\n\nDashboard:\n\n```text\nWhatsApp       Healthy\nEmail          Healthy\nCarrier APIs   Healthy\nCustoms        Warning\neInvoice       2 Pending\nBank           Healthy\n```\n\n---"
+    },
+    {
+      "id": 128,
+      "title": "API Platform",
+      "status": "Partial",
+      "evidence": "Integration configuration/logging, webhooks and user-bound API keys exist.",
+      "sources": [
+        "src/server/integrations/catalog.ts",
+        "src/server/integrations/log.ts",
+        "src/server/webhooks.ts",
+        "src/shared/entities/platform.ts"
+      ],
+      "gap": "Key-specific scopes, quotas, versioning, idempotency and developer contracts.",
+      "specification": "# 128. API Platform\n\n- OAuth\n- API keys\n- scopes\n- webhooks\n- rate limits\n- logs\n- replay\n- retry\n\n---"
+    },
+    {
+      "id": 129,
+      "title": "AI Operations Copilot",
+      "status": "Partial",
+      "evidence": "AI agents, tool allowlists, review queues and selected read/write tools exist. Higher autonomy can execute permitted tools without per-action approval.",
+      "sources": [
+        "src/server/ai/agents.ts",
+        "src/server/ai/tools.ts",
+        "src/server/ai/templates.ts"
+      ],
+      "gap": "Validate full operational assistance and human approval boundaries.",
+      "specification": "# 129. AI Operations Copilot\n\nAsk:\n\n> What needs attention today?\n\n> Which shipments will be late?\n\n> Show jobs missing invoices.\n\n> Which containers risk detention?\n\n> Summarize customer XYZ.\n\n---"
+    },
+    {
+      "id": 130,
+      "title": "AI Pricing Assistant",
+      "status": "Partial",
+      "evidence": "AI agents, tool allowlists, review queues and selected read/write tools exist. Higher autonomy can execute permitted tools without per-action approval.",
+      "sources": [
+        "src/server/ai/agents.ts",
+        "src/server/ai/tools.ts",
+        "src/server/ai/templates.ts"
+      ],
+      "gap": "Verified pricing data, recommendations, margin policy and approver sign-off.",
+      "specification": "# 130. AI Pricing Assistant\n\nCan:\n\n- retrieve historical rates\n- compare carriers\n- analyze margins\n- draft costing\n\nHuman approves final quote.\n\n---"
+    },
+    {
+      "id": 131,
+      "title": "AI Documentation QA",
+      "status": "Partial",
+      "evidence": "AI agents, tool allowlists, review queues and selected read/write tools exist. Higher autonomy can execute permitted tools without per-action approval.",
+      "sources": [
+        "src/server/ai/agents.ts",
+        "src/server/ai/tools.ts",
+        "src/server/ai/templates.ts"
+      ],
+      "gap": "Document extraction/QA, evidence, confidence and human review gates.",
+      "specification": "# 131. AI Documentation QA\n\nCompare:\n\n- HBL\n- MBL\n- invoice\n- packing list\n- SOP\n\nFlag inconsistencies.\n\n---"
+    },
+    {
+      "id": 132,
+      "title": "AI Finance Analyst",
+      "status": "Partial",
+      "evidence": "AI agents, tool allowlists, review queues and selected read/write tools exist. Higher autonomy can execute permitted tools without per-action approval.",
+      "sources": [
+        "src/server/ai/agents.ts",
+        "src/server/ai/tools.ts",
+        "src/server/ai/templates.ts"
+      ],
+      "gap": "Finance analysis reconciled to ledger with immutable prohibited-action boundaries.",
+      "specification": "# 132. AI Finance Analyst\n\nAsk:\n\n> Why did margin decline?\n\n> Which customers have poor payment behaviour?\n\n> Forecast collections this month.\n\n---"
+    },
+    {
+      "id": 133,
+      "title": "AI Management Analyst",
+      "status": "Partial",
+      "evidence": "AI agents, tool allowlists, review queues and selected read/write tools exist. Higher autonomy can execute permitted tools without per-action approval.",
+      "sources": [
+        "src/server/ai/agents.ts",
+        "src/server/ai/tools.ts",
+        "src/server/ai/templates.ts"
+      ],
+      "gap": "Full management insight, source attribution, access control and decision traceability.",
+      "specification": "# 133. AI Management Analyst\n\nAsk:\n\n> Which branch is underperforming?\n\n> Which employees are overloaded?\n\n> Which customers are at risk?\n\n---"
+    },
+    {
+      "id": 134,
+      "title": "AI Guardrails",
+      "status": "Partial",
+      "evidence": "Reviewed capability policy rejects unreviewed tools. External messages require approval at every autonomy level. Approval rechecks the current agent allowlist and atomically claims execution to prevent duplicate actions.",
+      "sources": [
+        "src/server/ai/agents.ts",
+        "src/server/ai/tools.ts",
+        "src/server/ai/templates.ts",
+        "src/server/ai/policy.ts"
+      ],
+      "gap": "Branch/user-scoped AI reads, complete action auditing, evidence quality, provider acceptance and incident/recovery controls remain. Financial posting, customs filing and cargo release tools are denied.",
+      "specification": "# 134. AI Guardrails\n\nAI must not independently:\n\n- post journals\n- approve payment\n- change banking\n- file customs declarations\n- issue credit notes\n- change tax\n- approve low margin\n\nwithout controlled workflow.\n\n---"
+    },
+    {
+      "id": 135,
+      "title": "Master Data Governance",
+      "status": "Partial",
+      "evidence": "Organisation, roles and master records exist.",
+      "sources": [
+        "src/shared/entities/platform.ts",
+        "src/shared/entities/masters.ts",
+        "src/shared/entities/automation.ts"
+      ],
+      "gap": "Master-data ownership, duplicate checks, change approvals and merge history.",
+      "specification": "# 135. Master Data Governance\n\nCentral management for:\n\n- ports\n- airports\n- carriers\n- container types\n- Incoterms\n- countries\n- currencies\n- HS codes\n- tax codes\n- charge codes\n\n---"
+    },
+    {
+      "id": 136,
+      "title": "Data Quality",
+      "status": "Partial",
+      "evidence": "Compliance records, exceptions and change audit history provide a foundation; audit storage is not tamper-evident.",
+      "sources": [
+        "src/shared/entities/compliance.ts",
+        "src/server/domain/compliance.ts",
+        "src/server/engine.ts"
+      ],
+      "gap": "Field/relationship quality rules, duplicate remediation, completeness and ownership.",
+      "specification": "# 136. Data Quality\n\nDetect:\n\n- duplicates\n- impossible dates\n- missing mandatory data\n- duplicated BL\n- invalid container number\n- inconsistent customer names\n- incomplete invoices\n\n---"
+    },
+    {
+      "id": 137,
+      "title": "Job Closure",
+      "status": "Partial",
+      "evidence": "Closure review now validates delivery, POD or independently verified non-applicability, document review, cleared customs/returned equipment or applicable exceptions, invoiced revenue, billed/reviewed costs and no draft invoices. Evidence is invalidated by relevant record changes.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx",
+        "src/server/domain/job-controls.ts",
+        "src/server/routes/jobs.ts",
+        "src/web/pages/JobControlPage.tsx"
+      ],
+      "gap": "Company/lane-specific closure policies, cost accrual and WIP alternatives, required document sets, full linked-record locking and role acceptance still need implementation.",
+      "specification": "# 137. Job Closure\n\nA job should not close until:\n\n```text\n✓ Delivered\n✓ POD\n✓ Revenue billed\n✓ Costs booked/accrued\n✓ Documents complete\n✓ Customs closed\n✓ Equipment returned\n✓ Final GP calculated\n```\n\n---"
+    },
+    {
+      "id": 138,
+      "title": "Controlled Reopening",
+      "status": "Partial",
+      "evidence": "Closed jobs are locked. Reopening requires a recorded reason and decision from a different authorised user; duplicate decisions are rejected and closure evidence requires review again. Core linked operational records cannot be changed while the job is closed.",
+      "sources": [
+        "src/shared/entities/ops.ts",
+        "src/server/domain/jobs.ts",
+        "src/web/pages/JobPage.tsx",
+        "src/server/domain/job-controls.ts",
+        "src/server/engine.ts"
+      ],
+      "gap": "Configurable reopening scope/expiry, delegated authorities, complete linked-document controls and company acceptance remain.",
+      "specification": "# 138. Controlled Reopening\n\nManager approval + reason + audit log.\n\n---"
+    },
+    {
+      "id": 139,
+      "title": "Production Environments",
+      "status": "Partial",
+      "evidence": "Runtime configuration, backups and replica support exist; this is not evidence of enterprise deployment or recovery certification.",
+      "sources": [
+        "src/server/config.ts",
+        "src/server/integrations/storage.ts",
+        "src/server/integrations/snapshot.ts",
+        "src/server/pgbridge.ts"
+      ],
+      "gap": "Isolated environments, release promotion, secrets/data separation and validated rollback.",
+      "specification": "# 139. Production Environments\n\n```text\nDevelopment\n↓\nStaging / UAT\n↓\nProduction\n```\n\nNo production experimentation.\n\n---"
+    },
+    {
+      "id": 140,
+      "title": "Backup & Disaster Recovery",
+      "status": "Partial",
+      "evidence": "Runtime configuration, backups and replica support exist; this is not evidence of enterprise deployment or recovery certification.",
+      "sources": [
+        "src/server/config.ts",
+        "src/server/integrations/storage.ts",
+        "src/server/integrations/snapshot.ts",
+        "src/server/pgbridge.ts"
+      ],
+      "gap": "Restore drills, measured RPO/RTO, retention, failover and disaster-recovery acceptance.",
+      "specification": "# 140. Backup & Disaster Recovery\n\n- automated backups\n- PITR where supported\n- offsite copies\n- restore tests\n- DR procedure\n- incident plan\n\n---"
+    },
+    {
+      "id": 141,
+      "title": "Monitoring",
+      "status": "Partial",
+      "evidence": "Runtime configuration, backups and replica support exist; this is not evidence of enterprise deployment or recovery certification.",
+      "sources": [
+        "src/server/config.ts",
+        "src/server/integrations/storage.ts",
+        "src/server/integrations/snapshot.ts",
+        "src/server/pgbridge.ts"
+      ],
+      "gap": "Metrics, health checks, central alerting, incident response and service-level validation.",
+      "specification": "# 141. Monitoring\n\n- uptime\n- latency\n- database\n- queues\n- API errors\n- integration errors\n- security events\n- automation failures\n\n---"
+    },
+    {
+      "id": 142,
+      "title": "Release Management",
+      "status": "Partial",
+      "evidence": "Runtime configuration, backups and replica support exist; this is not evidence of enterprise deployment or recovery certification.",
+      "sources": [
+        "src/server/config.ts",
+        "src/server/integrations/storage.ts",
+        "src/server/integrations/snapshot.ts",
+        "src/server/pgbridge.ts"
+      ],
+      "gap": "Release approvals, migrations, regression gates, rollback and change history.",
+      "specification": "# 142. Release Management\n\n- release versions\n- migrations\n- feature flags\n- rollback\n- changelog\n\n---"
+    },
+    {
+      "id": 143,
+      "title": "Migration from Fresa",
+      "status": "Partial",
+      "evidence": "Runtime configuration, backups and replica support exist; this is not evidence of enterprise deployment or recovery certification.",
+      "sources": [
+        "src/server/config.ts",
+        "src/server/integrations/storage.ts",
+        "src/server/integrations/snapshot.ts",
+        "src/server/pgbridge.ts"
+      ],
+      "gap": "Fresa source mappings, cleansing, trial imports, financial reconciliation and signed migration acceptance.",
+      "specification": "# 143. Migration from Fresa\n\nDedicated migration utilities for:\n\n- customers\n- contacts\n- suppliers\n- agents\n- open jobs\n- historic jobs\n- MBL/HBL\n- invoices\n- AR/AP\n- rates\n- documents\n- employees\n\n---"
+    },
+    {
+      "id": 144,
+      "title": "UX — do NOT copy Fresa visually",
+      "status": "Partial",
+      "evidence": "Shared navigation, document screens, search, task records and responsive layouts exist.",
+      "sources": [
+        "src/web/components/Shell.tsx",
+        "src/web/pages/DocumentsPage.tsx",
+        "src/web/pages/SearchPages.tsx",
+        "src/web/pages/Workspaces.tsx",
+        "src/web/reference.css"
+      ],
+      "gap": "Validate every requested UX pattern and access path across modules.",
+      "specification": "# 144. UX — do NOT copy Fresa visually\n\nFresa's functional concepts are good, but the interface in the screenshots is too dense.\n\nElovora should use:\n\n## Job Header\n\n**DXB10260136**\n\n`FCL Export · In Transit`\n\nDubai → Johannesburg\n\nThen:\n\n```text\nOverview\nRoute\nCargo\nContainers\nB/L\nCustoms\nDocuments\nCharges\nAccounting\nMessages\nHistory\n```\n\n---"
+    },
+    {
+      "id": 145,
+      "title": "Staff Homepage",
+      "status": "Partial",
+      "evidence": "Shared navigation, document screens, search, task records and responsive layouts exist.",
+      "sources": [
+        "src/web/components/Shell.tsx",
+        "src/web/pages/DocumentsPage.tsx",
+        "src/web/pages/SearchPages.tsx",
+        "src/web/pages/Workspaces.tsx",
+        "src/web/reference.css"
+      ],
+      "gap": "Complete personal queue, priorities, SLA, calendar, messages and assigned work.",
+      "specification": "# 145. Staff Homepage\n\nAn operator sees:\n\n```text\nMY WORK\n\nActive Jobs                 28\nNeed Attention               4\nDue Today                    9\nWaiting Customer             3\nWaiting Carrier              6\n```\n\nThen work queue.\n\nThey do not see 145 modules.\n\n---"
+    },
+    {
+      "id": 146,
+      "title": "Management Homepage",
+      "status": "Partial",
+      "evidence": "Dashboard aggregates and selected operational alerts exist.",
+      "sources": [
+        "src/server/routes/insights.ts",
+        "src/web/pages/Dashboard.tsx"
+      ],
+      "gap": "Complete management command centre including exceptions, risk, productivity and decisions.",
+      "specification": "# 146. Management Homepage\n\nManagement sees:\n\n```text\nRevenue\nGP\nCash\nAR\nAP\n\nShipments\nExceptions\nSales\nCollections\n\nApprovals\nRisks\nPerformance\n```\n\n---"
+    },
+    {
+      "id": 147,
+      "title": "Mobile",
+      "status": "Partial",
+      "evidence": "Shared navigation, document screens, search, task records and responsive layouts exist.",
+      "sources": [
+        "src/web/components/Shell.tsx",
+        "src/web/pages/DocumentsPage.tsx",
+        "src/web/pages/SearchPages.tsx",
+        "src/web/pages/Workspaces.tsx",
+        "src/web/reference.css"
+      ],
+      "gap": "Full mobile task/POD/scanning/approvals and offline/device workflow acceptance.",
+      "specification": "# 147. Mobile\n\nPWA/mobile experiences for:\n\n### Employees\n\n- work\n- tasks\n- shipments\n- inbox\n- approval\n\n### Driver\n\n- trips\n- route\n- POD\n\n### Warehouse\n\n- scan\n- receive\n- pick\n- dispatch\n\n### Management\n\n- dashboard\n- alerts\n- approvals\n\n---"
+    }
+  ],
+  "implementationUpdates": [
+    {
+      "date": "2026-10-08",
+      "areas": [
+        75,
+        134,
+        137,
+        138,
+        76
+      ],
+      "note": "Tested control layer added after baseline review; statuses remain Partial. See docs/scope/IMPLEMENTATION-PROGRESS.md."
+    }
+  ]
+}

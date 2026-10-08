@@ -1,3 +1,4 @@
+import { closureReadiness, addClosureEvidence, verifyClosureEvidence, requestReopen, decideReopen, EVIDENCE_TYPES } from '../domain/job-controls'
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { q, tx } from '../db'
@@ -16,6 +17,29 @@ export default async function (app: FastifyInstance) {
     if (edit) assertCan(req.ctx, 'jobs', 'edit')
     return { id, job: getRecord(jobDef(), id, req.ctx, { children: false }) }
   }
+
+  app.get('/api/jobs/:id/closure', async req => closureReadiness(idOf((req.params as any).id),req.ctx))
+  app.post('/api/jobs/:id/closure/evidence', async req => {
+    const b=z.object({kind:z.enum(EVIDENCE_TYPES),note:z.string().trim().min(10).max(2000)}).parse(req.body)
+    return tx(()=>addClosureEvidence(idOf((req.params as any).id),b.kind,b.note,req.ctx))
+  })
+  app.post('/api/jobs/:id/closure/evidence/:evidenceId/verify', async req => tx(()=>{
+    verifyClosureEvidence(idOf((req.params as any).id),idOf((req.params as any).evidenceId),req.ctx);return {ok:true}
+  }))
+  app.post('/api/jobs/:id/close', async req => tx(()=>{
+    const {id}=loadJob(req,true);assertCan(req.ctx,'jobs','approve')
+    return patchRecord(jobDef(),id,{job_status:'CLOSED'},{...req.ctx,jobTransition:'close'})
+  }))
+  app.post('/api/jobs/:id/reopen/request', async req => {
+    const b=z.object({reason:z.string().trim().min(10).max(2000)}).parse(req.body)
+    return tx(()=>requestReopen(idOf((req.params as any).id),b.reason,req.ctx))
+  })
+  app.post('/api/jobs/:id/reopen/:requestId/:decision', async req => {
+    const p=req.params as any
+    if(!['approve','reject'].includes(p.decision))throw bad('Unknown decision')
+    const b=z.object({reason:z.string().trim().min(10).max(2000)}).parse(req.body)
+    return tx(()=>decideReopen(idOf(p.id),idOf(p.requestId),p.decision==='approve',b.reason,req.ctx))
+  })
 
   app.post('/api/jobs/:id/events', async (req) => {
     const { id, job } = loadJob(req, true)
@@ -174,3 +198,4 @@ export default async function (app: FastifyInstance) {
   })
   void updateRecord; void createRecord; void deleteRecord; void todayStr; void recomputeJobTotals
 }
+

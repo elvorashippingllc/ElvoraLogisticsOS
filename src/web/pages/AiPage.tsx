@@ -21,7 +21,7 @@ export function AiPage() {
   const d = q.data
   return (
     <div className="fade-in">
-      <PageHeader icon={<Bot size={20} />} title="AI Team" subtitle="Jarvis and your digital employees – they read live company data, do the routine work and report to you. Anything that leaves the company waits for your approval unless you grant autopilot." actions={<Link className="btn outline" to="/admin/integrations"><Settings2 /> AI provider</Link>} />
+      <PageHeader icon={<Bot size={20} />} title="AI Team" subtitle="Jarvis and your digital employees – they read live company data, do the routine work and report to you. External messages always wait for your approval, including in autopilot. Financial posting, customs filing and cargo releases are prohibited AI capabilities." actions={<Link className="btn outline" to="/admin/integrations"><Settings2 /> AI provider</Link>} />
       {!d.configured && <div className="mb-4 p-4 rounded-xl border border-[#ecd9a0] bg-[#fbf3d6] text-[14px]"><b>AI is not connected yet.</b> Choose a provider in <Link to="/admin/integrations" className="underline">Integrations → AI employees</Link>. Free options: Groq, OpenRouter “:free” models, Google Gemini, Cloudflare Workers AI, or your own Ollama server.</div>}
       <div className="card overflow-hidden">
         <Tabs tabs={[{ key: 'chat', label: 'Chat with Jarvis' }, { key: 'team', label: 'Employees', count: d.agents.length }, { key: 'approvals', label: 'Approvals', count: d.pending || undefined }, { key: 'activity', label: 'Activity' }]} value={tab} onChange={k => setSp({ tab: k })} />
@@ -148,3 +148,4 @@ function Activity() {
     <div key={r.id} className="rounded-xl border border-line p-3"><button className="w-full text-start bg-transparent border-0 p-0 cursor-pointer flex gap-2 items-center flex-wrap" onClick={() => setOpen(open === r.id ? null : r.id)}><Badge value={r.status} /><b className="text-[14px]">{r._labels?.agent_id}</b><span className="text-xs text-muted">{r.trigger} · {r.started_at?.replace('T', ' ')} · {r.steps ?? 0} steps{r.tokens ? ` · ${r.tokens} tokens` : ''}{r.model ? ` · ${r.model}` : ''}</span></button>
       {(open === r.id || r.status === 'failed') && <div className="mt-2 text-[13.5px] whitespace-pre-wrap leading-relaxed">{r.output || r.error}{r.status === 'failed' && r.error && r.output ? '\n' + r.error : ''}</div>}</div>))}</div>
 }
+

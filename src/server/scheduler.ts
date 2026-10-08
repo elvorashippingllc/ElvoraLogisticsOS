@@ -1,3 +1,6 @@
+import { processWorkflowQueue } from './automation'
+import { runInDb } from './db'
+import { getDemoDb } from './demo/workspace'
 import { q } from './db'
 import { addDays, nowIso, todayStr } from './util'
 import { notify, notifyRole } from './notify'
@@ -9,6 +12,9 @@ import { nowLocal } from './util'
 
 /** Light-weight in-process scheduler: reminders, expiries and the e-mail outbox. */
 export function startScheduler() {
+  const workflowTick=async()=>{try{await processWorkflowQueue();const demo=getDemoDb();if(demo)await runInDb(demo,()=>processWorkflowQueue())}catch(e){console.error('workflow queue',e)}}
+  setInterval(()=>void workflowTick(),15000).unref()
+  setTimeout(()=>void workflowTick(),2000).unref()
   const tick = () => { try { daily() } catch (e) { console.error('scheduler', e) } }
   setTimeout(tick, 8_000)
   setInterval(tick, 60 * 60 * 1000).unref()
@@ -63,3 +69,4 @@ export function daily() {
   q.run(`DELETE FROM sessions WHERE expires_at < ?`, nowIso())
   q.run(`DELETE FROM notifications WHERE read_at IS NOT NULL AND read_at < ?`, new Date(Date.now() - 90 * 86400000).toISOString())
 }
+

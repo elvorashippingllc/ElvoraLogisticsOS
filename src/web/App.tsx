@@ -16,6 +16,8 @@ import { DocumentsPage } from './pages/DocumentsPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { RolesPage, SettingsPage, AuditPage, BackupPage } from './pages/AdminPages'
 import { CompliancePage } from './pages/CompliancePage'
+import { JobControlPage } from './pages/JobControlPage'
+import { ScopePage } from './pages/ScopePage'
 import { PublicTrack } from './pages/PublicTrack'
 import { IntegrationsPage } from './pages/IntegrationsPage'
 import { AiPage } from './pages/AiPage'
@@ -46,6 +48,7 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/workspace/:workspace" element={<Workspaces key={loc.pathname} />} />
           <Route path="/workspace-tools" element={<WorkspaceUtilities />} />
+          <Route path="/jobs/:id/closure" element={<Guard module="jobs"><JobControlPage /></Guard>} />
           <Route path="/jobs/:id" element={<Guard module="jobs"><JobPage /></Guard>} />
           <Route path="/e/:entity" element={<EntityListPage />} />
           <Route path="/e/:entity/:id" element={<EntityRecordPage />} />
@@ -69,6 +72,7 @@ export default function App() {
           <Route path="/finance/year-end" element={<Guard module="finance"><YearEndPage /></Guard>} />
           <Route path="/hr/wps" element={<Guard module="hr"><WpsPage /></Guard>} />
           <Route path="/compliance" element={<Guard module="compliance"><CompliancePage /></Guard>} />
+          <Route path="/admin/scope" element={<Guard module="admin"><ScopePage /></Guard>} />
           <Route path="/admin/backup" element={<Guard module="admin"><BackupPage /></Guard>} />
           <Route path="/print/:entity/:id" element={<PrintPage />} />
           <Route path="*" element={<ErrorBox error={new Error('Page not found')} />} />
@@ -78,4 +82,5 @@ export default function App() {
   )
 }
 void lazy
+
 

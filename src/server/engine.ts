@@ -11,7 +11,7 @@ export interface SessionUser {
   id: number; name: string; email: string; role_id: number | null; role_name: string; permissions: Perms
   branch_id: number | null; party_id: number | null; apiKey?: boolean
 }
-export interface Ctx { user: SessionUser | null; ip?: string; system?: boolean; after?: (() => void)[] }
+export interface Ctx { jobTransition?: 'close' | 'reopen'; user: SessionUser | null; ip?: string; system?: boolean; after?: (() => void)[] }
 export const SYSTEM_CTX: Ctx = { user: null, system: true }
 
 export type Rec = Record<string, any>
@@ -307,6 +307,7 @@ export function getRecord(def: EntityDef, id: number, ctx: Ctx, opts: { children
   if (ctx.user?.party_id && !ctx.system && (!scope || row[scope] !== ctx.user.party_id)) throw notFound()
   const rec = rowToApi(def, row)
   attachLabels(def, [rec])
+  if(['bills','payments','quotations','purchase_orders'].includes(def.key)) rec._approval=q.get(`SELECT r.*,u.name requested_by_name FROM approval_requests r LEFT JOIN users u ON u.id=r.requested_by WHERE r.entity=? AND r.record_id=? AND r.status='Pending'`,def.key,id) ?? null
   if (opts.children !== false && def.children?.length) rec.children = loadChildren(def, id)
   return rec
 }
@@ -327,6 +328,11 @@ export function findOne(entity: string, where: string, ...args: any[]): Rec | nu
   const def = getDef(entity)
   const row = q.get(`SELECT * FROM ${qi(entity)} WHERE deleted_at IS NULL AND (${where}) LIMIT 1`, ...args)
   return row ? rowToApi(def, row) : null
+}
+
+function assertOperationalJobOpen(def: EntityDef, rec: Rec) {
+  if (!['shipments','bookings','delivery_orders','customs_declarations','transport_orders'].includes(def.key) || !rec.job_id) return
+  if(q.val(`SELECT job_status FROM jobs WHERE id=?`,rec.job_id)==='CLOSED') throw bad('This job is closed. Reopen it through independent approval before changing operations.')
 }
 
 // ------------------------------------------------------------------ write
@@ -486,6 +492,8 @@ export function createRecord(def: EntityDef, payload: Rec, ctx: Ctx): Rec {
   const c2: Ctx = { ...ctx, after }
   const result = tx(() => {
     let rec = applyPayload(def, {}, payload, true, c2)
+    assertOperationalJobOpen(def,rec)
+    if(def.key==='purchase_orders' && !ctx.system && rec.status!=='Draft') throw bad('New purchase orders must start as drafts')
     const children = sanitizeChildren(def, payload.children, c2)
     const h = hooksFor(def.key)
     h.beforeSave?.({ def, rec, old: null, children, isNew: true, ctx: c2 })
@@ -525,6 +533,20 @@ export function updateRecord(def: EntityDef, id: number, payload: Rec, ctx: Ctx)
     const old = { ...oldFull }
     if (payload.version !== undefined && Number(payload.version) !== old.version && !ctx.system) throw conflict('This record was changed by someone else. Reload and try again.')
     const rec = applyPayload(def, old, payload, false, c2)
+    assertOperationalJobOpen(def,old); assertOperationalJobOpen(def,rec)
+    if (def.key === 'purchase_orders' && !ctx.system && rec.status === 'Approved' && old.status !== 'Approved') throw bad('Use the independent approval workflow')
+    if (['bills','payments','quotations','purchase_orders'].includes(def.key)) {
+      const changing = Object.keys(payload).some(k => !['version','approval_status','status'].includes(k) && JSON.stringify(payload[k]) !== JSON.stringify(old[k]))
+      if (changing && (old.approval_status === 'Approved' || (def.key === 'purchase_orders' && old.status === 'Approved'))) {
+        if (def.key === 'purchase_orders') rec.status = 'Draft'
+        else rec.approval_status = 'Not required'
+      }
+      if(changing && (old.approval_status==='Pending' || (def.key==='purchase_orders' && old.status==='Pending approval'))) {
+        if(def.key==='purchase_orders') rec.status='Draft'
+        else rec.approval_status='Not required'
+      }
+      if (changing) q.run(`UPDATE approval_requests SET status='Superseded',decided_at=? WHERE entity=? AND record_id=? AND status='Pending'`,nowIso(),def.key,id)
+    }
     const children = sanitizeChildren(def, payload.children, c2)
     const h = hooksFor(def.key)
     h.beforeSave?.({ def, rec, old, children, isNew: false, ctx: c2 })
@@ -577,6 +599,7 @@ export function deleteRecord(def: EntityDef, id: number, ctx: Ctx) {
     const rec = getRecord(def, id, ctx, { children: false })
     const used = referencedBy(def, id)
     if (used.length) throw conflict(`Cannot delete: used by ${used.map(u => `${u.count} ${u.label}`).join(', ')}`)
+    assertOperationalJobOpen(def,rec)
     hooksFor(def.key).beforeDelete?.({ def, rec, ctx })
     const now = nowIso()
     // free unique values so they can be reused
@@ -594,3 +617,4 @@ export function insertRow(def: EntityDef, rec: Rec, ctx: Ctx = SYSTEM_CTX): numb
 }
 
 export { HttpError }
+

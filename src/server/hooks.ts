@@ -1,3 +1,4 @@
+import { automationRuleHooks } from './automation'
 import type { EntityDef } from '../shared/types'
 import type { Ctx, Rec } from './engine'
 import { jobHooks, shipmentHooks, customsHooks, customsLineHooks, transportHooks, doHooks, bookingHooks } from './domain/jobs'
@@ -19,6 +20,7 @@ export interface Hooks {
 
 // Lazy registry: domain modules import the engine, the engine imports this file.
 const registry: Record<string, () => Hooks> = {
+  automation_rules:()=>automationRuleHooks,
   jobs: () => jobHooks, shipments: () => shipmentHooks, customs_declarations: () => customsHooks, customs_lines: () => customsLineHooks,
   transport_orders: () => transportHooks, delivery_orders: () => doHooks, bookings: () => bookingHooks,
   quotations: () => quoteHooks, parties: () => partyHooks, leads: () => leadHooks, opportunities: () => opportunityHooks, contracts: () => contractHooks,
@@ -38,3 +40,4 @@ export function hooksFor(key: string): Hooks {
   if (!w) { w = withCompliance(key, base); wrapped.set(key, w) }
   return w
 }
+

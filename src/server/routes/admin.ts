@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify'
 import fs from 'node:fs'
 import path from 'node:path'
 import { z } from 'zod'
-import { db, q } from '../db'
+import { db, q, tx } from '../db'
 import { dirs, config, BACKUP_EXT, isBackupFile } from '../config'
 import { loadSettings, publicSettings, setSettings, SETTING_DEFAULTS, SECRET_SETTINGS } from '../settings'
 import { audit, getDef, getRecord, SYSTEM_CTX, createRecord } from '../engine'
@@ -14,6 +14,32 @@ import { destroyUserSessions } from '../auth'
 import { ENTITY_LIST } from '../../shared/entities'
 
 export default async function (app: FastifyInstance) {
+  app.post('/api/workflow-runs/:id/retry',async req=>{
+    need(req,'admin','edit')
+    const b=z.object({reason:z.string().trim().min(10).max(1000)}).parse(req.body)
+    return tx(()=>{
+      const id=idOf((req.params as any).id),r=getRecord(getDef('workflow_runs'),id,req.ctx,{children:false})
+      if(r.status!=='Failed')throw bad('Only failed internal actions can be retried')
+      const payload:any=typeof r.payload==='string'?safeJson(r.payload,{}):r.payload??{}
+      const action=payload.rule?.action??''
+      if(!['Create follow-up task','Notify user','Queue e-mail to customer contact','Queue e-mail to address','Set field value'].includes(action))throw bad('External outcomes require review and cannot be replayed automatically')
+      q.run(`UPDATE workflow_runs SET status='Queued',max_attempts=attempts+3,next_at=?,error=NULL WHERE id=? AND status='Failed'`,nowIso(),id)
+      audit(req.ctx,getDef('workflow_runs'),id,'retry_workflow',{reason:b.reason},r._title)
+      return {ok:true}
+    })
+  })
+  app.post('/api/workflow-runs/:id/resolve',async req=>{
+    need(req,'admin','edit')
+    const b=z.object({outcome:z.enum(['Succeeded','Cancelled']),reason:z.string().trim().min(10).max(1000)}).parse(req.body)
+    return tx(()=>{
+      const id=idOf((req.params as any).id),r=getRecord(getDef('workflow_runs'),id,req.ctx,{children:false})
+      if(r.status!=='Needs review')throw bad('Only uncertain runs can be resolved manually')
+      q.run(`UPDATE workflow_runs SET status=?,finished_at=? WHERE id=? AND status='Needs review'`,b.outcome,nowIso(),id)
+      audit(req.ctx,getDef('workflow_runs'),id,'resolve_workflow',{outcome:b.outcome,reason:b.reason},r._title)
+      return {ok:true}
+    })
+  })
+
   app.get('/api/admin/settings', async (req) => { need(req, 'admin', 'view'); return publicSettings() })
   app.put('/api/admin/settings', async (req) => {
     need(req, 'admin', 'edit')
@@ -137,3 +163,4 @@ export default async function (app: FastifyInstance) {
 
   void loadSettings
 }
+

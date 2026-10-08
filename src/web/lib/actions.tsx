@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { post, put, get } from './api'
 
 export interface ActionHelpers {
-  rec: any; entity: string
+  rec: any; entity: string; userId?: number
   toast: { ok: (t: string) => void; error: (t: string) => void }
   dlg: { confirm: (o: any) => Promise<boolean>; prompt: (o: any) => Promise<string | null> }
   nav: (to: string) => void; reload: () => void; can: (module: string, a?: any) => boolean
@@ -14,6 +14,11 @@ const run = async (h: ActionHelpers, fn: () => Promise<any>, ok: string) => { tr
 const fin = (h: ActionHelpers) => h.can('finance', 'edit')
 
 export const ACTIONS: Record<string, ActionDef[]> = {
+  workflow_runs:[
+    {key:'retry',label:'Retry internal workflow',tone:'orange',show:(r,h)=>r.status==='Failed'&&h.can('admin','edit'),run:async h=>{const reason=await h.dlg.prompt({title:'Retry workflow',label:'Reason (at least 10 characters)',required:true,multiline:true});if(reason)await run(h,()=>post(`/api/workflow-runs/${h.rec.id}/retry`,{reason}),'Retry queued')}},
+    ...(['Succeeded','Cancelled'] as const).map(outcome=>({key:outcome,label:outcome==='Succeeded'?'Confirm completed':'Cancel after review',tone:'outline' as const,show:(r:any,h:ActionHelpers)=>r.status==='Needs review'&&h.can('admin','edit'),run:async(h:ActionHelpers)=>{const reason=await h.dlg.prompt({title:'Resolve uncertain external outcome',label:'Verification evidence (at least 10 characters)',required:true,multiline:true,message:'Check the integration/provider log before resolving. This action records the outcome and does not replay the send.'});if(reason)await run(h,()=>post(`/api/workflow-runs/${h.rec.id}/resolve`,{outcome,reason}),'Review recorded')}})),
+  ],
+
   invoices: [
     { key: 'post', label: 'Post', tone: 'green', show: (r, h) => r.status === 'Draft' && fin(h), run: async h => { if (await h.dlg.confirm({ title: `Post ${h.rec.doc_type.toLowerCase()}?`, message: h.rec.doc_type === 'Proforma Invoice' ? 'The proforma will be issued with its final number. No ledger entry is created.' : 'This assigns the final sequential number and creates the ledger entry. Posted documents can only be voided or credited.', ok: 'Post' })) await run(h, () => post(`/api/finance/invoices/${h.rec.id}/post`), 'Posted') } },
     { key: 'receipt', label: 'Record receipt', tone: 'violet', show: (r, h) => ['Posted', 'Partially paid'].includes(r.status) && r.balance > 0 && ['Tax Invoice', 'Debit Note'].includes(r.doc_type) && h.can('finance', 'create'), run: h => h.dialog('pay', { kind: 'receipt', doc: h.rec }) },
@@ -27,7 +32,7 @@ export const ACTIONS: Record<string, ActionDef[]> = {
   ],
   bills: [
     { key: 'req', label: 'Request approval', tone: 'orange', show: (r, h) => r.status === 'Draft' && r.approval_status === 'Not required' && h.can('finance', 'edit'), run: h => run(h, () => post(`/api/approvals/bills/${h.rec.id}/request`), 'Approval requested') },
-    { key: 'approve', label: 'Approve', tone: 'violet', show: (r, h) => r.approval_status === 'Pending' && h.can('finance', 'approve'), run: h => run(h, () => post(`/api/approvals/bills/${h.rec.id}/approve`), 'Approved') },
+    { key: 'approve', label: 'Approve', tone: 'violet', show: (r, h) => r.approval_status === 'Pending' && r._approval?.requested_by !== h.userId && r.created_by !== h.userId && h.can('finance', 'approve'), run: h => run(h, () => post(`/api/approvals/bills/${h.rec.id}/approve`), 'Approved') },
     { key: 'post', label: 'Post', tone: 'green', show: (r, h) => r.status === 'Draft' && fin(h), run: async h => { if (await h.dlg.confirm({ title: 'Post vendor bill?', message: 'Creates the payable and expense entries in the ledger.', ok: 'Post' })) await run(h, () => post(`/api/finance/bills/${h.rec.id}/post`), 'Posted') } },
     { key: 'pay', label: 'Pay', tone: 'violet', show: (r, h) => ['Posted', 'Partially paid'].includes(r.status) && r.balance > 0 && h.can('finance', 'create'), run: h => h.dialog('pay', { kind: 'payment', doc: h.rec }) },
     { key: 'void', label: 'Void', tone: 'red', more: true, show: (r, h) => r.status !== 'Void' && fin(h) && !(r.paid_amount > 0), run: async h => { const reason = await h.dlg.prompt({ title: 'Void bill', label: 'Reason', required: true, ok: 'Void' }); if (reason) await run(h, () => post(`/api/finance/bills/${h.rec.id}/void`, { reason }), 'Voided') } },
@@ -39,7 +44,7 @@ export const ACTIONS: Record<string, ActionDef[]> = {
   ],
   payments: [
     { key: 'req', label: 'Request approval', tone: 'orange', show: (r, h) => r.status === 'Draft' && r.approval_status === 'Not required' && h.can('finance', 'edit'), run: h => run(h, () => post(`/api/approvals/payments/${h.rec.id}/request`), 'Approval requested') },
-    { key: 'approve', label: 'Approve', tone: 'violet', show: (r, h) => r.approval_status === 'Pending' && h.can('finance', 'approve'), run: h => run(h, () => post(`/api/approvals/payments/${h.rec.id}/approve`), 'Approved') },
+    { key: 'approve', label: 'Approve', tone: 'violet', show: (r, h) => r.approval_status === 'Pending' && r._approval?.requested_by !== h.userId && r.created_by !== h.userId && h.can('finance', 'approve'), run: h => run(h, () => post(`/api/approvals/payments/${h.rec.id}/approve`), 'Approved') },
     { key: 'post', label: 'Post', tone: 'green', show: (r, h) => r.status === 'Draft' && fin(h), run: h => run(h, () => post(`/api/finance/payments/${h.rec.id}/post`), 'Payment posted') },
     { key: 'alloc', label: 'Allocate advance', tone: 'violet', show: (r, h) => r.status === 'Posted' && r.unallocated > 0 && fin(h), run: h => h.dialog('allocate', { kind: 'payment', rec: h.rec }) },
     { key: 'void', label: 'Void', tone: 'red', more: true, show: (r, h) => r.status !== 'Void' && fin(h), run: async h => { const reason = await h.dlg.prompt({ title: 'Void payment', label: 'Reason', required: true, ok: 'Void' }); if (reason) await run(h, () => post(`/api/finance/payments/${h.rec.id}/void`, { reason }), 'Voided') } },
@@ -54,8 +59,8 @@ export const ACTIONS: Record<string, ActionDef[]> = {
     { key: 'pay', label: 'Mark paid', tone: 'violet', show: (r, h) => r.status === 'Approved' && fin(h), run: h => h.dialog('payExpense', { rec: h.rec }) },
   ],
   quotations: [
-    { key: 'req', label: 'Request margin approval', tone: 'orange', show: (r, h) => r.approval_status === 'Pending' && r.status === 'Draft' && h.can('sales', 'edit'), run: h => run(h, () => post(`/api/approvals/quotations/${h.rec.id}/request`), 'Approval requested') },
-    { key: 'approve', label: 'Approve margin', tone: 'violet', show: (r, h) => r.approval_status === 'Pending' && h.can('sales', 'approve'), run: h => run(h, () => post(`/api/approvals/quotations/${h.rec.id}/approve`), 'Approved') },
+    { key: 'req', label: 'Request margin approval', tone: 'orange', show: (r, h) => r.approval_status === 'Pending' && !r._approval && r.status === 'Draft' && h.can('sales', 'edit'), run: h => run(h, () => post(`/api/approvals/quotations/${h.rec.id}/request`), 'Approval requested') },
+    { key: 'approve', label: 'Approve margin', tone: 'violet', show: (r, h) => r.approval_status === 'Pending' && r._approval?.requested_by !== h.userId && r.created_by !== h.userId && h.can('sales', 'approve'), run: h => run(h, () => post(`/api/approvals/quotations/${h.rec.id}/approve`), 'Approved') },
     { key: 'send', label: 'Send to customer', tone: 'green', show: (r, h) => ['Draft', 'Approved', 'Sent'].includes(r.status) && !['Pending', 'Rejected'].includes(r.approval_status) && h.can('sales', 'edit'), run: async h => { const to = await h.dlg.prompt({ title: 'Send quotation', label: 'Send to (leave blank for the customer contact)', initial: '', ok: 'Queue e-mail', message: 'The e-mail is queued in the outbox and delivered when SMTP is configured.' }); if (to === null) return; await run(h, () => post(`/api/quotes/${h.rec.id}/send`, to ? { to } : {}), 'Quotation queued for sending') } },
     { key: 'accept', label: 'Mark accepted', tone: 'violet', show: (r, h) => ['Sent', 'Approved'].includes(r.status) && h.can('sales', 'edit') && !['Pending', 'Rejected'].includes(r.approval_status), run: h => run(h, () => post(`/api/quotes/${h.rec.id}/accept`), 'Accepted') },
     { key: 'convert', label: 'Convert to job', tone: 'blue', show: (r, h) => !r.job_id && ['Sent', 'Approved', 'Accepted'].includes(r.status) && h.can('jobs', 'create'), run: async h => { try { const j = await post<any>(`/api/quotes/${h.rec.id}/convert`); h.toast.ok(`Job ${j.job_no} created`); h.nav(`/jobs/${j.id}`) } catch (e: any) { h.toast.error(e.message) } } },
@@ -79,7 +84,7 @@ export const ACTIONS: Record<string, ActionDef[]> = {
   ],
   purchase_orders: [
     { key: 'req', label: 'Request approval', tone: 'orange', show: (r, h) => r.status === 'Draft' && h.can('assets', 'edit'), run: h => run(h, () => post(`/api/approvals/purchase_orders/${h.rec.id}/request`), 'Approval requested') },
-    { key: 'approve', label: 'Approve', tone: 'violet', show: (r, h) => r.status === 'Pending approval' && h.can('assets', 'approve'), run: h => run(h, () => post(`/api/approvals/purchase_orders/${h.rec.id}/approve`), 'Approved') },
+    { key: 'approve', label: 'Approve', tone: 'violet', show: (r, h) => r.status === 'Pending approval' && r._approval?.requested_by !== h.userId && r.created_by !== h.userId && h.can('assets', 'approve'), run: h => run(h, () => post(`/api/approvals/purchase_orders/${h.rec.id}/approve`), 'Approved') },
     { key: 'order', label: 'Mark ordered', tone: 'green', show: (r, h) => r.status === 'Approved' && h.can('assets', 'edit'), run: h => run(h, () => put(`/api/e/purchase_orders/${h.rec.id}`, { status: 'Ordered', version: h.rec.version }), 'Marked as ordered') },
     { key: 'recv', label: 'Mark received', tone: 'violet', show: (r, h) => r.status === 'Ordered' && h.can('assets', 'edit'), run: h => run(h, () => put(`/api/e/purchase_orders/${h.rec.id}`, { status: 'Received', version: h.rec.version }), 'Marked as received') },
   ],
@@ -126,3 +131,4 @@ export const RELATED: Record<string, { key: string; label: string; entity: strin
   opportunities: [{ key: 'quotes', label: 'Quotations', entity: 'quotations', field: 'opportunity_id' }],
   projects: [{ key: 'tasks', label: 'Tasks', entity: 'tasks', field: 'project_id' }],
 }
+
