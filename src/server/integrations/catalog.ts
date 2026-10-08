@@ -6,7 +6,7 @@ const opt = (...v: string[]) => v.map(x => { const [value, label] = x.split('|')
 
 export const CATALOG: Section[] = [
   { key: 'mail', title: 'E-mail (Resend / SMTP)', icon: 'Mail', test: true, summary: 'All customer e-mails, quotations, invoices (with PDF attached) and agent messages.',
-    setup: 'Create a free Resend account → add and verify your domain → create an API key with "Sending access". Use a From like  Elvora Shipping <ops@yourdomain.com>.',
+    setup: 'For Sales, Accounts, Info, Contact and Support, open Email → Sender settings and connect each address. This section sets the default automation sender. SMTP needs the mailbox host, port, username and password; Resend needs a sending API key and a verified From domain. Save and test, then send to your own address to confirm delivery.',
     fields: [
       { key: 'mail_provider', label: 'Provider', type: 'select', options: opt('auto|Automatic (Resend if a key is set, else SMTP)', 'resend|Resend only', 'smtp|SMTP only') },
       { key: 'resend_api_key', label: 'Resend API key', type: 'password', placeholder: 're_…' }, { key: 'resend_from', label: 'From address (verified domain)', type: 'text', placeholder: 'Elvora Shipping <ops@yourdomain.com>' },
@@ -20,7 +20,7 @@ export const CATALOG: Section[] = [
       { key: 'r2_backup_nightly', label: 'Upload a database backup to R2 every night (02:00 Dubai)', type: 'bool' },
     ] },
   { key: 'supabase', title: 'Supabase (live Postgres replica)', icon: 'Database', test: true, summary: 'Every record is mirrored to your Supabase Postgres every 15 minutes – use it for Metabase / Looker dashboards, SQL, or as an off-site copy. The app itself keeps running on its own database.',
-    setup: '1) Supabase → new project → SQL editor → paste the schema (button below) and run. 2) Project settings → API → copy the project URL and the service_role key. 3) Save, test, then "Sync now".',
+    setup: 'Optional reporting mirror; this does not change the primary database. Run the downloaded schema in a separate Supabase project. Under Settings → API Keys obtain the legacy service_role JWT and enter the project URL. The current adapter requires the legacy JWT, not a new sb_secret key. Save, test, then Sync now; keep database backups separately.',
     fields: [{ key: 'supabase_url', label: 'Project URL', type: 'text', placeholder: 'https://xxxx.supabase.co' }, { key: 'supabase_service_key', label: 'service_role key', type: 'password' }, { key: 'supabase_sync', label: 'Sync automatically every 15 minutes', type: 'bool' }] },
   { key: 'whatsapp', title: 'WhatsApp (Cloud API)', icon: 'MessageCircle', test: true, summary: 'Lead capture, staff command bot, customer self-service, milestone alerts, overdue reminders and owner daily report.',
     setup: 'developers.facebook.com → create a Business app → add WhatsApp → copy the Phone number ID and a permanent System-User access token. In WhatsApp → Configuration set the callback URL and verify token shown below, and subscribe to "messages". Business-initiated messages outside 24h need approved templates with ONE body variable {{1}} – enter their names below.',
