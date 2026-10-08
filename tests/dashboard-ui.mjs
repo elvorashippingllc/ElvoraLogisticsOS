@@ -49,7 +49,7 @@ try {
   }
   await checkDashboardContrast()
   await page.evaluate(() => document.documentElement.dataset.theme = 'dark')
-  await page.waitForTimeout(300)
+  await page.waitForFunction(() => getComputedStyle(document.querySelector('.dashboard-metrics .metric-transit .v')).color === 'rgb(220, 238, 225)')
   await checkDashboardContrast()
   await capture('dark')
   await page.evaluate(() => delete document.documentElement.dataset.theme)
