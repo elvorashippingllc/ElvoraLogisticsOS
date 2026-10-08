@@ -8,12 +8,12 @@ import { config } from '../src/server/config'
 import { newApiKey } from '../src/server/auth'
 import { getSetting } from '../src/server/settings'
 import { addDays, todayStr } from '../src/server/util'
-import { processOutbox } from '../src/server/mailer'
+import { processOutbox, mailProvider, verifySmtp } from '../src/server/mailer'
 
 syncSchema(); seedReference()
 const app = await buildApp(), received: any[] = []
 let fail = false, checks = 0
-const mock = http.createServer(async (req, res) => { let raw = ''; for await (const b of req) raw += b; received.push(JSON.parse(raw || '{}')); res.writeHead(fail ? 422 : 200, { 'content-type': 'application/json' }); res.end(JSON.stringify(fail ? { message: 'Sender not authorised' } : { id: 'mock-message' })) })
+const mock = http.createServer(async (req, res) => { if (req.url === '/domains') { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify({ data: [{ name: 'elvorashipping.com', status: 'verified' }] })); return } let raw = ''; for await (const b of req) raw += b; received.push(JSON.parse(raw || '{}')); res.writeHead(fail ? 422 : 200, { 'content-type': 'application/json' }); res.end(JSON.stringify(fail ? { message: 'Sender not authorised' } : { id: 'mock-message' })) })
 await new Promise<void>(r => mock.listen(0, '127.0.0.1', r))
 process.env.RESEND_API_URL = `http://127.0.0.1:${(mock.address() as any).port}`
 const check = (label: string, value: unknown) => { assert.ok(value, label); checks++; console.log('  ✓', label) }
@@ -29,6 +29,7 @@ try {
   const message = { from: 'sales@elvorashipping.com', to: 'customer@example.com', cc: 'accounts@example.com', subject: 'Shipment update', body: 'Cargo is ready. <script>not HTML</script>' }
   check('unconnected sender rejected', (await request('/api/email/send', 'POST', message)).statusCode === 400)
   check('configure independent senders', (await request('/api/email/settings', 'PUT', [account(message.from), account('accounts@elvorashipping.com')])).statusCode === 200)
+  check('integration status recognises company sender', mailProvider() === 'resend' && (await verifySmtp()).ok)
   check('credentials encrypted at rest', String(q.val('SELECT value FROM settings WHERE key=?', 'mail_accounts')).includes('enc:v1:') && !String(q.val('SELECT value FROM settings WHERE key=?', 'mail_accounts')).includes('mock-private-key'))
   check('credentials never returned by sender settings', !JSON.stringify((await request('/api/email/settings')).json()).includes('mock-private-key'))
   check('credentials masked in general settings', (await request('/api/admin/settings')).json().mail_accounts === '********')

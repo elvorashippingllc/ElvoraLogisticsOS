@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer'
 import { q, currentDb } from './db'
-import { mailAccounts, ready, senderAccount, smtpTransport } from './mail-accounts'
+import { mailAccounts, ready, senderAccount, smtpTransport, verifyAccount } from './mail-accounts'
 import { getSetting, loadSettings } from './settings'
 import { nowIso, safeJson } from './util'
 import { inDemo } from './db'
@@ -12,7 +12,7 @@ export interface MailInput { from?: string; to: string; cc?: string; subject: st
 const resendOn = () => !!getSetting('resend_api_key') && getSetting('mail_provider') !== 'smtp'
 const smtpOn = () => !!getSetting('smtp_host') && !!getSetting('smtp_from') && getSetting('mail_provider') !== 'resend'
 export const smtpConfigured = () => resendOn() || smtpOn() || mailAccounts().some(ready)
-export const mailProvider = () => (resendOn() ? 'resend' : smtpOn() ? 'smtp' : 'none')
+export const mailProvider = () => (resendOn() ? 'resend' : smtpOn() ? 'smtp' : mailAccounts().find(ready)?.provider || 'none')
 const fromAddr = () => String(getSetting('resend_from') || getSetting('smtp_from') || '')
 
 export function queueEmail(m: MailInput): number {
@@ -60,7 +60,8 @@ export async function processOutbox() {
         q.run(`UPDATE email_outbox SET status='Sent', sent_at=?, updated_at=?, error=NULL WHERE id=?`, nowIso(), nowIso(), r.id)
       } catch (e: any) {
         q.run(`UPDATE email_outbox SET status='Failed', error=?, updated_at=? WHERE id=?`, String(e?.message ?? e).slice(0, 500), nowIso(), r.id)
-        logIntegration(mailProvider(), 'send', false, `E-mail to ${r.to_addr} failed`, String(e?.message ?? e))
+        const provider = r.from_addr ? mailAccounts().find(a => a.email === r.from_addr)?.provider || mailProvider() : mailProvider()
+        logIntegration(provider, 'send', false, `E-mail to ${r.to_addr} failed`, String(e?.message ?? e))
       }
     }
   } finally { running.delete(workspace) }
@@ -72,6 +73,11 @@ export function retryOutbox() {
 }
 export async function verifySmtp(): Promise<{ ok: boolean; error?: string; provider?: string }> {
   if (!smtpConfigured()) return { ok: false, error: 'Set a Resend API key (or SMTP host) and a From address' }
+  if (!resendOn() && !smtpOn()) {
+    const account = mailAccounts().find(ready)!
+    try { await verifyAccount(account); return { ok: true, provider: account.provider } }
+    catch (e: any) { return { ok: false, provider: account.provider, error: String(e?.message ?? e) } }
+  }
   if (resendOn()) {
     if (!fromAddr()) return { ok: false, error: 'Resend needs a verified From address (e.g. Elvora <ops@yourdomain.com>)' }
     const r = await http((process.env.RESEND_API_URL || 'https://api.resend.com') + '/domains', { headers: { Authorization: `Bearer ${getSetting('resend_api_key')}` } })
