@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import './index.css'
+import './reference.css'
 import App from './App'
 import { MetaProvider } from './lib/meta'
 import { ToastProvider } from './lib/toast'
@@ -22,3 +23,4 @@ createRoot(document.getElementById('root')!).render(
   </StrictMode>,
 )
 startDomTranslator()
+

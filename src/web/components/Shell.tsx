@@ -9,6 +9,7 @@ import { Modal, useClickOutside } from '../ui/kit'
 import { tr } from '../lib/i18n'
 import { CommandPalette } from './CommandPalette'
 import { workspacePath } from '../pages/Workspaces'
+import { iconByName } from '../lib/icons'
 
 function Clock() {
   const [t, setT] = useState(new Date())
@@ -58,15 +59,25 @@ export function Shell() {
   return (
     <div className="workspace-frame h-full flex flex-col">
       <header className="topbar no-print">
-        <Link to="/" className="flex items-center gap-2 mr-2" aria-label="Elvora Logistics OS home"><img src="/brand/icon-primary.png" alt="" width="32" height="27" className="h-7 w-auto" /><span className="font-display font-extrabold text-[17px] tracking-tight hidden sm:block">Elvora <span className="font-semibold opacity-90">Logistics OS</span></span></Link>
+        <Link to="/" className="flex items-center gap-2 mr-2" aria-label="Elvora Logistics OS home"><img src="/brand/icon-primary.svg" alt="" width="32" height="27" className="h-7 w-auto" /><span className="font-display font-extrabold text-[17px] tracking-tight hidden sm:block">Elvora <span className="font-semibold opacity-90">Logistics OS</span></span></Link>
+        <nav className="primary-pills" aria-label="Primary navigation">
+          <Link to="/dashboard" className={cls('primary-pill', loc.pathname === '/dashboard' && 'active')}><LayoutGrid size={15} />Dashboard</Link>
+          <Link to="/" className={cls('primary-pill', (loc.pathname === '/' || loc.pathname.startsWith('/workspace/')) && 'active')}>Workspaces</Link>
+          {meta?.nav.some(g => g.items.some(i => i.to.startsWith('/reports'))) && <Link to="/reports" className={cls('primary-pill', loc.pathname === '/reports' && 'active')}>Reports</Link>}
+        </nav>
         <div className="flex-1" />
         <NotificationBell />
         <button className="tb" onClick={() => setPalette(true)} aria-label="Search"><Search /><span className="toolbar-label">{tr('Search')}</span><kbd className="hidden xl:inline text-[10px] border border-line rounded px-1">Ctrl K</kbd></button>
         <Link to="/workspace-tools" className="tb" aria-label="Account, help and language"><User /><span className="toolbar-label">{me?.email.split('@')[0]}</span></Link>
       </header>
       <div className="flex flex-1 min-h-0">
+        {!isPrint && <nav className="workspace-rail no-print" aria-label="Workspace shortcuts">
+          <Link to="/" className={cls('rail-shortcut', loc.pathname === '/' && 'active')} aria-label="All workspaces" title="All workspaces"><LayoutGrid size={19} /></Link>
+          {(meta?.nav ?? []).filter(g => g.items.length).map(g => { const Icon = iconByName(g.icon); return <Link key={g.icon} to={workspacePath(g)} className={cls('rail-shortcut', (activeGroup?.icon === g.icon || loc.pathname === workspacePath(g)) && 'active')} aria-label={g.label} title={g.label}><Icon size={19} /></Link> })}
+          <button className="rail-shortcut" onClick={() => setGuide(true)} aria-label="Quick guide" title="Quick guide"><span aria-hidden="true">?</span></button>
+        </nav>}
         <div className="flex-1 min-w-0 flex flex-col">
-          {me?.demo && !isPrint && <div className="no-print bg-[#1f3a8a] text-white px-4 py-2 text-sm font-semibold flex items-center gap-3 flex-wrap">DEMO WORKSPACE – fictional data, isolated from production, resets every night. External sending (e-mail, WhatsApp, integrations) is switched off. <button className="underline bg-transparent border-0 text-white cursor-pointer font-semibold" onClick={async () => { if (confirm('Restore the demo to its original state and sign out?')) { await post('/api/demo/reset'); window.location.href = '/login' } }}>Reset demo now</button></div>}
+          {me?.demo && !isPrint && <div className="demo-notice no-print"><span><strong>Demo workspace</strong> · fictional data · external sending disabled</span><details><summary>Details</summary><p>Isolated from production. Resets every night. External e-mail, WhatsApp and integrations are switched off.</p><button className="btn outline sm" onClick={async () => { if (confirm('Restore the demo to its original state and sign out?')) { await post('/api/demo/reset'); window.location.href = '/login' } }}>Reset demo</button></details></div>}
           {me?.defaultPassword && !me?.demo && !isPrint && <div className="no-print bg-gold text-[#6b4a00] px-4 py-2 text-sm font-semibold flex items-center gap-3 flex-wrap">⚠ You are signed in with the default password. <Link to="/profile" className="underline">Change it now</Link></div>}
           <main className="app-main flex-1 overflow-y-auto p-4 md:p-6" id="main">
             {!isPrint && loc.pathname !== '/' && <nav className="workspace-breadcrumb no-print" aria-label="Breadcrumb"><Link to="/"><LayoutGrid size={16} />Workspaces</Link>{activeGroup && <><ChevronRight size={14} /><Link to={workspacePath(activeGroup)}>{activeGroup.label}</Link></>}</nav>}
@@ -90,4 +101,5 @@ export function Shell() {
   )
 }
 export type { ReactNode }
+
 
