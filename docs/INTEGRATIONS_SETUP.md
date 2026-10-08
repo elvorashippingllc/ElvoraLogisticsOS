@@ -101,6 +101,21 @@ The owner daily-report scheduler starts at 07:30 Dubai. Do not enable automatic 
 
 Credentials: provider API key, a currently available model ID, and optional base URL/fallback credentials. A ChatGPT subscription is not an API key.
 
+### Free starting setup: OpenRouter
+
+1. Sign up at https://openrouter.ai and open https://openrouter.ai/keys. Create an API key named `Elvora OS`.
+2. In the real OS workspace, open Admin → Integrations → AI employees and enable AI.
+3. Select OpenRouter. Replace the API key with your OpenRouter key, set Base URL to `https://openrouter.ai/api/v1`, and Model to `openrouter/free`. Explicitly replace any old model/address left from another provider.
+4. Leave fallback provider empty for the first test. Click Save & test connection; expect a successful connection and a short reply.
+5. Open Jarvis & Employees and ask for a business briefing. This checks the assistant's business tools as well as a simple connection.
+6. Optional free fallback: create a separate key at https://console.groq.com/keys; choose Groq as fallback, URL `https://api.groq.com/openai/v1`, model `openai/gpt-oss-20b`, and its own key.
+
+OpenRouter's `openrouter/free` selects an available free model compatible with the requested features, including tools. Free usage has limits and variable availability; Groq also applies free-plan limits. A briefing may involve several requests. Current limits are shown in each provider's account. Do not enable a paid fallback if you want this setup to stay free.
+
+A 404 means the address/model could not be found: check both fields above. A 401/403 means the key or permissions need attention; a 429 means the allowance is exhausted. Updating the OS defaults does not overwrite a model you previously saved. Keep keys in the OS, not in chat or GitHub.
+
+[OpenRouter free router](https://openrouter.ai/docs/guides/routing/routers/free-router) · [Groq free-plan limits](https://console.groq.com/docs/rate-limits).
+
 1. Choose a provider supported in the OS. Groq is one possible starting point; confirm its current usage allowance in your account.
 2. Generate a project/API key in that provider's console. Enter it under AI employees.
 3. Choose a current tool-capable model from the provider's own model list. Defaults are conveniences; providers can retire models.

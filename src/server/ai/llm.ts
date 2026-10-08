@@ -4,8 +4,8 @@ import { inDemo } from '../db'
 
 export interface Preset { key: string; label: string; base: string; model: string; keyRequired: boolean; free: string; notes: string }
 export const PRESETS: Preset[] = [
-  { key: 'groq', label: 'Groq (free tier)', base: 'https://api.groq.com/openai/v1', model: 'llama-3.3-70b-versatile', keyRequired: true, free: 'Free tier with rate limits', notes: 'Fast Llama / Qwen models. Get a key at console.groq.com.' },
-  { key: 'openrouter', label: 'OpenRouter (free models)', base: 'https://openrouter.ai/api/v1', model: 'meta-llama/llama-3.3-70b-instruct:free', keyRequired: true, free: 'Models ending in ":free" cost nothing', notes: 'Pick any model ending in :free at openrouter.ai/models.' },
+  { key: 'groq', label: 'Groq (free tier)', base: 'https://api.groq.com/openai/v1', model: 'openai/gpt-oss-20b', keyRequired: true, free: 'Free tier with rate limits', notes: 'Create a key at console.groq.com. Use openai/gpt-oss-20b; check your account for current free limits.' },
+  { key: 'openrouter', label: 'OpenRouter (free models)', base: 'https://openrouter.ai/api/v1', model: 'openrouter/free', keyRequired: true, free: 'Free router with usage limits', notes: 'Create a key at openrouter.ai/keys. Use openrouter/free to select an available free model with the capabilities requested. Free availability and limits can change.' },
   { key: 'ollama', label: 'Ollama (your own server)', base: 'http://localhost:11434/v1', model: 'llama3.1:8b', keyRequired: false, free: 'Free – runs on your hardware', notes: 'Install Ollama on a PC/VPS and pull a model that supports tools (llama3.1, qwen2.5). Use http://host.docker.internal:11434/v1 from Docker.' },
   { key: 'opencode', label: 'OpenCode Zen', base: 'https://opencode.ai/zen/v1', model: '', keyRequired: true, free: 'Some models are free', notes: 'Enter the model id shown in your OpenCode Zen dashboard.' },
   { key: 'xai', label: 'xAI Grok', base: 'https://api.x.ai/v1', model: 'grok-3-mini', keyRequired: true, free: 'Paid / promotional credits', notes: 'console.x.ai' },
@@ -22,9 +22,9 @@ export function endpoints(modelOverride?: string): Endpoint[] {
     const provider = String(getSetting(pre ? 'ai_fallback_provider' : 'ai_provider') || '')
     if (!provider) return
     const p = PRESETS.find(x => x.key === provider)
-    const base = String(getSetting(pre ? 'ai_fallback_base_url' : 'ai_base_url') || p?.base || '').replace(/\/+$/, '')
-    const model = String((!pre && modelOverride) || getSetting(pre ? 'ai_fallback_model' : 'ai_model') || p?.model || '')
-    const key = String(getSetting(pre ? 'ai_fallback_api_key' : 'ai_api_key') || '')
+    const base = String(getSetting(pre ? 'ai_fallback_base_url' : 'ai_base_url') || p?.base || '').trim().replace(/\/+$/, '')
+    const model = String((!pre && modelOverride) || getSetting(pre ? 'ai_fallback_model' : 'ai_model') || p?.model || '').trim()
+    const key = String(getSetting(pre ? 'ai_fallback_api_key' : 'ai_api_key') || '').trim()
     if (base && model) out.push({ base, key, model, label })
   }
   mk('', 'primary'); mk('f', 'fallback')
@@ -51,7 +51,12 @@ async function callOne(e: Endpoint, messages: ChatMsg[], tools: ToolDef[] | unde
   const body: any = { model: e.model, messages, temperature: 0.2, max_tokens: 1500 }
   if (tools?.length) { body.tools = tools.map(t => ({ type: 'function', function: t })); body.tool_choice = 'auto' }
   const r = await http(`${e.base}/chat/completions`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(e.key ? { Authorization: `Bearer ${e.key}` } : {}) }, body: JSON.stringify(body), timeoutMs: 90000 })
-  if (!r.ok) throw new Error(`${e.label} model ${e.model}: HTTP ${r.status} ${r.data?.error?.message ?? r.data?.message ?? r.text.slice(0, 160)}`)
+  if (!r.ok) {
+    const hint = r.status === 404 ? 'Check the model ID and base URL in Integrations → AI. The provider may have retired this model. For OpenRouter, use model openrouter/free and base URL https://openrouter.ai/api/v1.'
+      : r.status === 401 || r.status === 403 ? 'Check that the API key belongs to the selected provider and has permission to use this model.'
+      : r.status === 429 ? 'The provider has reached its usage limit. Wait for the allowance to reset or configure a separate free fallback provider.' : ''
+    throw new Error(`${e.label} model ${e.model}: HTTP ${r.status} ${r.data?.error?.message ?? r.data?.message ?? r.text.slice(0, 160)} ${hint}`.trim())
+  }
   const msg = r.data?.choices?.[0]?.message
   if (!msg) throw new Error(`${e.label}: empty response`)
   let content: string = typeof msg.content === 'string' ? msg.content : ''
@@ -92,10 +97,11 @@ export async function chat(messages: ChatMsg[], tools?: ToolDef[], modelOverride
   if (inDemo()) return demoChat(messages, tools)
   const eps = endpoints(modelOverride)
   if (!eps.length) throw new Error('AI is not configured. Choose a provider under Integrations → AI.')
-  let last: Error | null = null
-  for (const e of eps) { try { return await callOne(e, messages, tools) } catch (err: any) { last = err } }
-  throw last!
+  const errors: string[] = []
+  for (const e of eps) { try { return await callOne(e, messages, tools) } catch (err: any) { errors.push(String(err?.message ?? err)) } }
+  throw new Error(errors.join('\n'))
 }
 export async function testLlm(): Promise<{ ok: boolean; error?: string; model?: string; reply?: string }> {
+  if (inDemo()) return { ok: false, error: 'The demo assistant is scripted. Sign into your real workspace to test an external AI connection.' }
   try { const r = await chat([{ role: 'user', content: 'Reply with the single word: ready' }]); return { ok: true, model: r.model, reply: r.content.slice(0, 40) } } catch (e: any) { return { ok: false, error: String(e?.message ?? e) } }
 }
