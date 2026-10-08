@@ -17,6 +17,7 @@ import { ProfilePage } from './pages/ProfilePage'
 import { RolesPage, SettingsPage, AuditPage, BackupPage } from './pages/AdminPages'
 import { CompliancePage } from './pages/CompliancePage'
 import { JobControlPage } from './pages/JobControlPage'
+import { WorkQueuePage,HandoverPage } from './pages/WorkPages'
 import { ScopePage } from './pages/ScopePage'
 import { PublicTrack } from './pages/PublicTrack'
 import { IntegrationsPage } from './pages/IntegrationsPage'
@@ -54,6 +55,8 @@ export default function App() {
           <Route path="/e/:entity/:id" element={<EntityRecordPage />} />
           <Route path="/search" element={<Guard module="jobs"><JobSearch /></Guard>} />
           <Route path="/tracking" element={<Guard module="jobs"><TrackingPage /></Guard>} />
+          <Route path="/work/queues" element={<Guard module="projects"><WorkQueuePage /></Guard>} />
+          <Route path="/work/handovers" element={<Guard module="projects"><HandoverPage /></Guard>} />
           <Route path="/calendar" element={<CalendarPage />} />
           <Route path="/reports" element={<Guard module="reports"><ReportsPage /></Guard>} />
           <Route path="/finance/statements" element={<Guard module="finance"><Statements /></Guard>} />

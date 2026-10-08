@@ -1,3 +1,4 @@
+import {syncWorkQueues} from './domain/work'
 import { isPg, db, q, qi, tx, currentDb, type Row } from './db'
 import { ENTITIES } from '../shared/entities'
 import { recordTitle, optValue, type EntityDef, type FieldDef, type Action } from '../shared/types'
@@ -233,6 +234,11 @@ function buildWhere(def: EntityDef, p: ListParams, ctx: Ctx): { where: string; a
   if (ctx.user?.party_id && !ctx.system) {
     if (!scope) { cl.push('1=0') } else { cl.push(`${qi(scope)} = ?`); args.push(ctx.user.party_id) }
   }
+  if(!ctx.system&&def.key==='work_items'){
+    const sources=Object.values(ENTITIES).filter(e=>can(ctx.user,e.module,'view')).map(e=>e.key)
+    if(!sources.length)cl.push('1=0');else{cl.push(`source_entity IN (${sources.map(()=>'?').join(',')})`);args.push(...sources)}
+  }
+  if(!ctx.system&&def.key==='shift_handovers'&&!can(ctx.user,'admin','view')){cl.push('(from_user_id=? OR to_user_id=?)');args.push(ctx.user?.id??0,ctx.user?.id??0)}
   if (p.q && p.q.trim()) {
     const cols = [...new Set([...def.fields.filter(f => f.search && f.type !== 'ref').map(f => f.name), ...titleCols(def).filter(c => def.fields.find(x => x.name === c)?.type !== 'ref')])]
     const term = `%${likeEsc(p.q.trim())}%`
@@ -296,7 +302,16 @@ export function listRecords(def: EntityDef, p: ListParams, ctx: Ctx) {
   const rows = q.all(`SELECT * FROM ${qi(def.key)} ${where} ORDER BY ${qi(sortField)} ${dir}, id DESC LIMIT ? OFFSET ?`, ...args, pageSize, (page - 1) * pageSize)
   const recs = rows.map(r => rowToApi(def, r))
   attachLabels(def, recs)
+  if(def.key==='shift_handovers'&&!ctx.system)recs.forEach(r=>redactHandover(r,ctx))
   return { rows: recs, total, page, pageSize }
+}
+
+function redactHandover(r:Rec,ctx:Ctx){
+ const snap=r.snapshot;if(!snap||typeof snap!=='object')return
+ const readable=(i:Rec)=>can(ctx.user,getDef(i.source_entity).module,'view')
+ const items=(snap.items??[]).filter(readable),issues=(snap.critical_issues??[]).filter(readable)
+ r.snapshot={...snap,items,critical_issues:issues,jobs:can(ctx.user,'jobs','view')?snap.jobs:[],pending_communications:can(ctx.user,'admin','view')?snap.pending_communications:[]}
+ r.snapshot.hidden_items=(snap.items??[]).length-items.length
 }
 
 export function getRecord(def: EntityDef, id: number, ctx: Ctx, opts: { children?: boolean; includeDeleted?: boolean } = {}): Rec {
@@ -305,8 +320,11 @@ export function getRecord(def: EntityDef, id: number, ctx: Ctx, opts: { children
   if (!row || (row.deleted_at && !opts.includeDeleted)) throw notFound()
   const scope = ctx.user?.party_id && !ctx.system ? SCOPE[def.key] : undefined
   if (ctx.user?.party_id && !ctx.system && (!scope || row[scope] !== ctx.user.party_id)) throw notFound()
+  if(!ctx.system&&def.key==='work_items'&&!can(ctx.user,getDef(row.source_entity).module,'view'))throw notFound()
+  if(!ctx.system&&def.key==='shift_handovers'&&!can(ctx.user,'admin','view')&&row.from_user_id!==ctx.user?.id&&row.to_user_id!==ctx.user?.id)throw notFound()
   const rec = rowToApi(def, row)
   attachLabels(def, [rec])
+  if(def.key==='shift_handovers'&&!ctx.system)redactHandover(rec,ctx)
   if(['bills','payments','quotations','purchase_orders'].includes(def.key)) rec._approval=q.get(`SELECT r.*,u.name requested_by_name FROM approval_requests r LEFT JOIN users u ON u.id=r.requested_by WHERE r.entity=? AND r.record_id=? AND r.status='Pending'`,def.key,id) ?? null
   if (opts.children !== false && def.children?.length) rec.children = loadChildren(def, id)
   return rec
@@ -515,6 +533,7 @@ export function createRecord(def: EntityDef, payload: Rec, ctx: Ctx): Rec {
     const label = fresh._title
     auditLog(c2, def, id, 'create', null, label)
     after.push(() => emitWebhooks(def.key + '.created', fresh))
+    syncWorkQueues(def.key,fresh)
     runAutomations(def.key, 'created', fresh, null)
     return fresh
   })
@@ -565,6 +584,7 @@ export function updateRecord(def: EntityDef, id: number, payload: Rec, ctx: Ctx)
     if (Object.keys(ch).length) changes._children = ch
     if (Object.keys(changes).length) auditLog(c2, def, id, 'update', changes, fresh._title)
     after.push(() => emitWebhooks(def.key + '.updated', fresh))
+    syncWorkQueues(def.key,fresh)
     if (Object.keys(changes).length) runAutomations(def.key, 'updated', fresh, old, d)
     return fresh
   })

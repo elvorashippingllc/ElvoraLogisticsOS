@@ -965,52 +965,64 @@
       "id": 77,
       "title": "SLA Engine",
       "status": "Partial",
-      "evidence": "Event-triggered rules, tasks and notifications exist; they do not establish a full enterprise workflow engine.",
+      "evidence": "Customer/service/department/activity policies set persisted elapsed deadlines; waiting pause/resume, owner/escalation notifications and a scheduler record one-time breaches.",
       "sources": [
-        "src/server/automation.ts",
-        "src/shared/entities/platform.ts",
-        "src/shared/entities/people.ts"
+        "src/server/domain/work.ts",
+        "src/server/routes/work.ts",
+        "src/shared/entities/work.ts",
+        "src/web/pages/WorkPages.tsx",
+        "tests/work-controls.ts",
+        "tests/work-api.ts"
       ],
-      "gap": "Business calendars, SLA timers, breach ownership and escalation.",
+      "gap": "Working calendars, holidays, authority/escalation tiers, retrospective migration and operational acceptance remain outstanding.",
       "specification": "# 77. SLA Engine\n\nSLA by:\n\n- customer\n- service\n- department\n- activity\n\nExamples:\n\n- quote ≤ 2 hours\n- booking confirmation ≤ 4 hours\n- BL draft ≤ 8 hours\n- POD ≤ 4 hours\n\n---"
     },
     {
       "id": 78,
       "title": "Department Work Queues",
       "status": "Partial",
-      "evidence": "Event-triggered rules, tasks and notifications exist; they do not establish a full enterprise workflow engine.",
+      "evidence": "Source-linked department queues automatically track quotations, carrier confirmations, sea/air BL drafts and delivered shipment POD; source transitions complete activities, and source module permissions filter visibility.",
       "sources": [
-        "src/server/automation.ts",
-        "src/shared/entities/platform.ts",
-        "src/shared/entities/people.ts"
+        "src/server/domain/work.ts",
+        "src/server/routes/work.ts",
+        "src/shared/entities/work.ts",
+        "src/web/pages/WorkPages.tsx",
+        "tests/work-controls.ts",
+        "tests/work-api.ts"
       ],
-      "gap": "Department queues, assignment rules and handover/visibility controls.",
+      "gap": "Full activity catalogue, branch/entity record isolation, skill-based routing, reassignment approval policies and production queue acceptance remain outstanding.",
       "specification": "# 78. Department Work Queues\n\n### Pricing\n\nRates awaiting action.\n\n### Operations\n\nJobs requiring intervention.\n\n### Documentation\n\nBL/documents.\n\n### Accounts\n\nBilling/costing.\n\n### Credit\n\nCollections.\n\n---"
     },
     {
       "id": 79,
       "title": "Workload Management",
       "status": "Partial",
-      "evidence": "Event-triggered rules, tasks and notifications exist; they do not establish a full enterprise workflow engine.",
+      "evidence": "Staff capacity points, activity complexity, open jobs/tasks and overdue counts drive workload summaries and manager-reviewed same-department recommendations with source-permission checks.",
       "sources": [
-        "src/server/automation.ts",
-        "src/shared/entities/platform.ts",
-        "src/shared/entities/people.ts"
+        "src/server/domain/work.ts",
+        "src/server/routes/work.ts",
+        "src/shared/entities/work.ts",
+        "src/web/pages/WorkPages.tsx",
+        "tests/work-controls.ts",
+        "tests/work-api.ts"
       ],
-      "gap": "Capacity planning, skill-based assignment and workload balancing.",
+      "gap": "Skill qualifications, availability calendars, forecasts, capacity history and optimisation/operational acceptance remain outstanding.",
       "specification": "# 79. Workload Management\n\nTrack:\n\n- workload/person\n- jobs\n- tasks\n- overdue\n- complexity\n- utilization\n\nRecommend reassignment.\n\n---"
     },
     {
       "id": 80,
       "title": "Shift Handover",
       "status": "Partial",
-      "evidence": "Event-triggered rules, tasks and notifications exist; they do not establish a full enterprise workflow engine.",
+      "evidence": "Senders capture active activities, open jobs, tasks, critical issues and permission-gated linked email; only the named recipient can acknowledge, and current source permissions redact historical activity snapshots.",
       "sources": [
-        "src/server/automation.ts",
-        "src/shared/entities/platform.ts",
-        "src/shared/entities/people.ts"
+        "src/server/domain/work.ts",
+        "src/server/routes/work.ts",
+        "src/shared/entities/work.ts",
+        "src/web/pages/WorkPages.tsx",
+        "tests/work-controls.ts",
+        "tests/work-api.ts"
       ],
-      "gap": "Structured shift handover, outstanding exception acceptance and continuity tracking.",
+      "gap": "Shift calendars, WhatsApp/conversation assignment, escalation of unacknowledged handovers, exception responsibility transfer and production continuity acceptance remain outstanding.",
       "specification": "# 80. Shift Handover\n\nAutomatic:\n\n```text\nEmployee Ending Shift\n→ Outstanding Jobs\n→ Critical Issues\n→ Pending Communications\n→ Handover\n→ Recipient Acknowledges\n```\n\n---"
     },
     {

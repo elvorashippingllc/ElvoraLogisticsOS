@@ -764,41 +764,41 @@ Workflow events now enqueue atomically with source changes. Durable runs support
 
 **Status: Partial**
 
-Event-triggered rules, tasks and notifications exist; they do not establish a full enterprise workflow engine.
+Customer/service/department/activity policies set persisted elapsed deadlines; waiting pause/resume, owner/escalation notifications and a scheduler record one-time breaches.
 
-**Remaining acceptance work:** Business calendars, SLA timers, breach ownership and escalation.
+**Remaining acceptance work:** Working calendars, holidays, authority/escalation tiers, retrospective migration and operational acceptance remain outstanding.
 
-**Evidence:** `src/server/automation.ts`, `src/shared/entities/platform.ts`, `src/shared/entities/people.ts`
+**Evidence:** `src/server/domain/work.ts`, `src/server/routes/work.ts`, `src/shared/entities/work.ts`, `src/web/pages/WorkPages.tsx`, `tests/work-controls.ts`, `tests/work-api.ts`
 
 ### 78. Department Work Queues
 
 **Status: Partial**
 
-Event-triggered rules, tasks and notifications exist; they do not establish a full enterprise workflow engine.
+Source-linked department queues automatically track quotations, carrier confirmations, sea/air BL drafts and delivered shipment POD; source transitions complete activities, and source module permissions filter visibility.
 
-**Remaining acceptance work:** Department queues, assignment rules and handover/visibility controls.
+**Remaining acceptance work:** Full activity catalogue, branch/entity record isolation, skill-based routing, reassignment approval policies and production queue acceptance remain outstanding.
 
-**Evidence:** `src/server/automation.ts`, `src/shared/entities/platform.ts`, `src/shared/entities/people.ts`
+**Evidence:** `src/server/domain/work.ts`, `src/server/routes/work.ts`, `src/shared/entities/work.ts`, `src/web/pages/WorkPages.tsx`, `tests/work-controls.ts`, `tests/work-api.ts`
 
 ### 79. Workload Management
 
 **Status: Partial**
 
-Event-triggered rules, tasks and notifications exist; they do not establish a full enterprise workflow engine.
+Staff capacity points, activity complexity, open jobs/tasks and overdue counts drive workload summaries and manager-reviewed same-department recommendations with source-permission checks.
 
-**Remaining acceptance work:** Capacity planning, skill-based assignment and workload balancing.
+**Remaining acceptance work:** Skill qualifications, availability calendars, forecasts, capacity history and optimisation/operational acceptance remain outstanding.
 
-**Evidence:** `src/server/automation.ts`, `src/shared/entities/platform.ts`, `src/shared/entities/people.ts`
+**Evidence:** `src/server/domain/work.ts`, `src/server/routes/work.ts`, `src/shared/entities/work.ts`, `src/web/pages/WorkPages.tsx`, `tests/work-controls.ts`, `tests/work-api.ts`
 
 ### 80. Shift Handover
 
 **Status: Partial**
 
-Event-triggered rules, tasks and notifications exist; they do not establish a full enterprise workflow engine.
+Senders capture active activities, open jobs, tasks, critical issues and permission-gated linked email; only the named recipient can acknowledge, and current source permissions redact historical activity snapshots.
 
-**Remaining acceptance work:** Structured shift handover, outstanding exception acceptance and continuity tracking.
+**Remaining acceptance work:** Shift calendars, WhatsApp/conversation assignment, escalation of unacknowledged handovers, exception responsibility transfer and production continuity acceptance remain outstanding.
 
-**Evidence:** `src/server/automation.ts`, `src/shared/entities/platform.ts`, `src/shared/entities/people.ts`
+**Evidence:** `src/server/domain/work.ts`, `src/server/routes/work.ts`, `src/shared/entities/work.ts`, `src/web/pages/WorkPages.tsx`, `tests/work-controls.ts`, `tests/work-api.ts`
 
 ### 81. Customer SOP Engine
 

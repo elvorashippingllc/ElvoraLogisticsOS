@@ -1,3 +1,4 @@
+import {slaHooks,workHooks} from './domain/work'
 import { automationRuleHooks } from './automation'
 import type { EntityDef } from '../shared/types'
 import type { Ctx, Rec } from './engine'
@@ -20,7 +21,7 @@ export interface Hooks {
 
 // Lazy registry: domain modules import the engine, the engine imports this file.
 const registry: Record<string, () => Hooks> = {
-  automation_rules:()=>automationRuleHooks,
+  automation_rules:()=>automationRuleHooks, sla_policies:()=>slaHooks, work_items:()=>workHooks,
   jobs: () => jobHooks, shipments: () => shipmentHooks, customs_declarations: () => customsHooks, customs_lines: () => customsLineHooks,
   transport_orders: () => transportHooks, delivery_orders: () => doHooks, bookings: () => bookingHooks,
   quotations: () => quoteHooks, parties: () => partyHooks, leads: () => leadHooks, opportunities: () => opportunityHooks, contracts: () => contractHooks,
