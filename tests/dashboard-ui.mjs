@@ -36,7 +36,7 @@ try {
     const failures = await page.evaluate(() => {
       const rgb = value => value.match(/[\d.]+/g)?.slice(0, 3).map(Number)
       const luminance = color => rgb(color).map(v => { v /= 255; return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4 }).reduce((sum, v, i) => sum + v * [.2126, .7152, .0722][i], 0)
-      const selectors = '.workflow-step h3,.workflow-step p,.workflow-step strong,.workflow-step-head,.workflow-open,.dashboard-metrics .kpi .l,.dashboard-metrics .kpi .v,.dashboard-metrics .kpi .text-muted,.overview-ledger dt,.overview-ledger dd,.overview-ledger h2,.overview-mix h2,.overview-mix header > span,.mode-legend li,.mode-legend strong,.daily-schedule b,.daily-schedule small'
+      const selectors = '.dashboard-alert,.dashboard-brief > div:first-child,.quick-work a,.workflow-step h3,.workflow-step p,.workflow-step strong,.workflow-step-head,.workflow-open,.dashboard-metrics .kpi .l,.dashboard-metrics .kpi .v,.dashboard-metrics .kpi .text-muted,.overview-ledger dt,.overview-ledger dd,.overview-ledger h2,.overview-mix h2,.overview-mix header > span,.mode-legend li,.mode-legend strong,.daily-schedule b,.daily-schedule small'
       return [...document.querySelectorAll(selectors)].filter(n => n.getClientRects().length).flatMap(n => {
         let surface = n
         while (surface && getComputedStyle(surface).backgroundColor === 'rgba(0, 0, 0, 0)') surface = surface.parentElement

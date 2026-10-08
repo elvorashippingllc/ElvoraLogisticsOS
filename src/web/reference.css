@@ -286,3 +286,12 @@ table.grid td { font-size: 14px; }
 :root[data-theme='dark'] .dashboard-page .dashboard-metrics .kpi.metric-revenue { background: var(--dash-revenue); }
 :root[data-theme='dark'] .dashboard-page .dashboard-metrics .kpi.metric-collections { background: var(--dash-collections); }
 :root[data-theme='dark'] .dashboard-page .dashboard-metrics .kpi.metric-collections :is(.l,.v,.text-muted) { color: var(--dash-collections-text); }
+.dashboard-page .dashboard-alert { color: #1f4f85; }
+.dashboard-page .dashboard-alert[data-level='danger'] { color: #8f1325; }
+.dashboard-page .dashboard-alert[data-level='warn'] { color: #65441b; }
+.dashboard-page .dashboard-brief > div:first-child { color: var(--dash-revenue-text); }
+:root[data-theme='dark'] .dashboard-page .dashboard-alert { background: #233c48; color: #e0edf4; border-color: #4e7383; }
+:root[data-theme='dark'] .dashboard-page .dashboard-alert[data-level='danger'] { background: #482d33; color: #f3d8dc; border-color: #85535e; }
+:root[data-theme='dark'] .dashboard-page .dashboard-alert[data-level='warn'] { background: #463b21; color: #f5e5bf; border-color: #897347; }
+:root[data-theme='dark'] .dashboard-page .quick-work a { color: #b9dec9; }
+:root[data-theme='dark'] .dashboard-page .quick-work a:hover { color: #fff; }
