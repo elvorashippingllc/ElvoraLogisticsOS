@@ -7,7 +7,7 @@ export WA_GRAPH_URL=http://localhost:9099/graph RESEND_API_URL=http://localhost:
 CHROME_PATH="${CHROME_PATH:-$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)}"; export CHROME_PATH
 fail=0
 free_port() { (command -v fuser >/dev/null && fuser -k 8080/tcp >/dev/null 2>&1) || true; sleep 1; if curl -sf localhost:8080/api/health >/dev/null; then echo "port 8080 is busy; stop the other server first" >&2; exit 2; fi; }
-for suite in ${TEST_SUITES:-auth-security handover smoke phase2 compliance sweep enterprise-controls workflow-api work-api enterprise-module-api ai-controls workflow-controls work-controls enterprise-modules cargo-docs deposits ocr}; do
+for suite in ${TEST_SUITES:-auth-security email handover smoke phase2 compliance sweep enterprise-controls workflow-api work-api enterprise-module-api ai-controls workflow-controls work-controls enterprise-modules cargo-docs deposits ocr}; do
   free_port
   dir="$(mktemp -d)"; export DATA_DIR="$dir"
   if [ -n "${TEST_PG_ADMIN_URL:-}" ]; then
@@ -15,7 +15,7 @@ for suite in ${TEST_SUITES:-auth-security handover smoke phase2 compliance sweep
     export DATABASE_URL="${TEST_PG_ADMIN_URL%/*}/$db"
   fi
   case "$suite" in
-    auth-security|ai-controls|workflow-controls|work-controls|enterprise-modules|cargo-docs|deposits|ocr)
+    auth-security|email|ai-controls|workflow-controls|work-controls|enterprise-modules|cargo-docs|deposits|ocr)
       echo "=== $suite (domain) ==="
       if ! node --import tsx "tests/$suite.ts"; then fail=1;
       elif [ "$suite" = workflow-controls ]; then

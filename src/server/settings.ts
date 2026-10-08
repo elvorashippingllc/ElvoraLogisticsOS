@@ -30,7 +30,7 @@ export const SETTING_DEFAULTS: Record<string, any> = {
   weight_divisor_courier: 5000,
   free_days_default: 7,
   // --- e-mail (Resend / SMTP)
-  mail_provider: 'auto', resend_api_key: '', resend_from: '',
+  mail_accounts: '', mail_provider: 'auto', resend_api_key: '', resend_from: '',
   // --- file storage (Cloudflare R2, S3 compatible)
   storage_provider: 'local', r2_account_id: '', r2_access_key_id: '', r2_secret_access_key: '', r2_bucket: '', r2_backup_nightly: true,
   // --- Supabase (Postgres replica for BI / disaster recovery)
@@ -59,7 +59,7 @@ export const SETTING_DEFAULTS: Record<string, any> = {
   ui_lang: 'en',
   seeded: {},
 }
-export const SECRET_SETTINGS = new Set(['smtp_pass', 'resend_api_key', 'r2_secret_access_key', 'supabase_service_key', 'wa_access_token', 'wa_app_secret', 'ai_api_key', 'ai_fallback_api_key', 'tracking_api_key', 'tracking_webhook_secret', 'einv_api_key', 'edi_http_auth', 'edi_sftp_pass', 'customs_gateway_key', 'bank_webhook_secret'])
+export const SECRET_SETTINGS = new Set(['mail_accounts', 'smtp_pass', 'resend_api_key', 'r2_secret_access_key', 'supabase_service_key', 'wa_access_token', 'wa_app_secret', 'ai_api_key', 'ai_fallback_api_key', 'tracking_api_key', 'tracking_webhook_secret', 'einv_api_key', 'edi_http_auth', 'edi_sftp_pass', 'customs_gateway_key', 'bank_webhook_secret'])
 
 const caches = new WeakMap<object, Record<string, any>>()
 export function loadSettings(): Record<string, any> {

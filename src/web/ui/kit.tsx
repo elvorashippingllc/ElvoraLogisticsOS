@@ -1,20 +1,33 @@
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode, type CSSProperties } from 'react'
+import { createContext, useCallback, useContext, useEffect, useId, useRef, useState, type ReactNode, type CSSProperties } from 'react'
 import { X, ChevronDown, Loader2, Inbox, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cls } from '../lib/format'
 import { statusTone } from '../lib/status'
 
 export function Modal({ open, onClose, title, children, footer, width = 560, persistent = false }: { open: boolean; onClose: () => void; title: ReactNode; children: ReactNode; footer?: ReactNode; width?: number; persistent?: boolean }) {
+  const dialog = useRef<HTMLDivElement>(null), titleId = useId(), close = useRef(onClose)
+  close.current = onClose
   useEffect(() => {
     if (!open) return
-    const h = (e: KeyboardEvent) => { if (e.key === 'Escape' && !persistent) onClose() }
+    const previous = document.activeElement as HTMLElement | null
+    const controls = () => Array.from(dialog.current?.querySelectorAll<HTMLElement>('a[href],button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),[tabindex="0"]') || []).filter(el => el.getClientRects().length)
+    const h = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !persistent) close.current()
+      if (e.key === 'Tab') {
+        const nodes = controls(), first = nodes[0], last = nodes[nodes.length - 1]
+        if (!first) { e.preventDefault(); dialog.current?.focus() }
+        else if (e.shiftKey && (document.activeElement === first || document.activeElement === dialog.current)) { e.preventDefault(); last.focus() }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+      }
+    }
+    if (!dialog.current?.contains(document.activeElement)) (controls()[0] || dialog.current)?.focus()
     document.addEventListener('keydown', h); const prev = document.body.style.overflow; document.body.style.overflow = 'hidden'
-    return () => { document.removeEventListener('keydown', h); document.body.style.overflow = prev }
-  }, [open, onClose, persistent])
+    return () => { document.removeEventListener('keydown', h); document.body.style.overflow = prev; if (previous?.isConnected) previous.focus() }
+  }, [open, persistent])
   if (!open) return null
   return (
-    <div className="overlay" onMouseDown={e => { if (e.target === e.currentTarget && !persistent) onClose() }} role="dialog" aria-modal="true">
-      <div className="modal" style={{ maxWidth: width }}>
-        <div className="modal-head"><span>{title}</span><button className="btn ghost icon sm" onClick={onClose} aria-label="Close"><X /></button></div>
+    <div className="overlay" onMouseDown={e => { if (e.target === e.currentTarget && !persistent) onClose() }}>
+      <div ref={dialog} className="modal" style={{ maxWidth: width }} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}>
+        <div className="modal-head"><span id={titleId}>{title}</span><button className="btn ghost icon sm" onClick={onClose} aria-label="Close"><X /></button></div>
         <div className="modal-body">{children}</div>
         {footer && <div className="modal-foot">{footer}</div>}
       </div>

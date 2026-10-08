@@ -53,6 +53,7 @@ export const NAV: NavGroup[] = [
     { label: 'Job Search', to: '/search', icon: 'Search', module: 'jobs' },
   ] },
   { label: 'CRM & Sales', icon: 'Handshake', items: [
+    { label: 'Email', to: '/email', icon: 'Mail', module: 'crm' },
     { label: 'Customers & Parties', to: '/e/parties', icon: 'Building', module: 'crm' },
     { label: 'Contacts', to: '/e/contacts', icon: 'Contact', module: 'crm' },
     { label: 'Leads', to: '/e/leads', icon: 'UserPlus', module: 'crm' },
@@ -82,6 +83,7 @@ export const NAV: NavGroup[] = [
     { label: 'Bins & Locations', to: '/e/wh_locations', icon: 'LayoutGrid', module: 'warehouse' },
   ] },
   { label: 'Accounts', icon: 'Landmark', items: [
+    { label: 'Email', to: '/email', icon: 'Mail', module: 'finance' },
     { label: 'Invoices & Notes', to: '/e/invoices', icon: 'ReceiptText', module: 'finance' },
     { label: 'Customer Receipts', to: '/e/receipts', icon: 'HandCoins', module: 'finance' },
     { label: 'Vendor Bills', to: '/e/bills', icon: 'FileInput', module: 'finance' },
@@ -175,6 +177,7 @@ export const NAV: NavGroup[] = [
     { label: 'Workflow Runs', to: '/e/workflow_runs', icon: 'Activity', module: 'admin' },
     { label: 'SLA Policies', to: '/e/sla_policies', icon: 'Timer', module: 'admin' },
     { label: 'Automation Rules', to: '/e/automation_rules', icon: 'Workflow', module: 'admin' },
+    { label: 'Email', to: '/email', icon: 'Mail', module: 'admin' },
     { label: 'E-mail Outbox', to: '/e/email_outbox', icon: 'Mail', module: 'admin' },
     { label: 'Webhooks', to: '/e/webhooks', icon: 'Webhook', module: 'admin' },
     { label: 'API Keys', to: '/e/api_keys', icon: 'KeyRound', module: 'admin' },
