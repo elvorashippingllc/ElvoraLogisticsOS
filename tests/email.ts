@@ -7,6 +7,7 @@ import { q, db } from '../src/server/db'
 import { config } from '../src/server/config'
 import { newApiKey } from '../src/server/auth'
 import { getSetting } from '../src/server/settings'
+import { addDays, todayStr } from '../src/server/util'
 import { processOutbox } from '../src/server/mailer'
 
 syncSchema(); seedReference()
@@ -33,6 +34,9 @@ try {
   check('credentials masked in general settings', (await request('/api/admin/settings')).json().mail_accounts === '********')
   check('invalid recipients rejected', (await request('/api/email/send', 'POST', { ...message, to: 'invalid' })).statusCode === 400)
   check('unapproved from address rejected', (await request('/api/email/send', 'POST', { ...message, from: 'spoof@example.com' })).statusCode === 400)
+  check('newline in subject rejected', (await request('/api/email/send', 'POST', { ...message, subject: 'Shipment\nInvoice' })).statusCode === 400)
+  check('carriage return in subject rejected', (await request('/api/email/send', 'POST', { ...message, subject: 'Shipment\rInvoice' })).statusCode === 400)
+  check('KPI board date filters bind correctly', (await request('/api/kpi')).statusCode === 200)
   const sent = (await request('/api/email/send', 'POST', message)).json()
   await processOutbox()
   check('queued message reaches provider', await waitStatus(sent.id, 'Sent'))
@@ -46,6 +50,19 @@ try {
   check('retry succeeds', await waitStatus(failed.id, 'Sent'))
   check('sender remains selected after retry', received.at(-1).from === 'accounts@elvorashipping.com')
   check('sent messages cannot be retried', (await request(`/api/email/messages/${sent.id}/retry`, 'POST')).statusCode === 400)
+  q.run('INSERT INTO jobs(job_no,job_date,job_status,profit,total_revenue,total_cost,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)', 'FUTURE-TEST', addDays(todayStr(), 1), 'OPENED', 10000, 20000, 10000, new Date().toISOString(), new Date().toISOString())
+  q.run('INSERT INTO invoices(invoice_no,invoice_date,status,doc_type,subtotal,ex_rate,created_at,updated_at) VALUES (?,?,?,?,?,?,?,?)', 'FUTURE-INVOICE', addDays(todayStr(), 1), 'Posted', 'Tax Invoice', 20000, 1, new Date().toISOString(), new Date().toISOString())
+  const dashboard = (await request('/api/dashboard')).json()
+  check('future jobs excluded from month-to-date figures', dashboard.kpis.jobs_month === 0 && dashboard.kpis.profit_month === 0)
+  check('future invoices excluded from month-to-date revenue', dashboard.kpis.revenue_month === 0)
+  check('future jobs excluded from actual trend', dashboard.charts.revenue_trend.length === 0)
+  const other = q.get('SELECT id FROM users WHERE id<>? LIMIT 1', login.json().user.id)!
+  q.run('UPDATE users SET must_change_password=0 WHERE id=?', other.id)
+  const otherKey = newApiKey()
+  q.run('INSERT INTO api_keys(name,user_id,key_hash,active,created_at,updated_at) VALUES (?,?,?,1,?,?)', 'Other mail fixture', other.id, otherKey.hash, new Date().toISOString(), new Date().toISOString())
+  check('another staff member cannot read this history', (await request('/api/email/messages', 'GET', undefined, otherKey.key)).json().length === 0)
+  q.run("UPDATE email_outbox SET status='Failed' WHERE id=?", sent.id)
+  check('another staff member cannot retry this message', (await request(`/api/email/messages/${sent.id}/retry`, 'POST', undefined, otherKey.key)).statusCode === 400)
   const blank = [account(message.from), account('accounts@elvorashipping.com')].map(a => ({ ...a, apiKey: '' }))
   await request('/api/email/settings', 'PUT', blank)
   check('blank credentials preserve saved connection', JSON.parse(getSetting('mail_accounts'))[0].apiKey === 'mock-private-key')

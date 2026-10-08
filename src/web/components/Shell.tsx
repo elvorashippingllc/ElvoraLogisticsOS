@@ -76,7 +76,7 @@ export function Shell() {
       </header>
       <div className="flex flex-1 min-h-0">
         {!isPrint && <nav className="workspace-rail no-print" aria-label="Workspace shortcuts">
-          <Link to="/" className={cls('rail-shortcut', loc.pathname === '/' && 'active')} aria-label="All workspaces" title="All workspaces"><LayoutGrid size={19} /></Link>
+          <button onClick={() => setWorkspaceMenu({ label: 'All workspaces', icon: 'LayoutGrid', items: (meta?.nav || []).map(g => ({ label: g.label, to: workspacePath(g), icon: g.icon, module: 'dashboard' })) })} className={cls('rail-shortcut', loc.pathname === '/' && 'active')} aria-haspopup="dialog" aria-label="All workspaces" title="All workspaces"><LayoutGrid size={19} /></button>
           {(meta?.nav ?? []).filter(g => g.items.length).map(g => { const Icon = iconByName(g.icon); return <button key={g.icon} onClick={() => setWorkspaceMenu(g)} aria-haspopup="dialog" className={cls('rail-shortcut', (activeGroup?.icon === g.icon || loc.pathname === workspacePath(g)) && 'active')} aria-label={g.label} title={g.label}><Icon size={19} /></button> })}
           <button className="rail-shortcut" onClick={() => setGuide(true)} aria-label="Quick guide" title="Quick guide"><span aria-hidden="true">?</span></button>
         </nav>}
@@ -93,7 +93,7 @@ export function Shell() {
       <Modal open={!!workspaceMenu} onClose={() => setWorkspaceMenu(null)} title={workspaceMenu?.label} width={700}>
         <p className="text-muted">{workspaceDescription(workspaceMenu?.icon)}</p>
         <nav className="workspace-menu-links" aria-label={workspaceMenu?.label}>{workspaceMenu?.items.map(item => <Link key={item.to} to={item.to} onClick={() => setWorkspaceMenu(null)}><span>{item.label}</span><ChevronRight size={18} /></Link>)}</nav>
-        {workspaceMenu && <Link className="btn green mt-5" to={workspacePath(workspaceMenu)} onClick={() => setWorkspaceMenu(null)}>Open {workspaceMenu.label}</Link>}
+        {workspaceMenu && <Link className="btn green mt-5" to={workspaceMenu.icon === 'LayoutGrid' ? '/' : workspacePath(workspaceMenu)} onClick={() => setWorkspaceMenu(null)}>Open {workspaceMenu.label}</Link>}
       </Modal>
       {palette && <CommandPalette onClose={() => setPalette(false)} />}
       <Modal open={guide} onClose={() => setGuide(false)} title="Quick guide" width={640}>

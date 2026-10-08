@@ -48,7 +48,7 @@ export function Dashboard() {
   return (
     <div className="fade-in dashboard-page">
       <Welcome name={me?.name} />
-      <section aria-label="Business at a glance"><div className="dashboard-metrics">{tiles.map(t => <Kpi key={t.label} label={t.label} value={t.value ?? 0} hint={t.hint} tone={t.tone} onClick={t.to ? () => nav(t.to!) : undefined} />)}</div></section>
+      <section aria-label="Business at a glance"><div className="dashboard-metrics">{tiles.slice(0, 4).map(t => <Kpi key={t.label} label={t.label} value={t.value ?? 0} hint={t.hint} tone={t.tone} onClick={t.to && (!t.to.startsWith('/reports') || (can('reports', 'view') && can('finance', 'view'))) ? () => nav(t.to!) : undefined} />)}</div></section>
       {d.alerts?.length > 0 && <div className="grid gap-2 mb-5 md:grid-cols-2 xl:grid-cols-3">{d.alerts.slice(0, 6).map((a: any, i: number) => (
         <Link key={i} to={a.link} className={cls('flex items-center gap-3 px-4 py-2.5 rounded-xl border text-[13.5px] font-semibold', a.level === 'danger' ? 'bg-blush border-[#f2bcc3] text-[#8f1325]' : a.level === 'warn' ? 'bg-gold border-[#ead49a] text-[#6b4a00]' : 'bg-sky border-[#bcd6f0] text-[#1f4f85]')}>
           {a.level === 'danger' ? <AlertTriangle size={17} /> : a.level === 'warn' ? <TriangleAlert size={17} /> : <Info size={17} />}<span className="flex-1" dir="auto">{a.text}</span><ArrowRight size={15} /></Link>))}</div>}
@@ -108,8 +108,7 @@ export function Dashboard() {
             <table className="grid"><tbody>{ls.my_tasks.map((t: any) => <tr key={t.id} className="clickable" onClick={() => nav(t.link_entity ? (t.link_entity === 'jobs' ? `/jobs/${t.link_id}` : `/e/${t.link_entity}/${t.link_id}`) : `/e/tasks/${t.id}`)}><td className="font-semibold">{t.title}</td><td className="text-muted text-xs">{t.link_label}</td><td className="whitespace-nowrap">{fmtDate(t.due_date)}</td><td><Badge value={t.priority} /></td></tr>)}</tbody></table>
           </Panel>)}
       </div>
-      <h2 className="text-lg mt-8 mb-4">Business at a glance</h2>
-      
+      {tiles.length > 4 && <section className="mt-8" aria-label="More business figures"><h2 className="dashboard-section-title">More business figures</h2><div className="dashboard-metrics">{tiles.slice(4).map(t => <Kpi key={t.label} label={t.label} value={t.value ?? 0} hint={t.hint} tone={t.tone} onClick={t.to && (!t.to.startsWith('/reports') || (can('reports', 'view') && can('finance', 'view'))) ? () => nav(t.to!) : undefined} />)}</div></section>}
     </div>
   )
 }
@@ -147,7 +146,7 @@ function DashboardOverview({ data: d, base }: { data: any; base: string }) {
     <aside className="overview-account">
       {k.cash !== undefined && <section className="cash-card"><header><span>Cash &amp; bank</span><Wallet size={20} /></header><strong>{fmtMoney(k.cash, 0)} <span className="text-sm font-normal">{base}</span></strong><footer><span>Elvora Shipping L.L.C.</span><Link to="/e/bank_accounts">Accounts <ArrowRight size={14} /></Link></footer></section>}
       <section className="card quick-work"><h2>Quick actions</h2><div>{shortcuts.map(({ label, to, Icon }) => <Link key={to} to={to} title={label} aria-label={label}><Icon size={18} /><span>{label}</span></Link>)}</div></section>
-      {k.ar_outstanding !== undefined && <Link className="card quick-work" to="/reports?r=ar_aging"><h2>Receivables · {base}</h2><div className="text-2xl font-bold text-ink">{fmtMoney(k.ar_outstanding, 0)}</div><p className="text-xs text-muted mb-0">{k.ar_overdue > 0 ? `${fmtMoney(k.ar_overdue, 0)} overdue` : 'Nothing overdue'} <ArrowRight size={13} className="inline ml-1" /></p></Link>}
+      {k.ar_outstanding !== undefined && can('reports', 'view') && can('finance', 'view') && <Link className="card quick-work" to="/reports?r=ar_aging"><h2>Receivables · {base}</h2><div className="text-2xl font-bold text-ink">{fmtMoney(k.ar_outstanding, 0)}</div><p className="text-xs text-muted mb-0">{k.ar_overdue > 0 ? `${fmtMoney(k.ar_overdue, 0)} overdue` : 'Nothing overdue'} <ArrowRight size={13} className="inline ml-1" /></p></Link>}
     </aside>
   </section>
 }
@@ -179,6 +178,6 @@ function DailyWorkflow({ data, base }: { data: any; base: string }) {
   const move = (direction: number) => rail.current?.scrollBy({ left: direction * (rail.current.clientWidth * .8), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
   return <section className="daily-workflow" aria-label="Daily workflow"><header className="workflow-header"><div><h2>Move each shipment forward</h2><p>Start with anything that needs attention, then follow the job through to payment.</p></div><div className="flex gap-2"><button className="btn outline icon" aria-label="Previous workflow steps" disabled={position.start} onClick={() => move(-1)}><ChevronLeft /></button><button className="btn outline icon" aria-label="Next workflow steps" disabled={position.end || steps.length < 2} onClick={() => move(1)}><ChevronRight /></button></div></header>
     <div className="workflow-carousel" ref={rail} tabIndex={0} aria-label="Shipment workflow steps" onScroll={e => { const r = e.currentTarget; setPosition({ start: r.scrollLeft < 2, end: r.scrollLeft + r.clientWidth >= r.scrollWidth - 2 }) }}>{steps.map((s, i) => <Link key={s.title} to={s.to} className="workflow-step"><div className="workflow-step-head"><span>{i + 1}</span><s.Icon size={22} /></div><h3>{s.title}</h3><p>{s.detail}</p><strong>{s.value}</strong><span className="workflow-open">Open <ArrowRight size={16} /></span></Link>)}</div>
-    {(ls.departures || ls.arrivals || ls.my_tasks) && <div className="daily-schedule"><h3>Plan shipments and follow-ups</h3><div>{ls.departures && <Link to="/calendar"><Ship size={18} /><span><b>Upcoming departures</b><small>Confirm bookings and documents</small></span><ArrowRight size={16} /></Link>}{ls.arrivals && <Link to="/calendar"><Plane size={18} /><span><b>Upcoming arrivals</b><small>Prepare clearance and delivery</small></span><ArrowRight size={16} /></Link>}{ls.my_tasks && <Link to="/e/tasks"><CalendarDays size={18} /><span><b>{k.my_tasks ?? ls.my_tasks.length} open tasks</b><small>Check your follow-ups and due dates</small></span><ArrowRight size={16} /></Link>}</div></div>}
+    {(ls.departures || ls.arrivals || ls.my_tasks) && <div className="daily-schedule"><h3>Plan shipments and follow-ups</h3><div>{ls.departures && <Link to="/calendar"><Ship size={18} /><span><b>Upcoming departures</b><small>Confirm bookings and documents</small></span><ArrowRight size={16} /></Link>}{ls.arrivals && <Link to="/calendar"><Plane size={18} /><span><b>Upcoming arrivals</b><small>Prepare clearance and delivery</small></span><ArrowRight size={16} /></Link>}{ls.my_tasks && can('projects', 'view') && <Link to="/e/tasks"><CalendarDays size={18} /><span><b>{k.my_tasks ?? ls.my_tasks.length} open tasks</b><small>Check your follow-ups and due dates</small></span><ArrowRight size={16} /></Link>}</div></div>}
   </section>
 }

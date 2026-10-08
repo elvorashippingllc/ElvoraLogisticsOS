@@ -210,3 +210,5 @@ table.grid { font-size: 14px; }
 
 table.grid th, .overview-ledger dt, .overview-mix header > span, .dashboard-metrics .kpi .l { font-size: 14px; }
 .quick-work > div a { display: flex; border-radius: 10px; }
+
+.label { font-size: 14px; }

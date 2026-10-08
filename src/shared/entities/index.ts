@@ -53,6 +53,7 @@ export const NAV: NavGroup[] = [
     { label: 'Job Search', to: '/search', icon: 'Search', module: 'jobs' },
   ] },
   { label: 'CRM & Sales', icon: 'Handshake', items: [
+    { label: 'Email', to: '/email', icon: 'Mail', module: 'crm' },
     { label: 'Customers & Parties', to: '/e/parties', icon: 'Building', module: 'crm' },
     { label: 'Contacts', to: '/e/contacts', icon: 'Contact', module: 'crm' },
     { label: 'Leads', to: '/e/leads', icon: 'UserPlus', module: 'crm' },
@@ -82,6 +83,7 @@ export const NAV: NavGroup[] = [
     { label: 'Bins & Locations', to: '/e/wh_locations', icon: 'LayoutGrid', module: 'warehouse' },
   ] },
   { label: 'Accounts', icon: 'Landmark', items: [
+    { label: 'Email', to: '/email', icon: 'Mail', module: 'finance' },
     { label: 'Invoices & Notes', to: '/e/invoices', icon: 'ReceiptText', module: 'finance' },
     { label: 'Customer Receipts', to: '/e/receipts', icon: 'HandCoins', module: 'finance' },
     { label: 'Vendor Bills', to: '/e/bills', icon: 'FileInput', module: 'finance' },
@@ -133,7 +135,6 @@ export const NAV: NavGroup[] = [
     { label: 'Jarvis & Employees', to: '/ai', icon: 'Bot', module: 'ai' },
     { label: 'Approvals', to: '/ai?tab=approvals', icon: 'ShieldCheck', module: 'ai' },
     { label: 'AI Activity', to: '/e/ai_runs', icon: 'Activity', module: 'ai' },
-    { label: 'Email', to: '/email', icon: 'Mail', module: 'crm' },
     { label: 'WhatsApp', to: '/whatsapp', icon: 'MessageCircle', module: 'crm' },
   ] },
   { label: 'Compliance (UAE)', icon: 'BadgeCheck', items: [
