@@ -8,6 +8,8 @@ Staff manage enquiries and quotations, bookings and shipment jobs, shipment docu
 
 ## Current requirements
 
+- Vendor services and hired containers, trucks and trailers are linked to customer jobs, with separate buying/selling terms, job charges and return tracking. The operational workflow is documented in `docs/VENDOR_SERVICES.md`.
+
 - Sign-in opens the dashboard after any required account setup.
 - The dashboard should help staff identify urgent work and move a shipment from enquiry through payment and job closure. Figures, charts and detailed records must describe their time periods honestly.
 - Sidebar shortcuts explain each workspace and expose its permitted tasks.

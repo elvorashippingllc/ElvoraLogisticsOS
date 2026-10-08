@@ -3,6 +3,7 @@ import {deposits} from './deposits'
 import {cargoDocs} from './cargo-docs'
 import type { EntityDef, NavGroup } from '../types'
 import { platform } from './platform'
+import { vendorServices } from './vendor-services'
 import { masters } from './masters'
 import { crm } from './crm'
 import { ops } from './ops'
@@ -18,7 +19,7 @@ export { MODULE_DEFS } from './platform'
 export * from './ops'
 export { INCOTERMS, PACKAGE_TYPES } from './masters'
 
-export const ENTITY_LIST: EntityDef[] = [...platform, ...masters, ...crm, ...ops, ...transportWarehouse, ...finance, ...people, ...automation, ...compliance, ...work, ...enterprise, ...cargoDocs, ...deposits, ...ocr]
+export const ENTITY_LIST: EntityDef[] = [...platform, ...masters, ...crm, ...ops, ...transportWarehouse, ...finance, ...people, ...automation, ...compliance, ...work, ...enterprise, ...cargoDocs, ...deposits, ...ocr, ...vendorServices]
 export const ENTITIES: Record<string, EntityDef> = Object.fromEntries(ENTITY_LIST.map(e => [e.key, e]))
 
 export function validateMeta(): string[] {
@@ -45,6 +46,7 @@ export function validateMeta(): string[] {
 export const NAV: NavGroup[] = [
   { label: 'Operations', icon: 'Ship', items: [
     { label: 'Master Jobs', to: '/e/jobs', icon: 'Briefcase', module: 'jobs' },
+    { label: 'Vendor services & hired equipment', to: '/e/vendor_services', icon: 'Truck', module: 'jobs' },
     { label: 'Shipments (Sub-Jobs)', to: '/e/shipments', icon: 'PackageCheck', module: 'jobs' },
     { label: 'Carrier Bookings', to: '/e/bookings', icon: 'CalendarCheck', module: 'jobs' },
     { label: 'Delivery Orders', to: '/e/delivery_orders', icon: 'FileOutput', module: 'jobs' },

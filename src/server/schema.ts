@@ -93,6 +93,8 @@ export function syncSchema() {
     tx(() => { db.exec(ddl(m.sql)); q.run('INSERT INTO schema_migrations(id, applied_at) VALUES (?, ?)', m.id, nowIso()) })
   }
   tx(() => { for (const def of ENTITY_LIST) syncEntity(def) })
+  db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS ux_vendor_service_charge_kind ON job_charges(vendor_service_id,kind) WHERE vendor_service_id IS NOT NULL AND deleted_at IS NULL`)
+  db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS ux_vendor_equipment_in_use ON vendor_services(vendor_id,lower(equipment_no)) WHERE status='In use' AND equipment_no IS NOT NULL AND equipment_no<>'' AND deleted_at IS NULL`)
 }
 
 function syncEntity(def: EntityDef) {

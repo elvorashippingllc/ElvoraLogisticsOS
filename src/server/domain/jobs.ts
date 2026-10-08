@@ -27,6 +27,15 @@ export function addJobEvent(jobId: number, type: string, o: { at?: string; locat
 }
 
 function computeCharges(rows: Rec[], jobId: number | undefined) {
+  const supplied = jobId ? q.all('SELECT * FROM job_charges WHERE job_id=? AND vendor_service_id IS NOT NULL AND deleted_at IS NULL', jobId) : []
+  for (const c of supplied) {
+    const incoming = rows.find(r => Number(r.id) === c.id)
+    if (!incoming) throw bad('Vendor service charges cannot be removed here. Reset the service to draft first.')
+    for (const field of ['kind', 'charge_code_id', 'description', 'party_id', 'basis', 'qty', 'rate', 'currency', 'ex_rate', 'vat_code_id']) {
+      const expected = field === 'rate' ? fromCents(c[field]) : c[field]
+      if (JSON.stringify(incoming[field] ?? expected) !== JSON.stringify(expected)) throw bad('Vendor service charges are locked. Reset the service to draft before changing its buying or selling details.')
+    }
+  }
   const locked = jobId ? q.all(`SELECT id, status, qty, rate, charge_code_id, currency, kind FROM job_charges WHERE job_id = ? AND deleted_at IS NULL AND status <> 'Unbilled'`, jobId) : []
   const incoming = new Set(rows.filter(r => r.id).map(r => Number(r.id)))
   for (const l of locked) if (!incoming.has(l.id)) throw bad('A charge that is already invoiced or billed cannot be removed. Void the invoice / bill first.')
@@ -65,7 +74,7 @@ export function recomputeJobTotals(jobId: number) {
 }
 
 export const jobHooks: Hooks = {
-  beforeDelete({rec}) { if(rec.job_status==='CLOSED') throw bad('Closed jobs cannot be deleted; use controlled reopening') },
+  beforeDelete({rec}) { if(rec.job_status==='CLOSED') throw bad('Closed jobs cannot be deleted; use controlled reopening'); if(q.val("SELECT id FROM vendor_services WHERE job_id=? AND status<>'Cancelled' AND deleted_at IS NULL",rec.id)) throw bad('Resolve vendor services before deleting this job') },
   tokens: rec => ({ branch: q.val<string>(`SELECT code FROM branches WHERE id = ?`, rec.branch_id) ?? 'JOB' }),
   numberDate: rec => rec.job_date,
   beforeSave({ rec, old, children, isNew, ctx }) {
@@ -78,6 +87,7 @@ export const jobHooks: Hooks = {
     }
     if (rec.department?.includes('IMPORT') && rec.trade === 'Export' && isNew) rec.trade = 'Import'
     if (old) {
+      if (old.client_id !== rec.client_id && q.val('SELECT id FROM vendor_services WHERE job_id=? AND charges_created=1 AND deleted_at IS NULL', rec.id)) throw bad('Customer cannot change after vendor services have added job charges')
       if (old.branch_id !== rec.branch_id || old.job_date !== rec.job_date) throw bad('Branch and job date cannot be changed once the job number has been issued')
       if ((old.client_id !== rec.client_id || old.department !== rec.department) && q.val(`SELECT 1 FROM job_charges WHERE job_id = ? AND status <> 'Unbilled' AND deleted_at IS NULL LIMIT 1`, rec.id)) throw bad('Client and department cannot be changed after charges have been invoiced or billed')
     }
@@ -94,6 +104,7 @@ export const jobHooks: Hooks = {
         rec.closed_at = nowLocal()
       }
       if (rec.job_status === 'CANCELLED') {
+        if (q.val("SELECT id FROM vendor_services WHERE job_id=? AND status<>'Cancelled' AND deleted_at IS NULL", rec.id)) throw bad('Resolve and cancel vendor services before cancelling this job')
         const n = q.val<number>(`SELECT COUNT(*) FROM job_charges WHERE job_id = ? AND status <> 'Unbilled' AND deleted_at IS NULL`, rec.id) ?? 0
         if (n) throw bad('Void the invoices / bills linked to this job before cancelling it.')
       }
