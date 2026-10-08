@@ -234,6 +234,10 @@ function buildWhere(def: EntityDef, p: ListParams, ctx: Ctx): { where: string; a
   if (ctx.user?.party_id && !ctx.system) {
     if (!scope) { cl.push('1=0') } else { cl.push(`${qi(scope)} = ?`); args.push(ctx.user.party_id) }
   }
+  if(!ctx.system&&def.key==='document_extractions'){
+    const readable=Object.values(ENTITIES).filter(e=>can(ctx.user,e.module,'view')).map(e=>e.key)
+    cl.push(`attachment_id IN (SELECT id FROM attachments WHERE deleted_at IS NULL AND (link_entity IS NULL OR link_entity=''${readable.length?` OR link_entity IN (${readable.map(()=>'?').join(',')})`:''}))`);args.push(...readable)
+  }
   if(!ctx.system&&def.key==='work_items'){
     const sources=Object.values(ENTITIES).filter(e=>can(ctx.user,e.module,'view')).map(e=>e.key)
     if(!sources.length)cl.push('1=0');else{cl.push(`source_entity IN (${sources.map(()=>'?').join(',')})`);args.push(...sources)}
@@ -322,6 +326,11 @@ export function getRecord(def: EntityDef, id: number, ctx: Ctx, opts: { children
   if (ctx.user?.party_id && !ctx.system && (!scope || row[scope] !== ctx.user.party_id)) throw notFound()
   if(!ctx.system&&def.key==='work_items'&&!can(ctx.user,getDef(row.source_entity).module,'view'))throw notFound()
   if(!ctx.system&&def.key==='shift_handovers'&&!can(ctx.user,'admin','view')&&row.from_user_id!==ctx.user?.id&&row.to_user_id!==ctx.user?.id)throw notFound()
+  if(!ctx.system&&def.key==='document_extractions'){
+    const file=q.get('SELECT link_entity,link_id FROM attachments WHERE id=? AND deleted_at IS NULL',row.attachment_id)
+    if(!file)throw notFound()
+    if(file.link_entity)getRecord(getDef(file.link_entity),file.link_id,ctx,{children:false})
+  }
   const rec = rowToApi(def, row)
   attachLabels(def, [rec])
   if(def.key==='shift_handovers'&&!ctx.system)redactHandover(rec,ctx)

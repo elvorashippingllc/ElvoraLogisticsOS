@@ -8,7 +8,9 @@ export const EVIDENCE_TYPES = ['Documents verified', 'Costs complete', 'Customs 
 function fingerprint(id: number) {
   const job = q.get(`SELECT * FROM jobs WHERE id=?`,id) ?? {}
   for(const field of ['job_status','closed_at','updated_at','updated_by','version']) delete job[field]
-  const snapshot = [job, ...['shipments','job_containers','job_charges','customs_declarations','invoices'].map(table=>q.all(`SELECT * FROM ${table} WHERE job_id=? AND deleted_at IS NULL ORDER BY id`,id)),q.all(`SELECT * FROM attachments WHERE link_entity='jobs' AND link_id=? AND deleted_at IS NULL ORDER BY id`,id)]
+  const originals=q.all('SELECT o.* FROM document_originals o JOIN freight_documents d ON d.id=o.document_id WHERE d.job_id=? AND o.deleted_at IS NULL ORDER BY o.id',id)
+  const custody=q.all('SELECT e.* FROM document_custody_events e JOIN document_originals o ON o.id=e.original_id JOIN freight_documents d ON d.id=o.document_id WHERE d.job_id=? AND e.deleted_at IS NULL ORDER BY e.id',id)
+  const snapshot = [job,originals,custody, ...['shipments','job_containers','job_charges','customs_declarations','invoices','freight_documents'].map(table=>q.all(`SELECT * FROM ${table} WHERE job_id=? AND deleted_at IS NULL ORDER BY id`,id)),q.all(`SELECT * FROM attachments WHERE link_entity='jobs' AND link_id=? AND deleted_at IS NULL ORDER BY id`,id)]
   return createHash('sha256').update(JSON.stringify(snapshot)).digest('hex')
 }
 export function closureReadiness(id: number, ctx: Ctx) {
@@ -24,7 +26,8 @@ export function closureReadiness(id: number, ctx: Ctx) {
   const checks = [
     { key:'delivery', label:'Delivery complete', passed: ['DELIVERED','EMPTY RETURNED'].includes(job.operational_status) || job.job_status === 'DELIVERED' || job.job_status === 'CLOSED' },
     { key:'pod', label:'Proof of delivery', passed: pod || n(`SELECT COUNT(*) FROM attachments WHERE link_entity='jobs' AND link_id=? AND category='POD' AND deleted_at IS NULL`) > 0 || verified('POD not applicable') },
-    { key:'documents', label:'Documents reviewed', passed:verified('Documents verified') },
+    { key:'documents', label:'Documents reviewed', passed:verified('Documents verified') && n(`SELECT COUNT(*) FROM freight_documents WHERE job_id=? AND status='Draft' AND deleted_at IS NULL`)===0 },
+    { key:'custody', label:'No pending original-document handovers', passed:n(`SELECT COUNT(*) FROM document_originals o JOIN freight_documents d ON d.id=o.document_id WHERE d.job_id=? AND o.status='Transfer pending' AND o.deleted_at IS NULL AND d.deleted_at IS NULL`)===0 },
     { key:'customs', label:'Customs released or verified not applicable', passed: customs > 0 ? n(`SELECT COUNT(*) FROM customs_declarations WHERE job_id=? AND deleted_at IS NULL AND status NOT IN ('Cleared','Cancelled')`) === 0 : job.customs_status === 'Cleared' || verified('Customs not applicable') },
     { key:'equipment', label:'Equipment returned or verified not applicable', passed:containers > 0 ? n(`SELECT COUNT(*) FROM job_containers WHERE job_id=? AND deleted_at IS NULL AND status<>'Empty returned'`) === 0 : verified('Equipment not applicable') },
     { key:'revenue', label:'All revenue invoiced', passed:n(`SELECT COUNT(*) FROM job_charges WHERE job_id=? AND kind='Revenue' AND status='Unbilled' AND deleted_at IS NULL AND amount<>0`) === 0 },

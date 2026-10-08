@@ -21,7 +21,10 @@ await api(`/api/workflow-runs/${uncertain.id}/retry`,'POST',{reason:'Unsafe repl
 await api(`/api/workflow-runs/${uncertain.id}/resolve`,'POST',{outcome:'Cancelled',reason:'Reviewed provider log; cancel without replay'})
 await api(`/api/workflow-runs/${uncertain.id}/resolve`,'POST',{outcome:'Succeeded',reason:'Duplicate contradictory decision blocked'},400)
 assert.equal((await api(`/api/e/workflow_runs/${uncertain.id}`)).status,'Cancelled')
-const clerk=await login('clerk@elvorashipping.com','Clerk@Pass2026')
+const limitedRole=await api('/api/e/roles','POST',{name:'Workflow permission test '+Date.now(),permissions:{jobs:['view']}},201)
+const limitedEmail='workflow-clerk-'+Date.now()+'@example.invalid'
+await api('/api/e/users','POST',{name:'Workflow clerk',email:limitedEmail,role_id:limitedRole.id,password:'Clerk@Pass2026',active:true},201)
+const clerk=await login(limitedEmail,'Clerk@Pass2026')
 await api(`/api/e/workflow_runs/${run.id}`,'GET',undefined,403,clerk)
 await api(`/api/workflow-runs/${run.id}/retry`,'POST',{reason:'Unauthorised attempt'},403,clerk)
 console.log('Workflow API passed: read-only queue, protected states, worker failure/history, manual internal retry, uncertain external review without replay, duplicate decisions and permission checks.')

@@ -1,0 +1,33 @@
+import assert from 'node:assert/strict'
+import fs from 'node:fs/promises'
+import path from 'node:path'
+import {syncSchema} from '../src/server/schema'
+import {seedReference} from '../src/server/seed'
+import {q,tx} from '../src/server/db'
+import {dirs} from '../src/server/config'
+import {loadUser} from '../src/server/auth'
+import {createRecord,getDef,insertRow,getRecord,listRecords,SYSTEM_CTX} from '../src/server/engine'
+import {extractDocument,reviewExtraction,matchReferences,parseTsv,recoverInterruptedExtractions} from '../src/server/domain/ocr'
+syncSchema();seedReference()
+const maker={user:loadUser(q.val<number>("SELECT id FROM users WHERE email='admin@elvorashipping.com'")!)!},mk=(key:string,b:any)=>createRecord(getDef(key),b,maker)
+const customer=mk('parties',{name:'OCR review customer',is_customer:true}),branch=q.val<number>('SELECT id FROM branches LIMIT 1')!,job=mk('jobs',{client_id:customer.id,branch_id:branch,department:'AIR EXPORT',trade:'Export',mbl_no:'123-00000011'})
+const name='ocr-source-'+Date.now()+'.txt',text=`AIR WAYBILL\nMaster: 123-00000011\nJob reference: ${job.job_no}\nShipper: Test sender\nConsignee: Test receiver\nPackages 10 Weight 100 KG\n`
+await fs.writeFile(path.join(dirs.uploads,name),text)
+const attachment=insertRow(getDef('attachments'),{file_name:name,stored_name:name,mime:'text/plain',category:'Air Waybill',size:Buffer.byteLength(text),doc_version:1},maker)
+const extraction=await extractDocument(attachment,maker);assert.equal(extraction.status,'Ready for review');assert.ok(extraction.text.includes(job.job_no));assert.equal(extraction.candidates.length,1);assert.equal(extraction.candidates[0].job_id,job.id);assert.equal(q.val('SELECT link_entity FROM attachments WHERE id=?',attachment),null,'No automatic association before review')
+assert.equal(matchReferences('prefix'+job.job_no+'suffix',maker).candidates.length,0)
+await reviewExtraction(extraction.id,job.id,'Checked original AWB number and job reference',maker);assert.equal(q.val('SELECT link_id FROM attachments WHERE id=?',attachment),job.id);assert.equal(q.val('SELECT link_entity FROM attachments WHERE id=?',attachment),'jobs');await assert.rejects(()=>reviewExtraction(extraction.id,job.id,'Duplicate review cannot change ownership',maker),/Only a ready/)
+const altered=insertRow(getDef('attachments'),{file_name:name,stored_name:name,mime:'text/plain',category:'Air Waybill',size:Buffer.byteLength(text),doc_version:1},maker),stale=await extractDocument(altered,maker);await fs.writeFile(path.join(dirs.uploads,name),text+'Changed after extraction');await assert.rejects(()=>reviewExtraction(stale.id,job.id,'Stale source cannot be linked automatically',maker),/Source file changed/)
+// A source containing both job references stays ambiguous until a human chooses a job.
+const job2=mk('jobs',{client_id:customer.id,branch_id:branch,department:'AIR EXPORT',trade:'Export'});assert.equal(matchReferences(`${job.job_no} ${job2.job_no}`,maker).candidates.length,2)
+const parsed=parseTsv('level\tpage_num\tblock_num\tpar_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext\n5\t1\t1\t1\t1\t1\t0\t0\t20\t10\t92.5\tAIR\n5\t1\t1\t1\t1\t2\t20\t0\t40\t10\t85\tWAYBILL');assert.ok(parsed.text.includes('AIR WAYBILL'));assert.deepEqual(parsed.confidence,[92.5,85])
+const running=createRecord(getDef('document_extractions'),{attachment_id:altered,status:'Running',started_at:'2000-01-01T00:00:00.000Z'}, {...maker,system:true});recoverInterruptedExtractions();assert.equal(q.val('SELECT status FROM document_extractions WHERE id=?',running.id),'Failed')
+const role=mk('roles',{name:'OCR reader without finance',permissions:{documents:['view'],jobs:['view']}}),staff=createRecord(getDef('users'),{name:'OCR limited reader',email:'ocr-reader@example.invalid',role_id:role.id,password:'Temporary-test-12345',active:true},SYSTEM_CTX),limited={user:loadUser(staff.id)!}
+const invoice=mk('invoices',{party_id:customer.id,job_id:job.id}),financial=insertRow(getDef('attachments'),{file_name:name,stored_name:name,mime:'text/plain',category:'Commercial Invoice',size:1,doc_version:1,link_entity:'invoices',link_id:invoice.id},maker),financialExtraction=createRecord(getDef('document_extractions'),{attachment_id:financial,status:'Ready for review',text:'Confidential financial source'},{...maker,system:true})
+assert.throws(()=>getRecord(getDef('document_extractions'),financialExtraction.id,limited),/access|permission/i);assert.equal(listRecords(getDef('document_extractions'),{},limited).rows.some(r=>r.id===financialExtraction.id),false)
+// Minimal embedded-text PDF exercises the real pdftotext process without an external OCR service.
+const pdfName='ocr-embedded-'+Date.now()+'.pdf',stream=`BT /F1 18 Tf 72 720 Td (${job.job_no} AIR WAYBILL TEST) Tj ET`,objects=['<< /Type /Catalog /Pages 2 0 R >>','<< /Type /Pages /Kids [3 0 R] /Count 1 >>','<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>','<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',`<< /Length ${stream.length} >>\nstream\n${stream}\nendstream`];let pdf='%PDF-1.4\n',offsets=[0];for(const [i,o]of objects.entries()){offsets.push(pdf.length);pdf+=`${i+1} 0 obj\n${o}\nendobj\n`}const xref=pdf.length;pdf+='xref\n0 6\n0000000000 65535 f \n'+offsets.slice(1).map(n=>String(n).padStart(10,'0')+' 00000 n \n').join('')+`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF\n`;await fs.writeFile(path.join(dirs.uploads,pdfName),pdf)
+const pdfId=insertRow(getDef('attachments'),{file_name:pdfName,stored_name:pdfName,mime:'application/pdf',category:'Air Waybill',size:pdf.length,doc_version:1},maker),pdfResult=await extractDocument(pdfId,maker);assert.equal(pdfResult.status,'Ready for review');assert.equal(pdfResult.engine,'PDF embedded text');assert.ok(pdfResult.text.includes(job.job_no))
+const pngName='ocr-image-'+Date.now()+'.png',png=await fs.readFile('tests/fixtures/ocr-awb.png');await fs.writeFile(path.join(dirs.uploads,pngName),png)
+const pngId=insertRow(getDef('attachments'),{file_name:pngName,stored_name:pngName,mime:'image/png',category:'Air Waybill',size:png.length,doc_version:1},maker),pngResult=await extractDocument(pngId,maker);assert.equal(pngResult.status,'Ready for review');assert.equal(pngResult.engine,'Tesseract English image OCR');assert.ok(pngResult.text.includes('AIR WAYBILL'));assert.ok(pngResult.confidence>70);assert.equal(pngResult.candidates[0].job_id,job.id)
+console.log('OCR controls passed: real PDF and Tesseract image extraction, text extraction, exact/ambiguous references, human-only matching, source checksum, duplicate review, interrupted recovery and source-permission filtering.')

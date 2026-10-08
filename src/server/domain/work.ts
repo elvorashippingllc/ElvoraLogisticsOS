@@ -1,3 +1,4 @@
+import {eligibleForActivity} from './enterprise'
 import {q,tx} from '../db'
 import {assertCan,can,getDef,getRecord,listRecords,createRecord,patchRecord,audit,SYSTEM_CTX,type Ctx,type Rec} from '../engine'
 import {loadUser} from '../auth'
@@ -34,6 +35,7 @@ export const workHooks:Hooks={beforeSave({rec,old,isNew,ctx}){
   if(rec.assignee_id!==old?.assignee_id&&rec.assignee_id!==ctx.user.id)throw bad('Only a queue manager can assign work to another person')
  }
  if(rec.assignee_id){const owner=loadUser(rec.assignee_id);if(!owner||owner.party_id||!can(owner,'projects','view')||!can(owner,getDef(rec.source_entity).module,'view'))throw bad('Owner must be active and permitted to see the source record')}
+ if(rec.assignee_id&&(!old||rec.assignee_id!==old.assignee_id)&&!eligibleForActivity(rec.assignee_id,rec.activity,rec.department_id))throw bad('Owner lacks a current verified qualification required for this activity')
  if(old&&!active(old.status)&&!ctx.system)throw bad('Completed/cancelled work is locked')
  if(isNew){
   const p=policy(rec);rec.sla_policy_id=p?.id??null;rec.sla_pause_waiting=!!p?.pause_waiting;rec.sla_minutes=p?.minutes??defaultMinutes[rec.activity]??null;rec.started_at=nowIso();rec.due_at=rec.sla_minutes?addMinutes(rec.started_at,rec.sla_minutes):null
@@ -63,7 +65,7 @@ export function syncWorkQueues(entity:string,rec:Rec){
  if(done)return
  const department=q.val<number>(`SELECT id FROM departments WHERE code=? AND deleted_at IS NULL`,code)??q.val<number>(`SELECT id FROM departments WHERE deleted_at IS NULL ORDER BY id LIMIT 1`)
  if(!department)return
- const u=owner?loadUser(owner):null;if(!u||u.party_id||!can(u,'projects','view')||!can(u,getDef(entity).module,'view'))owner=null
+ const u=owner?loadUser(owner):null;if(!u||u.party_id||!can(u,'projects','view')||!can(u,getDef(entity).module,'view')||!eligibleForActivity(owner,activity,department))owner=null
  createRecord(getDef('work_items'),{title:`${activity}: ${rec._title}`,source_entity:entity,source_id:rec.id,activity,department_id:department,assignee_id:owner,complexity:1,dedupe_key:key},SYSTEM_CTX)
 }
 export function transitionWork(id:number,status:string,note:string,ctx:Ctx){
@@ -72,6 +74,7 @@ export function transitionWork(id:number,status:string,note:string,ctx:Ctx){
  if(r.assignee_id!==ctx.user?.id&&!manager(ctx))throw bad('Only the owner or queue manager can change work state')
  if(!['In progress','Waiting','Completed','Cancelled'].includes(status))throw bad('Unknown work status')
  if(status===r.status)throw bad('Work is already in this state')
+ if(status==='In progress'&&r.assignee_id&&!eligibleForActivity(r.assignee_id,r.activity,r.department_id))throw bad('Owner no longer meets activity qualification rules')
  const src=source(r.source_entity,r.source_id,ctx)
  if(status==='Completed'&&['Quotation','Booking confirmation','BL draft','POD'].includes(r.activity)&&sourceDone(r.source_entity,src,r.activity)!=='Completed')throw bad('Complete the source workflow before completing this tracked activity')
  if(['Completed','Cancelled'].includes(status)&&note.trim().length<10)throw bad('Record a resolution of at least 10 characters')
@@ -106,7 +109,7 @@ export function workOverview(ctx:Ctx){
  })
  const recommendations=team?items.filter(i=>active(i.status)&&i.assignee_id).flatMap(item=>{
   const current=workload.find(u=>u.id===item.assignee_id);if(!current)return []
-  const candidate=workload.filter(u=>u.id!==item.assignee_id&&u.department_id===current.department_id&&u.points+item.complexity<current.points&&can(loadUser(u.id),getDef(item.source_entity).module,'view')&&can(loadUser(u.id),'projects','view')).sort((a,b)=>a.utilization-b.utilization)[0]
+  const candidate=workload.filter(u=>u.id!==item.assignee_id&&u.department_id===current.department_id&&u.points+item.complexity<current.points&&eligibleForActivity(u.id,item.activity,item.department_id)&&can(loadUser(u.id),getDef(item.source_entity).module,'view')&&can(loadUser(u.id),'projects','view')).sort((a,b)=>a.utilization-b.utilization)[0]
   return candidate?[{work_id:item.id,title:item.title,from:current.name,to_user_id:candidate.id,to:candidate.name,reason:`${current.points} → ${candidate.points} points; same department and source permission`}]:[]
  }):[]
  return {items,workload,recommendations,can_manage:team,departments:q.all(`SELECT id,name FROM departments WHERE deleted_at IS NULL AND active=1`)}

@@ -1,3 +1,4 @@
+import {recoverInterruptedExtractions} from './domain/ocr'
 import {slaTick} from './domain/work'
 import { processWorkflowQueue } from './automation'
 import { runInDb } from './db'
@@ -13,7 +14,7 @@ import { nowLocal } from './util'
 
 /** Light-weight in-process scheduler: reminders, expiries and the e-mail outbox. */
 export function startScheduler() {
-  const workflowTick=async()=>{try{await processWorkflowQueue();slaTick();const demo=getDemoDb();if(demo)await runInDb(demo,async()=>{await processWorkflowQueue();slaTick()})}catch(e){console.error('workflow queue',e)}}
+  const workflowTick=async()=>{try{await processWorkflowQueue();slaTick();recoverInterruptedExtractions();const demo=getDemoDb();if(demo)await runInDb(demo,async()=>{await processWorkflowQueue();slaTick();recoverInterruptedExtractions()})}catch(e){console.error('workflow queue',e)}}
   setInterval(()=>void workflowTick(),15000).unref()
   setTimeout(()=>void workflowTick(),2000).unref()
   const tick = () => { try { daily() } catch (e) { console.error('scheduler', e) } }

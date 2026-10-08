@@ -4,7 +4,7 @@ Source-based coverage assessment, not production certification. Partial means an
 
 Reviewed source: `d6ed04293dc1e363cc9978e317749e9a3eaece57` on 2026-10-08.
 
-147 areas: 129 partial foundations, 14 missing dedicated implementations, 4 adapters requiring external validation. No area is certified complete by this audit.
+147 areas: 137 partial foundations, 6 missing dedicated implementations, 4 adapters requiring external validation. No area is certified complete by this audit.
 
 [Canonical specification](MASTER-SPECIFICATION.md) includes every original section, final lifecycle, six product areas and deployment caveat. The machine-readable record is `src/shared/enterprise-scope.json`.
 
@@ -136,11 +136,13 @@ CRM, parties, contracts, rate cards, quotations and a margin approval threshold 
 
 ### 13. Carrier RFQ
 
-**Status: Missing**
+**Status: Partial**
 
-No dedicated implementation identified for this capability in the reviewed source.
+Carrier requests issue queued provider emails; immutable response revisions compare freight/local charges, AED totals, transit, free days and validity. Independent award checks reject maker decisions, expired and superseded responses.
 
-**Remaining acceptance work:** Carrier RFQ issuance, response capture, comparison and award workflow.
+**Remaining acceptance work:** Live mail delivery, provider self-service responses, award-to-booking execution and pricing team acceptance remain outstanding.
+
+**Evidence:** `src/shared/entities/enterprise.ts`, `src/server/domain/enterprise.ts`, `src/web/pages/EnterprisePages.tsx`, `tests/enterprise-modules.ts`
 
 ### 14. Rate Intelligence
 
@@ -292,27 +294,33 @@ Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and cust
 
 ### 29. Container Deposit
 
-**Status: Missing**
+**Status: Partial**
 
-No dedicated implementation identified for this capability in the reviewed source.
+Container-linked AED deposits track paid amounts, refund due/received, approved damage deductions and recoverable balances; independent transactions post balanced asset/bank/expense journals with controlled reversals.
 
-**Remaining acceptance work:** Container deposit collection, settlement, refund and reconciliation ledger.
+**Remaining acceptance work:** Multicurrency deposits, automated carrier/bank statement matching, tax treatment policy and finance acceptance remain outstanding.
+
+**Evidence:** `src/shared/entities/deposits.ts`, `src/server/domain/deposits.ts`, `src/web/pages/DepositPage.tsx`, `tests/deposits.ts`
 
 ### 30. BL / AWB Engine
 
-**Status: Missing**
+**Status: Partial**
 
-No dedicated implementation identified for this capability in the reviewed source.
+Controlled MBL/HBL/MAWB/HAWB records retain independently approved revision snapshots and amendments, original/copy counts, MAWB check digits and release modes. Internal worksheets print with clear copy/draft labels; customs, finance and custody gate release authorisation.
 
-**Remaining acceptance work:** Controlled BL/AWB numbering, amendments, approvals, versions and releases.
+**Remaining acceptance work:** Authorised negotiable carrier forms, airline number allocations, electronic signature/issuance, partner transmission and company/carrier acceptance remain outstanding.
+
+**Evidence:** `src/shared/entities/cargo-docs.ts`, `src/server/domain/cargo-docs.ts`, `src/web/print/PrintPage.tsx`, `tests/cargo-docs.ts`
 
 ### 31. Original Document Custody
 
-**Status: Missing**
+**Status: Partial**
 
-No dedicated implementation identified for this capability in the reviewed source.
+Each approved original is registered by revision and number; office/employee/customer/bank/courier transfers capture tracking and evidence. Named internal recipients or independent external-receipt approvers acknowledge custody; release dates and immutable event history are retained.
 
-**Remaining acceptance work:** Original document custody chain, handovers, release authority and acknowledgements.
+**Remaining acceptance work:** Company release authority policies, courier event integration, physical custody reconciliation and operational acceptance remain outstanding.
+
+**Evidence:** `src/shared/entities/cargo-docs.ts`, `src/server/domain/cargo-docs.ts`, `src/web/pages/CustodyPage.tsx`, `tests/cargo-docs.ts`
 
 ### 32. Documentation Department
 
@@ -756,7 +764,7 @@ Independent maker/checker requests and decisions now cover bills, payments, quot
 
 Workflow events now enqueue atomically with source changes. Durable runs support delays, event deduplication, transaction-safe internal retries, attempt history, edited/disabled-rule cancellation, failed-run handling and independent database processing for the demo. Uncertain external outcomes require review and are not replayed automatically.
 
-**Remaining acceptance work:** Multi-step workflow templates, branching, business calendars, approval escalation, department/shift queues, SLA policies and company acceptance remain.
+**Remaining acceptance work:** Multi-step workflow templates, conditional branching, business calendars, delegated approval escalation and company acceptance remain.
 
 **Evidence:** `src/server/automation.ts`, `src/shared/entities/platform.ts`, `src/shared/entities/people.ts`, `src/server/routes/admin.ts`, `src/shared/entities/automation.ts`, `src/server/scheduler.ts`
 
@@ -786,7 +794,7 @@ Source-linked department queues automatically track quotations, carrier confirma
 
 Staff capacity points, activity complexity, open jobs/tasks and overdue counts drive workload summaries and manager-reviewed same-department recommendations with source-permission checks.
 
-**Remaining acceptance work:** Skill qualifications, availability calendars, forecasts, capacity history and optimisation/operational acceptance remain outstanding.
+**Remaining acceptance work:** Availability calendars, forecasts, capacity history, workload optimisation and broader skill-qualified operational assignment/acceptance remain outstanding.
 
 **Evidence:** `src/server/domain/work.ts`, `src/server/routes/work.ts`, `src/shared/entities/work.ts`, `src/web/pages/WorkPages.tsx`, `tests/work-controls.ts`, `tests/work-api.ts`
 
@@ -930,19 +938,23 @@ Shared navigation, document screens, search, task records and responsive layouts
 
 ### 94. OCR
 
-**Status: Missing**
+**Status: Partial**
 
-No dedicated implementation identified for this capability in the reviewed source.
+Local Tesseract image/scanned-PDF OCR and embedded PDF/text extraction support BL, AWB, invoices, packing lists, COO, customs and receipt documents. Source hashes, confidence, bounded processing, review and interrupted-job recovery are stored with source permissions.
 
-**Remaining acceptance work:** OCR extraction, confidence review and validated structured field ingestion.
+**Remaining acceptance work:** Structured field ingestion beyond reference detection, multilingual/custom layouts, larger documents, deployment binary installation and production quality acceptance remain outstanding.
+
+**Evidence:** `src/shared/entities/ocr.ts`, `src/server/domain/ocr.ts`, `src/web/pages/ExtractionPage.tsx`, `tests/ocr.ts`
 
 ### 95. Document Matching
 
-**Status: Missing**
+**Status: Partial**
 
-No dedicated implementation identified for this capability in the reviewed source.
+Exact job/master/house references produce stored job candidates. Human source verification confirms attachment association; checksums reject changed files, ambiguous references remain unlinked and existing associations cannot be overwritten.
 
-**Remaining acceptance work:** Document-to-job matching with confidence, conflict handling and human verification.
+**Remaining acceptance work:** Fuzzy/layout matching, controlled reassociation, quality thresholds and operational matching acceptance remain outstanding.
+
+**Evidence:** `src/server/domain/ocr.ts`, `src/server/routes/ocr.ts`, `src/web/pages/ExtractionPage.tsx`, `tests/ocr.ts`
 
 ### 96. Customer Portal
 
@@ -1032,19 +1044,23 @@ Employee, leave, attendance, payslip, insurance, claims, ticket, asset and purch
 
 ### 105. Training & Competency
 
-**Status: Missing**
+**Status: Partial**
 
-No dedicated implementation identified for this capability in the reviewed source.
+Ocean/Air/Customs/DG/Warehouse/Finance competencies have evidence-backed independently verified qualifications, levels, expiry and revocation. A staff matrix and activity rules enforce current qualifications on assignment and starting/resuming work.
 
-**Remaining acceptance work:** Skill/competency framework, qualifications and assignment restrictions.
+**Remaining acceptance work:** Training curricula, attendance, practical assessments, renewals/notifications and enforcement across every operational assignment remain outstanding.
+
+**Evidence:** `src/shared/entities/enterprise.ts`, `src/server/domain/enterprise.ts`, `src/server/domain/work.ts`, `src/web/pages/EnterprisePages.tsx`, `tests/enterprise-modules.ts`
 
 ### 106. Knowledge Base
 
-**Status: Missing**
+**Status: Partial**
 
-No dedicated implementation identified for this capability in the reviewed source.
+Searchable SOP/policy/manual/customer-SOP/carrier/customs/training articles retain immutable independently reviewed versions and hashes; amendments start new drafts and each published revision has staff acknowledgements.
 
-**Remaining acceptance work:** Versioned searchable knowledge base, ownership, approval and acknowledgement.
+**Remaining acceptance work:** Mandatory reader distribution, acknowledgement reminders, attachment versions and linked SOP enforcement/operational acceptance remain outstanding.
+
+**Evidence:** `src/shared/entities/enterprise.ts`, `src/server/domain/enterprise.ts`, `src/web/lib/actions.tsx`, `tests/enterprise-modules.ts`
 
 ### 107. Internal Helpdesk
 
