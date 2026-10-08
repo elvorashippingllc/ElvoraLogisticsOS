@@ -25,6 +25,11 @@ try {
   assert.equal(auth.status(), 200)
   await page.goto(base + '/dashboard'); await page.getByRole('heading', { name: 'Move each shipment forward' }).waitFor()
   await page.evaluate(() => document.fonts.ready)
+  const sidebarLabels = await page.locator('.rail-shortcut-label').evaluateAll(nodes => nodes.map(n => {
+    const label = n.getBoundingClientRect(), button = n.parentElement.getBoundingClientRect()
+    return { text: n.textContent.trim(), fits: label.left >= button.left && label.right <= button.right + 1 && label.bottom <= button.bottom + 1 }
+  }))
+  assert.ok(sidebarLabels.length > 2 && sidebarLabels.every(n => n.text && n.fits), 'sidebar icons have readable labels contained within each button')
   const capture = async name => { const style = await page.addStyleTag({ content: '.workspace-frame { height:auto; min-height:100dvh; overflow:visible; } .app-main { overflow:visible; }' }); await page.screenshot({ path: `${out}/${name}.png`, fullPage: true }); await page.screenshot({ path: `${out}/${name}.jpg`, type: 'jpeg', quality: 65, fullPage: true }); await style.evaluate(el => el.remove()) }
   await capture('desktop')
   const carousel = page.getByLabel('Shipment workflow steps')
