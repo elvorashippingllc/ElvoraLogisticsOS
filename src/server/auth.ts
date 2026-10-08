@@ -21,6 +21,7 @@ export function verifyPassword(pw: string, stored: string | null | undefined): b
   return exp.length === calc.length && crypto.timingSafeEqual(exp, calc)
 }
 export function validatePasswordStrength(pw: string) {
+  if (pw.length > 200) throw bad('Password must be no more than 200 characters')
   if (pw.length < 10) throw bad('Password must be at least 10 characters')
   if (!/[a-z]/.test(pw) || !/[A-Z]/.test(pw) || !/\d/.test(pw)) throw bad('Password needs upper-case, lower-case letters and a digit')
 }
@@ -128,6 +129,7 @@ export function totpAt(secret: string, t: number): string {
   return String(code % 1_000_000).padStart(6, '0')
 }
 export function verifyTotp(secret: string, code: string): boolean {
+  if (typeof secret !== 'string' || !/^[A-Z2-7]{16,64}$/i.test(secret) || !/^\d{6}$/.test(String(code).trim())) return false
   const now = Date.now() / 1000
   return [-1, 0, 1].some(w => totpAt(secret, now + w * 30) === String(code).trim())
 }

@@ -4,7 +4,8 @@ import { seedReference } from '../src/server/seed'
 import { buildApp } from '../src/server/app'
 import { q, db } from '../src/server/db'
 import { config } from '../src/server/config'
-import { newApiKey, totpAt, attemptLogin } from '../src/server/auth'
+import { newApiKey, totpAt, attemptLogin, verifyTotp } from '../src/server/auth'
+import { setSettings } from '../src/server/settings'
 import { pgConnectionOptions } from '../src/server/pgbridge'
 import { can } from '../src/server/engine'
 
@@ -44,6 +45,7 @@ try {
   const secret = setup.json().secret, code = () => totpAt(secret, Date.now() / 1000), pendingKey = `totp-pending:${id}`
   const pending = JSON.parse(q.val<string>('SELECT value FROM settings WHERE key = ?', pendingKey)!)
   check('pending secret encrypted at rest', pending.secret.startsWith('enc:v1:') && !pending.secret.includes(secret))
+  setSettings({}) // Reload the newly persisted internal key rather than relying on a pre-setup cache.
   check('admin settings never expose pending secret', !JSON.stringify((await request('/api/admin/settings', 'GET', undefined, cookie)).json()).includes('totp-pending:'))
   check('another session cannot confirm setup', (await request('/api/auth/totp/enable', 'POST', { code: code() }, second)).statusCode === 400)
   q.run('UPDATE settings SET value = ? WHERE key = ?', JSON.stringify({ ...pending, expires: Date.now() - 1 }), pendingKey)
@@ -71,6 +73,7 @@ try {
   check('valid code cannot bypass temporary lockout', true)
   q.run('UPDATE users SET locked_until = NULL, failed_logins = 0 WHERE id = ?', id)
   check('legacy authenticator remains compatible', 'user' in attemptLogin(credentials.email, password, code()))
+  check('unreadable or corrupt authenticator secret fails closed', !verifyTotp('', totpAt('', Date.now() / 1000)))
   const restricted = { id: 99, name: 'Scoped staff', email: 'scoped@example.test', role_id: null, role_name: 'Scoped', permissions: { ai: ['*'] }, branch_id: 1, party_id: null }
   check('restricted roles cannot access company-wide AI tools', !can(restricted, 'ai', 'view'))
   check('portal users cannot access company-wide AI tools', !can({ ...restricted, permissions: '*' as const, party_id: 1 }, 'ai', 'view'))

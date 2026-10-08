@@ -53,7 +53,7 @@ export default async function (app: FastifyInstance) {
   })
 
   app.post('/api/auth/change-password', { config: { rateLimit: { max: 8, timeWindow: '1 minute' } } }, async (req) => {
-    const b = z.object({ current: z.string(), next: z.string() }).parse(req.body)
+    const b = z.object({ current: z.string().max(200), next: z.string().max(200) }).parse(req.body)
     const row = q.get(`SELECT * FROM users WHERE id = ?`, req.user!.id)
     if (!verifyPassword(b.current, row?.password_hash)) throw new HttpError(400, 'Current password is incorrect')
     validatePasswordStrength(b.next)
