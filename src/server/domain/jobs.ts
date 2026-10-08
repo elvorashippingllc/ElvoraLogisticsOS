@@ -33,7 +33,8 @@ function computeCharges(rows: Rec[], jobId: number | undefined) {
     if (!incoming) throw bad('Vendor service charges cannot be removed here. Reset the service to draft first.')
     for (const field of ['kind', 'charge_code_id', 'description', 'party_id', 'basis', 'qty', 'rate', 'currency', 'ex_rate', 'vat_code_id']) {
       const expected = field === 'rate' ? fromCents(c[field]) : c[field]
-      if (JSON.stringify(incoming[field] ?? expected) !== JSON.stringify(expected)) throw bad('Vendor service charges are locked. Reset the service to draft before changing its buying or selling details.')
+      if (incoming[field] === undefined) incoming[field] = expected
+      if (JSON.stringify(incoming[field]) !== JSON.stringify(expected)) throw bad('Vendor service charges are locked. Reset the service to draft before changing its buying or selling details.')
     }
   }
   const locked = jobId ? q.all(`SELECT id, status, qty, rate, charge_code_id, currency, kind FROM job_charges WHERE job_id = ? AND deleted_at IS NULL AND status <> 'Unbilled'`, jobId) : []
@@ -104,7 +105,7 @@ export const jobHooks: Hooks = {
         rec.closed_at = nowLocal()
       }
       if (rec.job_status === 'CANCELLED') {
-        if (q.val("SELECT id FROM vendor_services WHERE job_id=? AND status<>'Cancelled' AND deleted_at IS NULL", rec.id)) throw bad('Resolve and cancel vendor services before cancelling this job')
+        if (q.val("SELECT id FROM vendor_services WHERE job_id=? AND deleted_at IS NULL AND status<>'Cancelled' AND ((return_required=1 AND status<>'Returned') OR (return_required=0 AND status<>'Completed'))", rec.id)) throw bad('Complete or cancel vendor services and return hired equipment before cancelling this job')
         const n = q.val<number>(`SELECT COUNT(*) FROM job_charges WHERE job_id = ? AND status <> 'Unbilled' AND deleted_at IS NULL`, rec.id) ?? 0
         if (n) throw bad('Void the invoices / bills linked to this job before cancelling it.')
       }
