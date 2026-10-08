@@ -32,6 +32,27 @@ try {
   assert.ok(sidebarLabels.length > 2 && sidebarLabels.every(n => n.text && n.fits), 'sidebar icons have readable labels contained within each button')
   const capture = async name => { const style = await page.addStyleTag({ content: '.workspace-frame { height:auto; min-height:100dvh; overflow:visible; } .app-main { overflow:visible; }' }); await page.screenshot({ path: `${out}/${name}.png`, fullPage: true }); await page.screenshot({ path: `${out}/${name}.jpg`, type: 'jpeg', quality: 65, fullPage: true }); await style.evaluate(el => el.remove()) }
   await capture('desktop')
+  const checkDashboardContrast = async () => {
+    const failures = await page.evaluate(() => {
+      const rgb = value => value.match(/[\d.]+/g)?.slice(0, 3).map(Number)
+      const luminance = color => rgb(color).map(v => { v /= 255; return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4 }).reduce((sum, v, i) => sum + v * [.2126, .7152, .0722][i], 0)
+      const selectors = '.workflow-step h3,.workflow-step p,.workflow-step strong,.workflow-step-head,.workflow-open,.dashboard-metrics .kpi .l,.dashboard-metrics .kpi .v,.dashboard-metrics .kpi .text-muted,.overview-ledger dt,.overview-ledger dd,.overview-ledger h2,.overview-mix h2,.overview-mix header > span,.mode-legend li,.mode-legend strong,.daily-schedule b,.daily-schedule small'
+      return [...document.querySelectorAll(selectors)].filter(n => n.getClientRects().length).flatMap(n => {
+        let surface = n
+        while (surface && getComputedStyle(surface).backgroundColor === 'rgba(0, 0, 0, 0)') surface = surface.parentElement
+        const bg = getComputedStyle(surface).backgroundColor, fg = getComputedStyle(n).color
+        const a = luminance(bg), b = luminance(fg), ratio = (Math.max(a, b) + .05) / (Math.min(a, b) + .05)
+        return ratio >= 4.5 ? [] : [{ text: n.textContent.slice(0, 60), ratio, bg, fg }]
+      })
+    })
+    assert.deepEqual(failures, [], 'colored dashboard text meets 4.5:1 contrast')
+  }
+  await checkDashboardContrast()
+  await page.evaluate(() => document.documentElement.dataset.theme = 'dark')
+  await checkDashboardContrast()
+  await capture('dark')
+  await page.evaluate(() => delete document.documentElement.dataset.theme)
+
   const carousel = page.getByLabel('Shipment workflow steps')
   await page.getByRole('button', { name: 'Next workflow steps' }).click()
   await page.waitForTimeout(300)
@@ -53,5 +74,5 @@ try {
   assert.equal(await page.getByRole('button', { name: 'Send email', exact: true }).isEnabled(), false, 'unconnected sender cannot send')
   assert.deepEqual(errors, [])
   console.log('PASS: dashboard desktop, mobile, carousel, sidebar popup, focus return and email empty state')
-  if (process.env.UI_CAPTURE_PRINT === 'true') for (const name of ['desktop', 'mobile', 'sidebar', 'email']) console.log(`UI_CAPTURE:${name}:${fs.readFileSync(`${out}/${name}.jpg`).toString('base64')}`)
+  if (process.env.UI_CAPTURE_PRINT === 'true') for (const name of ['desktop', 'mobile', 'dark', 'sidebar', 'email']) console.log(`UI_CAPTURE:${name}:${fs.readFileSync(`${out}/${name}.jpg`).toString('base64')}`)
 } finally { await browser?.close(); server.kill('SIGTERM'); fs.rmSync(data, { recursive: true, force: true }) }

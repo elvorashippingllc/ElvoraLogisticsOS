@@ -29,14 +29,14 @@ export function Dashboard() {
     </div>
   )
 
-  const tiles: { label: string; value: any; hint?: any; tone?: any; to?: string; show: boolean }[] = [
-    { label: 'Open jobs', value: k.open_jobs, hint: `${k.jobs_month ?? 0} opened this month`, to: '/e/jobs?status=OPENED', show: k.open_jobs !== undefined },
-    { label: 'In transit', value: k.in_transit, to: '/e/jobs?status=IN%20PROGRESS', show: k.in_transit !== undefined },
-    { label: `Revenue this month (${base})`, value: fmtMoney(k.revenue_month, 0), hint: `Job profit ${fmtMoney(k.profit_month, 0)}`, show: k.revenue_month !== undefined },
-    { label: `Receivables (${base})`, value: fmtMoney(k.ar_outstanding, 0), hint: k.ar_overdue > 0 ? `${fmtMoney(k.ar_overdue, 0)} overdue` : 'Nothing overdue', tone: k.ar_overdue > 0 ? 'amber' : undefined, to: '/reports?r=ar_aging', show: k.ar_outstanding !== undefined },
+  const tiles: { label: string; value: any; hint?: any; tone?: any; surface?: string; to?: string; show: boolean }[] = [
+    { label: 'Open jobs', surface: 'ocean', value: k.open_jobs, hint: `${k.jobs_month ?? 0} opened this month`, to: '/e/jobs?status=OPENED', show: k.open_jobs !== undefined },
+    { label: 'In transit', surface: 'transit', value: k.in_transit, to: '/e/jobs?status=IN%20PROGRESS', show: k.in_transit !== undefined },
+    { label: `Revenue this month (${base})`, surface: 'revenue', value: fmtMoney(k.revenue_month, 0), hint: `Job profit ${fmtMoney(k.profit_month, 0)}`, show: k.revenue_month !== undefined },
+    { label: `Receivables (${base})`, surface: 'collections', value: fmtMoney(k.ar_outstanding, 0), hint: k.ar_overdue > 0 ? `${fmtMoney(k.ar_overdue, 0)} overdue` : 'Nothing overdue', tone: k.ar_overdue > 0 ? 'amber' : undefined, to: '/reports?r=ar_aging', show: k.ar_outstanding !== undefined },
     { label: `Payables (${base})`, value: fmtMoney(k.ap_outstanding, 0), to: '/reports?r=ap_aging', show: k.ap_outstanding !== undefined },
     { label: `Cash & bank (${base})`, value: fmtMoney(k.cash, 0), to: '/e/bank_accounts', show: k.cash !== undefined },
-    { label: `Unbilled work (${base})`, value: fmtMoney(k.unbilled, 0), tone: k.unbilled > 0 ? 'amber' : undefined, to: '/reports?r=unbilled_charges', show: k.unbilled !== undefined },
+    { label: `Unbilled work (${base})`, surface: 'collections', value: fmtMoney(k.unbilled, 0), tone: k.unbilled > 0 ? 'amber' : undefined, to: '/reports?r=unbilled_charges', show: k.unbilled !== undefined },
     { label: 'Open quotations', value: k.quotes_open, to: '/e/quotations', show: k.quotes_open !== undefined },
     { label: 'New leads', value: k.leads_new, hint: `Pipeline ${fmtMoney(k.pipeline, 0)}`, to: '/e/leads', show: k.leads_new !== undefined },
     { label: 'Open tickets', value: k.tickets_open, to: '/e/tickets', show: k.tickets_open !== undefined },
@@ -48,7 +48,7 @@ export function Dashboard() {
   return (
     <div className="fade-in dashboard-page">
       <Welcome name={me?.name} />
-      <section aria-label="Business at a glance"><div className="dashboard-metrics">{tiles.slice(0, 4).map(t => <Kpi key={t.label} label={t.label} value={t.value ?? 0} hint={t.hint} tone={t.tone} onClick={t.to && (!t.to.startsWith('/reports') || (can('reports', 'view') && can('finance', 'view'))) ? () => nav(t.to!) : undefined} />)}</div></section>
+      <section aria-label="Business at a glance"><div className="dashboard-metrics">{tiles.slice(0, 4).map(t => <Kpi key={t.label} className={t.surface ? `metric-${t.surface}` : undefined} label={t.label} value={t.value ?? 0} hint={t.hint} tone={t.tone} onClick={t.to && (!t.to.startsWith('/reports') || (can('reports', 'view') && can('finance', 'view'))) ? () => nav(t.to!) : undefined} />)}</div></section>
       {d.alerts?.length > 0 && <div className="grid gap-2 mb-5 md:grid-cols-2 xl:grid-cols-3">{d.alerts.slice(0, 6).map((a: any, i: number) => (
         <Link key={i} to={a.link} className={cls('flex items-center gap-3 px-4 py-2.5 rounded-xl border text-[13.5px] font-semibold', a.level === 'danger' ? 'bg-blush border-[#f2bcc3] text-[#8f1325]' : a.level === 'warn' ? 'bg-gold border-[#ead49a] text-[#6b4a00]' : 'bg-sky border-[#bcd6f0] text-[#1f4f85]')}>
           {a.level === 'danger' ? <AlertTriangle size={17} /> : a.level === 'warn' ? <TriangleAlert size={17} /> : <Info size={17} />}<span className="flex-1" dir="auto">{a.text}</span><ArrowRight size={15} /></Link>))}</div>}
@@ -61,7 +61,7 @@ export function Dashboard() {
 
       <div className="grid gap-4 xl:grid-cols-12">
         {ch.sales_branch && (
-          <Panel className="xl:col-span-7" title="Sales by branch" color={C.ocean} tools={<span className="text-xs opacity-80 mr-1">invoiced this month · {base}</span>}>
+          <Panel className="xl:col-span-7 dashboard-sales-panel" title="Sales by branch" color={C.ocean} tools={<span className="text-xs opacity-80 mr-1">invoiced this month · {base}</span>}>
             <div className="p-3" style={{ height: 290 }}>
               {ch.sales_branch.length === 0 ? <Empty title="No sales yet this month" hint="Invoiced revenue and unbilled job work appear here by branch." /> : (
                 <ResponsiveContainer><BarChart data={ch.sales_branch} margin={{ top: 8, right: 12, left: 0, bottom: 0 }}><CartesianGrid strokeDasharray="3 3" stroke="#dbe3dc" vertical={false} /><XAxis dataKey="branch" tick={{ fontSize: 14 }} /><YAxis tickFormatter={fmtCompact} tick={{ fontSize: 14 }} width={46} /><Tooltip formatter={money} /><Legend /><Bar dataKey="invoiced" name="Invoiced" fill={C.emerald} radius={[6, 6, 0, 0]} maxBarSize={90} /><Bar dataKey="unbilled" name="All work waiting to invoice" fill={C.champagne} radius={[6, 6, 0, 0]} maxBarSize={90} /></BarChart></ResponsiveContainer>)}
@@ -83,7 +83,7 @@ export function Dashboard() {
           </Panel>)}
 
         {ch.revenue_trend && (
-          <Panel className="xl:col-span-12" title="Revenue, cost & profit by job month" color={C.emerald}>
+          <Panel className="xl:col-span-12 dashboard-financial-panel" title="Revenue, cost & profit by job month" color={C.emerald}>
             <div className="p-3" style={{ height: 280 }}>{ch.revenue_trend.length === 0 ? <Empty title="No job financials yet" /> : (
               <ResponsiveContainer><ComposedChart data={ch.revenue_trend}><CartesianGrid strokeDasharray="3 3" stroke="#dbe3dc" vertical={false} /><XAxis dataKey="month" tick={{ fontSize: 14 }} /><YAxis tickFormatter={fmtCompact} tick={{ fontSize: 14 }} width={46} /><Tooltip formatter={money} /><Legend /><Bar dataKey="revenue" name="Revenue" fill={C.emerald} radius={[5, 5, 0, 0]} maxBarSize={44} /><Bar dataKey="cost" name="Cost" fill={C.copper} radius={[5, 5, 0, 0]} maxBarSize={44} /><Line type="monotone" dataKey="profit" name="Profit" stroke={C.graphite} strokeWidth={2.5} dot={{ r: 3 }} /></ComposedChart></ResponsiveContainer>)}</div>
           </Panel>)}
@@ -108,7 +108,7 @@ export function Dashboard() {
             <table className="grid"><tbody>{ls.my_tasks.map((t: any) => <tr key={t.id} className="clickable" onClick={() => nav(t.link_entity ? (t.link_entity === 'jobs' ? `/jobs/${t.link_id}` : `/e/${t.link_entity}/${t.link_id}`) : `/e/tasks/${t.id}`)}><td className="font-semibold">{t.title}</td><td className="text-muted text-xs">{t.link_label}</td><td className="whitespace-nowrap">{fmtDate(t.due_date)}</td><td><Badge value={t.priority} /></td></tr>)}</tbody></table>
           </Panel>)}
       </div>
-      {tiles.length > 4 && <section className="mt-8" aria-label="More business figures"><h2 className="dashboard-section-title">More business figures</h2><div className="dashboard-metrics">{tiles.slice(4).map(t => <Kpi key={t.label} label={t.label} value={t.value ?? 0} hint={t.hint} tone={t.tone} onClick={t.to && (!t.to.startsWith('/reports') || (can('reports', 'view') && can('finance', 'view'))) ? () => nav(t.to!) : undefined} />)}</div></section>}
+      {tiles.length > 4 && <section className="mt-8" aria-label="More business figures"><h2 className="dashboard-section-title">More business figures</h2><div className="dashboard-metrics">{tiles.slice(4).map(t => <Kpi key={t.label} className={t.surface ? `metric-${t.surface}` : undefined} label={t.label} value={t.value ?? 0} hint={t.hint} tone={t.tone} onClick={t.to && (!t.to.startsWith('/reports') || (can('reports', 'view') && can('finance', 'view'))) ? () => nav(t.to!) : undefined} />)}</div></section>}
     </div>
   )
 }
@@ -168,16 +168,16 @@ function DailyWorkflow({ data, base }: { data: any; base: string }) {
   const { can } = useMeta(), rail = useRef<HTMLDivElement>(null), [position, setPosition] = useState({ start: true, end: false })
   const k = data.kpis || {}, ls = data.lists || {}
   const steps = [
-    { title: 'Enquiry and quotation', detail: 'Follow up enquiries, agree the rate and confirm the customer’s acceptance.', value: `${k.quotes_open ?? 0} open quotations`, to: '/e/quotations', module: 'sales', Icon: FileText },
-    { title: 'Booking and shipment', detail: 'Open the job, confirm the booking and keep departure and arrival dates current.', value: `${k.open_jobs ?? 0} open jobs`, to: '/e/jobs', module: 'jobs', Icon: Ship },
-    { title: 'Documents and clearance', detail: 'Check the shipment documents and customs requirements before cargo moves.', value: 'Review shipment documents', to: '/documents', module: 'documents', Icon: FileText },
-    { title: 'Delivery and proof', detail: 'Arrange the final delivery, record proof and confirm the shipment is complete.', value: 'Check transport and delivery', to: '/e/transport_orders', module: 'transport', Icon: Truck },
-    { title: 'Invoice the customer', detail: 'Check job charges and supplier costs, then prepare and send the invoice.', value: k.unbilled === undefined ? 'Review charges waiting to invoice' : `${fmtMoney(k.unbilled, 0)} ${base} waiting to invoice`, to: '/reports?r=unbilled_charges', module: 'finance', Icon: FileText },
-    { title: 'Collect payment and close', detail: 'Follow up overdue invoices, record the receipt and check the job before closing it.', value: k.ar_overdue === undefined ? 'Review customer balances' : `${fmtMoney(k.ar_overdue, 0)} ${base} overdue`, to: '/reports?r=ar_aging', module: 'finance', Icon: Wallet },
+    { title: 'Enquiry and quotation', surface: 'sales', detail: 'Follow up enquiries, agree the rate and confirm the customer’s acceptance.', value: `${k.quotes_open ?? 0} open quotations`, to: '/e/quotations', module: 'sales', Icon: FileText },
+    { title: 'Booking and shipment', surface: 'shipment', detail: 'Open the job, confirm the booking and keep departure and arrival dates current.', value: `${k.open_jobs ?? 0} open jobs`, to: '/e/jobs', module: 'jobs', Icon: Ship },
+    { title: 'Documents and clearance', surface: 'documents', detail: 'Check the shipment documents and customs requirements before cargo moves.', value: 'Review shipment documents', to: '/documents', module: 'documents', Icon: FileText },
+    { title: 'Delivery and proof', surface: 'delivery', detail: 'Arrange the final delivery, record proof and confirm the shipment is complete.', value: 'Check transport and delivery', to: '/e/transport_orders', module: 'transport', Icon: Truck },
+    { title: 'Invoice the customer', surface: 'billing', detail: 'Check job charges and supplier costs, then prepare and send the invoice.', value: k.unbilled === undefined ? 'Review charges waiting to invoice' : `${fmtMoney(k.unbilled, 0)} ${base} waiting to invoice`, to: '/reports?r=unbilled_charges', module: 'finance', Icon: FileText },
+    { title: 'Collect payment and close', surface: 'collections', detail: 'Follow up overdue invoices, record the receipt and check the job before closing it.', value: k.ar_overdue === undefined ? 'Review customer balances' : `${fmtMoney(k.ar_overdue, 0)} ${base} overdue`, to: '/reports?r=ar_aging', module: 'finance', Icon: Wallet },
   ].filter(s => can(s.module, 'view') && (!s.to.startsWith('/reports') || can('reports', 'view')))
   const move = (direction: number) => rail.current?.scrollBy({ left: direction * (rail.current.clientWidth * .8), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })
   return <section className="daily-workflow" aria-label="Daily workflow"><header className="workflow-header"><div><h2>Move each shipment forward</h2><p>Start with anything that needs attention, then follow the job through to payment.</p></div><div className="flex gap-2"><button className="btn outline icon" aria-label="Previous workflow steps" disabled={position.start} onClick={() => move(-1)}><ChevronLeft /></button><button className="btn outline icon" aria-label="Next workflow steps" disabled={position.end || steps.length < 2} onClick={() => move(1)}><ChevronRight /></button></div></header>
-    <div className="workflow-carousel" ref={rail} tabIndex={0} aria-label="Shipment workflow steps" onScroll={e => { const r = e.currentTarget; setPosition({ start: r.scrollLeft < 2, end: r.scrollLeft + r.clientWidth >= r.scrollWidth - 2 }) }}>{steps.map((s, i) => <Link key={s.title} to={s.to} className="workflow-step"><div className="workflow-step-head"><span>{i + 1}</span><s.Icon size={22} /></div><h3>{s.title}</h3><p>{s.detail}</p><strong>{s.value}</strong><span className="workflow-open">Open <ArrowRight size={16} /></span></Link>)}</div>
+    <div className="workflow-carousel" ref={rail} tabIndex={0} aria-label="Shipment workflow steps" onScroll={e => { const r = e.currentTarget; setPosition({ start: r.scrollLeft < 2, end: r.scrollLeft + r.clientWidth >= r.scrollWidth - 2 }) }}>{steps.map((s, i) => <Link key={s.title} to={s.to} className={`workflow-step workflow-${s.surface}`}><div className="workflow-step-head"><span>{i + 1}</span><s.Icon size={22} /></div><h3>{s.title}</h3><p>{s.detail}</p><strong>{s.value}</strong><span className="workflow-open">Open <ArrowRight size={16} /></span></Link>)}</div>
     {(ls.departures || ls.arrivals || ls.my_tasks) && <div className="daily-schedule"><h3>Plan shipments and follow-ups</h3><div>{ls.departures && <Link to="/calendar"><Ship size={18} /><span><b>Upcoming departures</b><small>Confirm bookings and documents</small></span><ArrowRight size={16} /></Link>}{ls.arrivals && <Link to="/calendar"><Plane size={18} /><span><b>Upcoming arrivals</b><small>Prepare clearance and delivery</small></span><ArrowRight size={16} /></Link>}{ls.my_tasks && can('projects', 'view') && <Link to="/e/tasks"><CalendarDays size={18} /><span><b>{k.my_tasks ?? ls.my_tasks.length} open tasks</b><small>Check your follow-ups and due dates</small></span><ArrowRight size={16} /></Link>}</div></div>}
   </section>
 }

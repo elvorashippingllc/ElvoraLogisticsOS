@@ -70,3 +70,7 @@ The palette continues to use the existing emerald (`#007b52`), graphite (`#161d1
 - [Email screen](../src/web/pages/EmailPage.tsx) and [email operation guide](EMAIL.md)
 
 The Email screen uses the same typography and controls. Write email contains explicit From, To, Cc, Subject and Message labels; Sent & queued shows outgoing status, and Sender settings is available to administrators with edit access.
+
+## Dashboard color roles
+
+Shipment cards use deep ocean blue and cool blue-green surfaces. The monthly ledger uses Elvora green; sales and collection work uses warm ochre. Documents and delivery have quieter neutral and green surfaces. These roles are attached to the work itself, so permission-based filtering does not change their meaning. Detailed tables and chart bodies remain calm reading surfaces. Both light and dark themes retain labeled states and readable contrast; no new assets or dashboard actions are introduced.
