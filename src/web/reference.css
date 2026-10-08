@@ -277,3 +277,5 @@ table.grid td { font-size: 14px; }
   --dash-documents: #393a32; --dash-documents-text: #e8e8d9;
   --dash-delivery: #263e38; --dash-delivery-text: #dceee7;
 }
+.dashboard-page :is(.workflow-shipment,.workflow-collections,.metric-ocean[role='button']):focus-visible { outline-color: #f5e5bf; }
+:root[data-theme='dark'] .dashboard-page :is(.workflow-step,.daily-schedule a,.kpi[role='button']):focus-visible { outline-color: #f5e5bf; }
