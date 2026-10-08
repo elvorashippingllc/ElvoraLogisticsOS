@@ -75,8 +75,9 @@ export const automation: EntityDef[] = [
     key: 'ai_actions', label: 'Proposed action', plural: 'AI approvals', module: 'ai', icon: 'ShieldCheck', title: ['summary'], readonlyApi: true, noDelete: true, statusField: 'status',
     fields: [
       R('agent_id', 'Employee', 'ai_agents', { list: true }), R('run_id', 'Run', 'ai_runs'), T('tool', 'Action', { list: true }), TA('summary', 'What it wants to do', { list: true }), J('args', 'Arguments'),
-      S('status', 'Status', ['Pending', 'Approved', 'Rejected', 'Executed', 'Failed'], { default: 'Pending', list: true }), TA('result', 'Result'), DT('created', 'Proposed', { list: true }), DT('decided_at', 'Decided'), R('decided_by', 'Decided by', 'users'),
+      S('status', 'Status', ['Pending', 'Approved', 'Rejected', 'Executing', 'Executed', 'Failed'], { default: 'Pending', list: true }), TA('result', 'Result'), DT('created', 'Proposed', { list: true }), DT('decided_at', 'Decided'), R('decided_by', 'Decided by', 'users'),
     ],
     defaultSort: { field: 'id', dir: 'desc' },
   },
 ]
+

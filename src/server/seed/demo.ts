@@ -1,3 +1,4 @@
+import { addClosureEvidence, verifyClosureEvidence } from '../domain/job-controls'
 /** Optional sample data (fictional companies). Built through the real engine so every hook, total and ledger posting runs. */
 import { q } from '../db'
 import { createRecord, getDef, patchRecord, type Ctx, type Rec } from '../engine'
@@ -49,6 +50,7 @@ export async function seedDemoScenarios(): Promise<void> {
   const v2 = mk('parties', { name: 'Skyline Customs Brokerage', is_vendor: true, is_broker: true, status: 'Active', country_id: uae, trn: '100678901200003' })
   const v3 = mk('parties', { name: 'Oceanic Agency Johannesburg', is_vendor: true, is_agent: true, status: 'Active', country_id: idBy('countries', 'code', 'ZA') })
   const v4 = mk('parties', { name: 'Jebel Ali Container Services', is_vendor: true, status: 'Active', country_id: uae, trn: '100789012300003' })
+  const v5=mk('parties',{name:'Emirates Air Freight Services (demo)',is_vendor:true,status:'Active',country_id:uae,trn:'100890123400003'})
   for (const [p, n, e, t] of [[c1, 'Mariam Al Suwaidi', 'mariam@gulftextile.example', 'Logistics Manager'], [c2, 'Rahul Menon', 'rahul@atlasauto.example', 'Import Coordinator'], [c3, 'Layla Haddad', 'layla@emeraldfoods.example', 'Supply Chain Lead'], [c4, 'Dr. Omar Rashid', 'omar@saharapharma.example', 'Procurement'], [v1, 'Imran Qureshi', 'imran@gulfhaulage.example', 'Dispatcher']] as const)
     mk('contacts', { name: n, party_id: p.id, email: e, designation: t, is_primary: true, receives_invoices: true, receives_tracking: true, phone: '+971 50 555 01' + String(p.id).padStart(2, '0') })
 
@@ -88,7 +90,7 @@ export async function seedDemoScenarios(): Promise<void> {
   mk('customs_declarations', { declaration_type: 'Export – Shipping Bill (SB)', declaration_no: 'EX-4471209-26', job_id: j2.id, status: 'Cleared', customs_office: 'Jebel Ali', broker_id: v2.id, children: { lines: [{ description: 'Cotton fabrics HS 5208', value: 168000, duty_pct: 0, vat_pct: 0 }] } })
 
   const j3 = job({ client_id: c2.id, department: 'AIR IMPORT', trade: 'Import', job_date: d(-20), mbl_no: '17612345678', hbl_no: 'ELV-HA-2044', carrier_id: carrier('Emirates'), por_id: loc('DEFRA'), pol_id: loc('DEFRA'), pod_id: loc('AEDXB'), pof_id: loc('AEDXB'), inco_terms: 'FCA', freight_terms: 'Collect', etd: `${d(-18)}T13:00`, atd: `${d(-18)}T13:40`, eta: `${d(-17)}T22:00`, ata: `${d(-17)}T22:20`, operational_status: 'DELIVERED', job_status: 'DELIVERED', bl_status: 'RELEASED', commodity: 'Brake components', packages: 12, package_type: 'Carton', gross_weight: 480, chargeable_weight: 520,
-    children: { charges: [ch('Revenue', 'FRT-AIR', 520, 6.2, c2.id), ch('Revenue', 'CCF', 1, 350, c2.id), ch('Revenue', 'DUTY', 1, 2190, c2.id), ch('Revenue', 'DELIV', 1, 280, c2.id), ch('Cost', 'FRT-AIR', 520, 4.9, null), ch('Cost', 'CCF', 1, 220, v2.id), ch('Cost', 'DUTY', 1, 2190, v2.id), ch('Cost', 'DELIV', 1, 180, v1.id)] } })
+    children: { charges: [ch('Revenue', 'FRT-AIR', 520, 6.2, c2.id), ch('Revenue', 'CCF', 1, 350, c2.id), ch('Revenue', 'DUTY', 1, 2190, c2.id), ch('Revenue', 'DELIV', 1, 280, c2.id), ch('Cost', 'FRT-AIR', 520, 4.9, v5.id), ch('Cost', 'CCF', 1, 220, v2.id), ch('Cost', 'DUTY', 1, 2190, v2.id), ch('Cost', 'DELIV', 1, 180, v1.id)] } })
   const j4 = job({ client_id: c3.id, department: 'FCL IMPORT', trade: 'Import', job_date: d(-35), mbl_no: 'COSU6380019', carrier_id: carrier('COSCO'), por_id: loc('INNSA'), pol_id: loc('INNSA'), pod_id: loc('AEJEA'), pof_id: loc('AEJEA'), inco_terms: 'CFR', freight_terms: 'Prepaid', etd: `${d(-30)}T05:00`, atd: `${d(-30)}T07:00`, eta: `${d(-22)}T08:00`, ata: `${d(-22)}T11:00`, operational_status: 'DELIVERED', job_status: 'DELIVERED', commodity: 'Basmati rice', packages: 1600, package_type: 'Bag', gross_weight: 26000,
     children: { containers: [{ container_no: 'CSNU6021345', type_id: ct('40GP'), seal_no: 'IN778812', gross_weight: 26000, status: 'Delivered', free_time_until: d(-8) }], charges: [ch('Revenue', 'THC-D', 1, 1450, c3.id), ch('Revenue', 'DOF', 1, 300, c3.id), ch('Revenue', 'CCF', 1, 400, c3.id), ch('Revenue', 'TRK', 1, 650, c3.id), ch('Cost', 'THC-D', 1, 1380, v4.id), ch('Cost', 'TRK', 1, 520, v1.id)] } })
   const j5 = job({ client_id: c4.id, department: 'WAREHOUSING', trade: 'Domestic', job_date: d(-8), operational_status: 'CARGO RECEIVED', commodity: 'Pharmaceutical consumables', packages: 80, package_type: 'Carton', gross_weight: 900, children: { charges: [ch('Revenue', 'STOR', 30, 45, c4.id), ch('Revenue', 'HNDL', 1, 600, c4.id), ch('Cost', 'HNDL', 1, 380, v1.id)] } })
@@ -109,7 +111,7 @@ export async function seedDemoScenarios(): Promise<void> {
   const invoiceAndPost = (jobId: number, partyBill: boolean, pay: number) => {
     const invs = generateInvoicesFromJob(jobId, {}, ctx)
     const posted = invs.map(i => postInvoice(i.id, ctx))
-    if (partyBill) { try { for (const v of [v1, v2, v4]) { try { const b = createBillFromJobCosts(jobId, v.id, `${v.code}-${jobId}${v.id}`, [], ctx); postBill(b.id, ctx) } catch { /* vendor has no costs on this job */ } } } catch { /* ignore */ } }
+    if (partyBill) { try { for (const v of [v1, v2, v4, v5]) { try { const b = createBillFromJobCosts(jobId, v.id, `${v.code}-${jobId}${v.id}`, [], ctx); postBill(b.id, ctx) } catch { /* vendor has no costs on this job */ } } } catch { /* ignore */ } }
     if (pay > 0 && posted[0]) { const p = posted[0]; const r = mk('receipts', { party_id: p.party_id, bank_account_id: bank, receipt_date: d(-2), method: 'Bank transfer', currency: p.currency, ex_rate: p.ex_rate, amount: Math.round(p.total * pay * 100) / 100, reference: 'TRF' + p.id + '88', children: { allocations: [{ invoice_id: p.id, amount: Math.round(p.total * pay * 100) / 100 }] } }); postReceipt(r.id, ctx) }
     return posted
   }
@@ -117,7 +119,12 @@ export async function seedDemoScenarios(): Promise<void> {
   invoiceAndPost(j4.id, true, 0.6)
   invoiceAndPost(j2.id, false, 0)
   void j5
-  patchRecord(getDef('jobs'), j3.id, { job_status: 'CLOSED' }, ctx)
+  const reviewer: Ctx={system:true,user:loadUser(q.val<number>(`SELECT id FROM users WHERE email='priya.nair@demo.elvora'`)!)}
+  for(const kind of ['Documents verified','Costs complete','Customs not applicable','Equipment not applicable','POD not applicable']) {
+    const e=addClosureEvidence(j3.id,kind,'Fictional demonstration: shipment records independently reviewed',ctx)
+    verifyClosureEvidence(j3.id,e.id,reviewer)
+  }
+  patchRecord(getDef('jobs'), j3.id, { job_status: 'CLOSED' }, {...reviewer,jobTransition:'close'})
   mk('expenses', { employee_id: mk('employees', { name: 'Operations Manager', designation: 'Operations Manager', department_id: idBy('departments', 'code', 'OPS'), branch_id: dxb, join_date: d(-400), basic_salary: 14000, housing_allowance: 4000, transport_allowance: 1000, status: 'Active', passport_expiry: d(75), visa_expiry: d(25), eid_expiry: d(140) }).id, expense_date: d(-4), category: 'Port / terminal fees', description: 'Terminal gate fee – Jebel Ali', amount: 315, vat_amount: 15, status: 'Draft' })
 
   // ---- warehouse
@@ -142,3 +149,4 @@ export async function seedDemoScenarios(): Promise<void> {
   mk('announcements', { title: 'Peak season surcharge notice – Far East trade', category: 'Carrier notice', body: 'Several lines have announced a peak season surcharge from the 15th. Sales: please reflect in new quotations and inform key accounts.' })
   await seedExtras(ctx)
 }
+

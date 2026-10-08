@@ -1,3 +1,4 @@
+import { loadUser } from '../auth'
 /** Additional demo scenarios layered on the core demo data: every status, exception and workflow the product supports. */
 import fs from 'node:fs'
 import path from 'node:path'
@@ -94,11 +95,12 @@ export async function seedExtras(ctx: Ctx) {
     const pay = mk('payments', { vendor_id: v1, bank_account_id: bank, payment_date: d(-4), method: 'Bank transfer', amount: 4000, reference: 'PAY-GH-1', children: { allocations: [{ bill_id: b2.id, amount: 4000 }] } }); postPayment(pay.id, ctx)
   })
   step('expenses', () => {
+    const reviewer:Ctx={system:true,user:loadUser(user('Priya'))}
     const emp = q.val<number>(`SELECT id FROM employees WHERE deleted_at IS NULL ORDER BY id LIMIT 1`)!
     const e = (cat: string, amt: number, daysAgo: number, desc: string) => mk('expenses', { employee_id: emp, category: cat, amount: amt, expense_date: d(-daysAgo), description: desc })
     const a = e('Fuel', 180, 12, 'Fuel for site visit'), b = e('Port / terminal fees', 420, 9, 'Gate pass – Jebel Ali'), c = e('Travel', 950, 5, 'Taxi and parking – Abu Dhabi meetings'); e('Meals & entertainment', 260, 2, 'Customer lunch – draft')
-    expenseAction(a.id, 'submit', {}, ctx); expenseAction(a.id, 'approve', {}, ctx); expenseAction(a.id, 'pay', { bank_account_id: bank }, ctx)
-    expenseAction(b.id, 'submit', {}, ctx); expenseAction(b.id, 'approve', {}, ctx); expenseAction(c.id, 'submit', {}, ctx)
+    expenseAction(a.id, 'submit', {}, ctx); expenseAction(a.id, 'approve', {}, reviewer); expenseAction(a.id, 'pay', { bank_account_id: bank }, ctx)
+    expenseAction(b.id, 'submit', {}, ctx); expenseAction(b.id, 'approve', {}, reviewer); expenseAction(c.id, 'submit', {}, ctx)
   })
 
   // ---------------------------------------------------------------- bank reconciliation: matched and unmatched lines
@@ -255,3 +257,4 @@ export async function seedExtras(ctx: Ctx) {
   })
 }
 void todayStr
+

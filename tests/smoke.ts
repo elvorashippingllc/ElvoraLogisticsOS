@@ -121,7 +121,10 @@ async function main() {
   const quote = r.data
   ok('quote margin below minimum triggers approval', quote.approval_status === 'Pending' && quote.margin_pct === 4, [quote.approval_status, quote.margin_pct])
   r = await api('POST', `/api/quotes/${quote.id}/convert`); ok('cannot convert unapproved/unsent quote', r.status === 400, r.data)
-  r = await api('POST', `/api/approvals/quotations/${quote.id}/approve`); ok('admin approves quote margin', r.status === 200 && r.data.approval_status === 'Approved', r.data)
+  r = await api('POST', `/api/approvals/quotations/${quote.id}/approve`); ok('quote maker cannot approve their own quote', r.status === 400, r.data)
+  r = await api('POST', '/api/auth/login', { email: 'manager@elvorashipping.com', password: 'Elvora@Manager2026' }); ok('independent quote approver signs in', r.status === 200)
+  r = await api('POST', `/api/approvals/quotations/${quote.id}/approve`); ok('independent manager approves quote margin', r.status === 200 && r.data.approval_status === 'Approved', r.data)
+  r = await api('POST', '/api/auth/login', { email: 'admin@elvorashipping.com', password: 'Elvora@Admin2026' }); ok('return to quote maker session', r.status === 200)
   r = await api('POST', `/api/quotes/${quote.id}/send`, { to: 'buyer@procet.example' }); ok('send quotation (outbox)', r.status === 200, r.data)
   r = await api('POST', `/api/quotes/${quote.id}/accept`); ok('accept quotation', r.status === 200 && r.data.status === 'Accepted', r.data)
   r = await api('POST', `/api/quotes/${quote.id}/convert`); ok('convert quotation to job with charges', r.status === 200 && r.data.total_revenue === 1000 && r.data.total_cost === 960 && r.data.department === 'FCL EXPORT', r.data)
@@ -194,3 +197,4 @@ async function main() {
   void meta
 }
 main().catch(e => { console.error(e); process.exit(1) })
+

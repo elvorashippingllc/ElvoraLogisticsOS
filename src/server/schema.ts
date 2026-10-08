@@ -58,6 +58,14 @@ const MIGRATIONS: { id: string; sql: string }[] = [
     CREATE TABLE job_tracking_tokens ( job_id INTEGER PRIMARY KEY, token TEXT NOT NULL UNIQUE, created_at TEXT NOT NULL );
     `,
   },
+  { id: '002_job_controls', sql: `
+    CREATE TABLE job_closure_evidence (id INTEGER PRIMARY KEY AUTOINCREMENT, job_id INTEGER NOT NULL, kind TEXT NOT NULL, note TEXT NOT NULL, submitted_by INTEGER NOT NULL, submitted_at TEXT NOT NULL, verified_by INTEGER, verified_at TEXT, fingerprint TEXT);
+    CREATE INDEX ix_closure_job ON job_closure_evidence(job_id);
+    CREATE TABLE job_reopen_requests (id INTEGER PRIMARY KEY AUTOINCREMENT, job_id INTEGER NOT NULL, reason TEXT NOT NULL, requested_by INTEGER NOT NULL, requested_at TEXT NOT NULL, status TEXT NOT NULL, decided_by INTEGER, decided_at TEXT, decision_reason TEXT);
+    CREATE UNIQUE INDEX ix_reopen_pending ON job_reopen_requests(job_id) WHERE status='Pending';
+    CREATE TABLE approval_requests (id INTEGER PRIMARY KEY AUTOINCREMENT, entity TEXT NOT NULL, record_id INTEGER NOT NULL, requested_by INTEGER NOT NULL, requested_at TEXT NOT NULL, status TEXT NOT NULL, decided_by INTEGER, decided_at TEXT, reason TEXT);
+    CREATE UNIQUE INDEX ix_approval_pending ON approval_requests(entity,record_id) WHERE status='Pending';
+  ` },
 ]
 
 /** System-table DDL is written once in SQLite dialect and adapted for PostgreSQL. */
@@ -110,3 +118,4 @@ function syncEntity(def: EntityDef) {
   }
   db.exec(`CREATE INDEX IF NOT EXISTS ${qi(`ix_${t}_deleted`)} ON ${qi(t)}(deleted_at)`)
 }
+

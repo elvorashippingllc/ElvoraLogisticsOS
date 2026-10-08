@@ -1,4 +1,5 @@
 import crypto from 'node:crypto'
+import { assertClosureReady } from './job-controls'
 import { q, inDemo } from '../db'
 import type { Hooks } from '../hooks'
 import { bad, r2, toCents, fromCents, nowLocal, todayStr, addDays, daysBetween, nowIso } from '../util'
@@ -64,9 +65,12 @@ export function recomputeJobTotals(jobId: number) {
 }
 
 export const jobHooks: Hooks = {
+  beforeDelete({rec}) { if(rec.job_status==='CLOSED') throw bad('Closed jobs cannot be deleted; use controlled reopening') },
   tokens: rec => ({ branch: q.val<string>(`SELECT code FROM branches WHERE id = ?`, rec.branch_id) ?? 'JOB' }),
   numberDate: rec => rec.job_date,
   beforeSave({ rec, old, children, isNew, ctx }) {
+    if (isNew && rec.job_status === 'CLOSED' && !ctx.system) throw bad('Create the job first and complete its closure review')
+    if (old?.job_status === 'CLOSED' && ctx.jobTransition !== 'reopen') throw bad('Closed jobs are locked. Request independent approval to reopen the job.')
     rec.mode = modeOf(rec.department)
     if (isNew || old?.client_id !== rec.client_id) {
       const c = q.get(`SELECT name, status FROM parties WHERE id = ?`, rec.client_id)
@@ -82,6 +86,9 @@ export const jobHooks: Hooks = {
     if (rec.atd && rec.ata && rec.ata < rec.atd) throw bad('ATA cannot be earlier than ATD')
     if (old && old.job_status !== rec.job_status) {
       if (rec.job_status === 'CLOSED') {
+        if(old.job_status==='CANCELLED') throw bad('Cancelled jobs cannot be closed')
+        if (ctx.jobTransition !== 'close') throw bad('Use the job closure review to close this job')
+        assertClosureReady(rec.id, ctx)
         const n = q.val<number>(`SELECT COUNT(*) FROM job_charges WHERE job_id = ? AND kind = 'Revenue' AND status = 'Unbilled' AND deleted_at IS NULL AND amount <> 0`, rec.id) ?? 0
         if (n) throw bad(`${n} revenue charge${n > 1 ? 's are' : ' is'} not yet invoiced. Invoice or remove ${n > 1 ? 'them' : 'it'} before closing the job.`)
         rec.closed_at = nowLocal()
@@ -407,3 +414,4 @@ export function trackingLinks(jobId: number) {
 }
 
 void ENTITIES
+

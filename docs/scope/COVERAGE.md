@@ -744,11 +744,11 @@ Employee, leave, attendance, payslip, insurance, claims, ticket, asset and purch
 
 **Status: Partial**
 
-Accounts, balanced posting, invoices, bills, allocations, banks, FX, tax and selected approvals/reports provide a finance foundation.
+Independent maker/checker requests and decisions now cover bills, payments, quotations and purchase orders. Threshold posting bypass is removed; edited or pending documents invalidate approval.
 
-**Remaining acceptance work:** Configurable approval matrix, delegation, escalation, maker/checker exclusion and decision audit.
+**Remaining acceptance work:** Configurable multi-level authority matrices, delegation, temporary substitutes, escalation, budget and credit approvals remain.
 
-**Evidence:** `src/shared/entities/finance.ts`, `src/server/domain/accounting.ts`, `src/server/domain/finance.ts`, `src/server/reports.ts`
+**Evidence:** `src/shared/entities/finance.ts`, `src/server/domain/accounting.ts`, `src/server/domain/finance.ts`, `src/server/reports.ts`, `src/server/engine.ts`
 
 ### 76. Workflow Engine
 
@@ -1320,11 +1320,11 @@ AI agents, tool allowlists, review queues and selected read/write tools exist. H
 
 **Status: Partial**
 
-AI agents, tool allowlists, review queues and selected read/write tools exist. Higher autonomy can execute permitted tools without per-action approval.
+Reviewed capability policy rejects unreviewed tools. External messages require approval at every autonomy level. Approval rechecks the current agent allowlist and atomically claims execution to prevent duplicate actions.
 
-**Remaining acceptance work:** Explicit forbidden financial/customs/release actions, approval invariants, scoped data and tool/action audit at every autonomy level.
+**Remaining acceptance work:** Branch/user-scoped AI reads, complete action auditing, evidence quality, provider acceptance and incident/recovery controls remain. Financial posting, customs filing and cargo release tools are denied.
 
-**Evidence:** `src/server/ai/agents.ts`, `src/server/ai/tools.ts`, `src/server/ai/templates.ts`
+**Evidence:** `src/server/ai/agents.ts`, `src/server/ai/tools.ts`, `src/server/ai/templates.ts`, `src/server/ai/policy.ts`
 
 ### 135. Master Data Governance
 
@@ -1350,21 +1350,21 @@ Compliance records, exceptions and change audit history provide a foundation; au
 
 **Status: Partial**
 
-Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.
+Closure review now validates delivery, POD or independently verified non-applicability, document review, cleared customs/returned equipment or applicable exceptions, invoiced revenue, billed/reviewed costs and no draft invoices. Evidence is invalidated by relevant record changes.
 
-**Remaining acceptance work:** Closure gates for POD, documents, customs/equipment, costs/accruals, billing and approvals. Current close checks only unbilled revenue.
+**Remaining acceptance work:** Company/lane-specific closure policies, cost accrual and WIP alternatives, required document sets, full linked-record locking and role acceptance still need implementation.
 
-**Evidence:** `src/shared/entities/ops.ts`, `src/server/domain/jobs.ts`, `src/web/pages/JobPage.tsx`
+**Evidence:** `src/shared/entities/ops.ts`, `src/server/domain/jobs.ts`, `src/web/pages/JobPage.tsx`, `src/server/domain/job-controls.ts`, `src/server/routes/jobs.ts`, `src/web/pages/JobControlPage.tsx`
 
 ### 138. Controlled Reopening
 
 **Status: Partial**
 
-Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.
+Closed jobs are locked. Reopening requires a recorded reason and decision from a different authorised user; duplicate decisions are rejected and closure evidence requires review again. Core linked operational records cannot be changed while the job is closed.
 
-**Remaining acceptance work:** Mandatory reason, independent approval, controlled reopen scope and audit. Current status transition permits reopening without that workflow.
+**Remaining acceptance work:** Configurable reopening scope/expiry, delegated authorities, complete linked-document controls and company acceptance remain.
 
-**Evidence:** `src/shared/entities/ops.ts`, `src/server/domain/jobs.ts`, `src/web/pages/JobPage.tsx`
+**Evidence:** `src/shared/entities/ops.ts`, `src/server/domain/jobs.ts`, `src/web/pages/JobPage.tsx`, `src/server/domain/job-controls.ts`, `src/server/engine.ts`
 
 ### 139. Production Environments
 

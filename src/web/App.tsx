@@ -16,6 +16,7 @@ import { DocumentsPage } from './pages/DocumentsPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { RolesPage, SettingsPage, AuditPage, BackupPage } from './pages/AdminPages'
 import { CompliancePage } from './pages/CompliancePage'
+import { JobControlPage } from './pages/JobControlPage'
 import { ScopePage } from './pages/ScopePage'
 import { PublicTrack } from './pages/PublicTrack'
 import { IntegrationsPage } from './pages/IntegrationsPage'
@@ -47,6 +48,7 @@ export default function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/workspace/:workspace" element={<Workspaces key={loc.pathname} />} />
           <Route path="/workspace-tools" element={<WorkspaceUtilities />} />
+          <Route path="/jobs/:id/closure" element={<Guard module="jobs"><JobControlPage /></Guard>} />
           <Route path="/jobs/:id" element={<Guard module="jobs"><JobPage /></Guard>} />
           <Route path="/e/:entity" element={<EntityListPage />} />
           <Route path="/e/:entity/:id" element={<EntityRecordPage />} />

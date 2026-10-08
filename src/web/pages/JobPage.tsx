@@ -69,6 +69,7 @@ export function JobPage() {
       <div className="flex flex-wrap gap-2 items-center mb-4">
         <Btn className="grey" to="/e/jobs"><ArrowLeft /> Back</Btn>
         <Btn className="violet" onClick={() => setModal('mail')}><Mail /> Bulk Mail / Print</Btn>
+        <Btn className="grey" to={`/jobs/${jid}/closure`}><Check />Closure review</Btn>
         <Btn className="red" to={`/print/jobs/${jid}`}><FileBarChart2 /> Report</Btn>
         {canEdit && <Btn className="green" onClick={() => setEditing(true)}><Pencil /> Edit</Btn>}
         {can('jobs', 'create') && <Dropdown label="Create" icon={<Plus size={16} />} className="btn violet" items={createMenu} align="left" />}
@@ -337,4 +338,5 @@ export function MailPrintDialog({ jobIds, jobNo, air, onClose }: { jobIds: numbe
   )
 }
 void useMemo; void Upload
+
 

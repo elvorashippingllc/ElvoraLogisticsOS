@@ -97,6 +97,7 @@ export const quoteHooks: Hooks = {
     if (!required && row.approval_status !== 'Not required') q.run(`UPDATE quotations SET approval_status = 'Not required' WHERE id = ?`, rec.id)
     else if (required && (row.approval_status === 'Not required' || (row.approval_status === 'Approved' && children.lines))) {
       q.run(`UPDATE quotations SET approval_status = 'Pending' WHERE id = ?`, rec.id)
+      if (ctx.user && !q.get(`SELECT id FROM approval_requests WHERE entity='quotations' AND record_id=? AND status='Pending'`,rec.id)) q.insert(`INSERT INTO approval_requests(entity,record_id,requested_by,requested_at,status) VALUES ('quotations',?,?,?,'Pending')`,rec.id,ctx.user.id,new Date().toISOString())
       notifyRole('sales', `Quotation ${rec.quote_no} is below minimum margin`, `Margin ${row.margin_pct}% < ${minPct}%`, `/e/quotations/${rec.id}`, 'approval', `qm-${rec.id}`)
     }
     void old; void isNew; void ctx
@@ -163,3 +164,4 @@ export function sendQuote(quoteId: number, to: string | undefined, message: stri
 }
 
 void toCents; void fromCents
+

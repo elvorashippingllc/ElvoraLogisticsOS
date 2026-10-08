@@ -934,14 +934,15 @@
       "id": 75,
       "title": "Approval Engine",
       "status": "Partial",
-      "evidence": "Accounts, balanced posting, invoices, bills, allocations, banks, FX, tax and selected approvals/reports provide a finance foundation.",
+      "evidence": "Independent maker/checker requests and decisions now cover bills, payments, quotations and purchase orders. Threshold posting bypass is removed; edited or pending documents invalidate approval.",
       "sources": [
         "src/shared/entities/finance.ts",
         "src/server/domain/accounting.ts",
         "src/server/domain/finance.ts",
-        "src/server/reports.ts"
+        "src/server/reports.ts",
+        "src/server/engine.ts"
       ],
-      "gap": "Configurable approval matrix, delegation, escalation, maker/checker exclusion and decision audit.",
+      "gap": "Configurable multi-level authority matrices, delegation, temporary substitutes, escalation, budget and credit approvals remain.",
       "specification": "# 75. Approval Engine\n\nOne engine for everything:\n\n- quote\n- discount\n- credit\n- purchase\n- supplier bill\n- payment\n- refund\n- journal\n- expenses\n- leave\n- HR\n- vendor creation\n\n---"
     },
     {
@@ -1668,13 +1669,14 @@
       "id": 134,
       "title": "AI Guardrails",
       "status": "Partial",
-      "evidence": "AI agents, tool allowlists, review queues and selected read/write tools exist. Higher autonomy can execute permitted tools without per-action approval.",
+      "evidence": "Reviewed capability policy rejects unreviewed tools. External messages require approval at every autonomy level. Approval rechecks the current agent allowlist and atomically claims execution to prevent duplicate actions.",
       "sources": [
         "src/server/ai/agents.ts",
         "src/server/ai/tools.ts",
-        "src/server/ai/templates.ts"
+        "src/server/ai/templates.ts",
+        "src/server/ai/policy.ts"
       ],
-      "gap": "Explicit forbidden financial/customs/release actions, approval invariants, scoped data and tool/action audit at every autonomy level.",
+      "gap": "Branch/user-scoped AI reads, complete action auditing, evidence quality, provider acceptance and incident/recovery controls remain. Financial posting, customs filing and cargo release tools are denied.",
       "specification": "# 134. AI Guardrails\n\nAI must not independently:\n\n- post journals\n- approve payment\n- change banking\n- file customs declarations\n- issue credit notes\n- change tax\n- approve low margin\n\nwithout controlled workflow.\n\n---"
     },
     {
@@ -1707,26 +1709,31 @@
       "id": 137,
       "title": "Job Closure",
       "status": "Partial",
-      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "evidence": "Closure review now validates delivery, POD or independently verified non-applicability, document review, cleared customs/returned equipment or applicable exceptions, invoiced revenue, billed/reviewed costs and no draft invoices. Evidence is invalidated by relevant record changes.",
       "sources": [
         "src/shared/entities/ops.ts",
         "src/server/domain/jobs.ts",
-        "src/web/pages/JobPage.tsx"
+        "src/web/pages/JobPage.tsx",
+        "src/server/domain/job-controls.ts",
+        "src/server/routes/jobs.ts",
+        "src/web/pages/JobControlPage.tsx"
       ],
-      "gap": "Closure gates for POD, documents, customs/equipment, costs/accruals, billing and approvals. Current close checks only unbilled revenue.",
+      "gap": "Company/lane-specific closure policies, cost accrual and WIP alternatives, required document sets, full linked-record locking and role acceptance still need implementation.",
       "specification": "# 137. Job Closure\n\nA job should not close until:\n\n```text\n✓ Delivered\n✓ POD\n✓ Revenue billed\n✓ Costs booked/accrued\n✓ Documents complete\n✓ Customs closed\n✓ Equipment returned\n✓ Final GP calculated\n```\n\n---"
     },
     {
       "id": 138,
       "title": "Controlled Reopening",
       "status": "Partial",
-      "evidence": "Jobs, shipments, bookings, cargo, containers, legs, milestones, charges and customs records provide an operations foundation.",
+      "evidence": "Closed jobs are locked. Reopening requires a recorded reason and decision from a different authorised user; duplicate decisions are rejected and closure evidence requires review again. Core linked operational records cannot be changed while the job is closed.",
       "sources": [
         "src/shared/entities/ops.ts",
         "src/server/domain/jobs.ts",
-        "src/web/pages/JobPage.tsx"
+        "src/web/pages/JobPage.tsx",
+        "src/server/domain/job-controls.ts",
+        "src/server/engine.ts"
       ],
-      "gap": "Mandatory reason, independent approval, controlled reopen scope and audit. Current status transition permits reopening without that workflow.",
+      "gap": "Configurable reopening scope/expiry, delegated authorities, complete linked-document controls and company acceptance remain.",
       "specification": "# 138. Controlled Reopening\n\nManager approval + reason + audit log.\n\n---"
     },
     {
@@ -1855,6 +1862,18 @@
       ],
       "gap": "Full mobile task/POD/scanning/approvals and offline/device workflow acceptance.",
       "specification": "# 147. Mobile\n\nPWA/mobile experiences for:\n\n### Employees\n\n- work\n- tasks\n- shipments\n- inbox\n- approval\n\n### Driver\n\n- trips\n- route\n- POD\n\n### Warehouse\n\n- scan\n- receive\n- pick\n- dispatch\n\n### Management\n\n- dashboard\n- alerts\n- approvals\n\n---"
+    }
+  ],
+  "implementationUpdates": [
+    {
+      "date": "2026-10-08",
+      "areas": [
+        75,
+        134,
+        137,
+        138
+      ],
+      "note": "Tested control layer added after baseline review; statuses remain Partial. See docs/scope/IMPLEMENTATION-PROGRESS.md."
     }
   ]
 }

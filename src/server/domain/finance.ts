@@ -1,7 +1,7 @@
 import crypto from 'node:crypto'
 import { q, qi } from '../db'
 import type { Hooks } from '../hooks'
-import { bad, r2, toCents, todayStr, addDays, fromCents } from '../util'
+import { bad, r2, toCents, todayStr, addDays, fromCents, nowLocal } from '../util'
 import { getDef, getRecord, patchRecord, formatNumber, can, SYSTEM_CTX, type Ctx, type Rec } from '../engine'
 import { accountByRole, accountByCode, assertNotLocked, BASE, fxRate, postJournal, reverseJournal, type JLine } from './accounting'
 import { getSetting } from '../settings'
@@ -231,7 +231,7 @@ export function postBill(id: number, ctx: Ctx): Rec {
   assertNotLocked(b.bill_date)
   checkBillPosting(b, lines)
   const limit = Number(getSetting('bill_approval_limit')) || 0
-  if (limit > 0 && b.base_total >= limit && b.approval_status !== 'Approved' && !can(ctx.user, 'finance', 'approve') && !ctx.system) {
+  if (limit > 0 && b.base_total >= limit && b.approval_status !== 'Approved') {
     throw bad(`Bills of ${limit.toLocaleString()} ${BASE()} or more need approval. Request approval first.`)
   }
   const ex = b.ex_rate || 1
@@ -375,7 +375,7 @@ export function postPayment(id: number, ctx: Ctx): Rec {
   if (p.status !== 'Draft') throw bad('Only draft payments can be posted')
   assertNotLocked(p.payment_date)
   const limit = Number(getSetting('payment_approval_limit')) || 0
-  if (limit > 0 && r2(p.amount * p.ex_rate) >= limit && p.approval_status !== 'Approved' && !can(ctx.user, 'finance', 'approve') && !ctx.system) throw bad(`Payments of ${limit.toLocaleString()} ${BASE()} or more need approval. Request approval first.`)
+  if (limit > 0 && r2(p.amount * p.ex_rate) >= limit && p.approval_status !== 'Approved') throw bad(`Payments of ${limit.toLocaleString()} ${BASE()} or more need approval. Request approval first.`)
   const allocs: Rec[] = p.children.allocations
   const ap = accountByRole('ap_control')
   const baseAmt = r2(p.amount * p.ex_rate)
@@ -475,6 +475,7 @@ export function expenseAction(id: number, action: 'submit' | 'approve' | 'reject
     case 'approve': {
       if (e.status !== 'Submitted') throw bad('Only submitted claims can be approved')
       if (!can(ctx.user, 'finance', 'approve') && !ctx.system) throw bad('You cannot approve expense claims')
+      if (e.created_by === ctx.user?.id || q.val(`SELECT user_id FROM employees WHERE id=?`,e.employee_id) === ctx.user?.id) throw bad('A different finance approver must approve your expense claim')
       assertNotLocked(e.expense_date)
       const acc = e.account_id ?? accountByCode('6900') ?? accountByRole('default_cost')
       const net = r2(e.amount - (e.vat_amount ?? 0))
@@ -512,14 +513,23 @@ export const bankTxnHooks: Hooks = {
 // ------------------------------------------------------------ approvals (generic)
 export function approvalAction(entity: 'bills' | 'payments' | 'quotations' | 'purchase_orders', id: number, action: 'request' | 'approve' | 'reject', reason: string | undefined, ctx: Ctx): Rec {
   const def = getDef(entity)
-  const r = getRecord(def, id, SYSTEM_CTX)
+  const r = getRecord(def, id, ctx)
   const mod = def.module
+  const pending=q.get(`SELECT * FROM approval_requests WHERE entity=? AND record_id=? AND status='Pending'`,entity,id)
   if (action === 'request') {
+    if(pending) return r
+    if(entity !== 'quotations' && !['Draft'].includes(r.status)) throw bad('Only draft documents can request approval')
+    if(!ctx.user) throw bad('A signed-in maker is required')
+    q.insert(`INSERT INTO approval_requests(entity,record_id,requested_by,requested_at,status) VALUES (?,?,?,?,'Pending')`,entity,id,ctx.user.id,nowLocal())
     if (entity === 'purchase_orders') patchRecord(def, id, { status: 'Pending approval' }, ctx)
     else patchRecord(def, id, { approval_status: 'Pending', ...(entity === 'quotations' ? { status: 'Pending approval' } : {}) }, ctx)
     notifyRole(mod, `Approval requested: ${r._title}`, '', `/e/${entity}/${id}`, 'approval', `appr-${entity}-${id}`)
   } else {
     if (!can(ctx.user, mod, 'approve') && !ctx.system) throw bad('You do not have approval rights for this record type')
+    if(!pending) throw bad('Request approval before deciding this document')
+    if(pending.requested_by===ctx.user?.id || r.created_by===ctx.user?.id) throw bad('A different user must decide this approval')
+    if(action==='reject' && !reason?.trim()) throw bad('A rejection reason is required')
+    q.run(`UPDATE approval_requests SET status=?,decided_by=?,decided_at=?,reason=? WHERE id=? AND status='Pending'`,action==='approve'?'Approved':'Rejected',ctx.user?.id,nowLocal(),reason??null,pending.id)
     const approved = action === 'approve'
     if (entity === 'purchase_orders') patchRecord(def, id, { status: approved ? 'Approved' : 'Draft', approved_by: ctx.user?.id }, ctx)
     else patchRecord(def, id, { approval_status: approved ? 'Approved' : 'Rejected', ...(entity === 'quotations' ? { status: approved ? 'Approved' : 'Draft', rejection_reason: approved ? null : reason ?? null } : {}) }, ctx)
@@ -556,3 +566,4 @@ export function allocateOnAccount(kind: 'receipt' | 'payment', id: number, rows:
   syncAllocationTotals(kind === 'receipt' ? 'receipts' : 'payments', id)
   return getRecord(def, id, SYSTEM_CTX)
 }
+

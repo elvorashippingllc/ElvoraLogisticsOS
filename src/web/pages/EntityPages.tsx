@@ -44,7 +44,7 @@ const LOCKED: Record<string, (r: any) => boolean> = {
 
 export function EntityRecordPage() {
   const { entity = '', id = '' } = useParams()
-  const { def: getDef, can, meta } = useMeta()
+  const { def: getDef, can, meta, me } = useMeta()
   const nav = useNavigate(), qc = useQueryClient(), toast = useToast(), dlg = useDialogs()
   const rid = Number(id)
   const known = meta?.entities.find(e => e.key === entity)
@@ -59,7 +59,7 @@ export function EntityRecordPage() {
   if (q.error) return <ErrorBox error={q.error} onRetry={() => void q.refetch()} />
   if (!q.data) return <Loading />
   const rec = q.data
-  const helpers = { rec, entity, toast, dlg, nav: (to: string) => nav(to), reload, can, dialog: (name: string, props?: any) => setDialog({ name, props }) }
+  const helpers = { rec, entity, userId:me?.id, toast, dlg, nav: (to: string) => nav(to), reload, can, dialog: (name: string, props?: any) => setDialog({ name, props }) }
   const acts = (ACTIONS[entity] ?? []).filter((a: ActionDef) => a.show(rec, helpers))
   const primary = acts.filter(a => !a.more), more = acts.filter(a => a.more)
   const locked = LOCKED[entity]?.(rec) || def.readonlyApi
@@ -126,4 +126,5 @@ function EmailPdfDialog({ entity, rec, onClose }: { entity: string; rec: any; on
     </Modal>
   )
 }
+
 
