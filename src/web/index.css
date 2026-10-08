@@ -421,3 +421,11 @@ table.grid td.num, table.grid th.num { white-space: nowrap; }
 .workspace-card h2 { font-size: 22px; margin-bottom: 12px; }
 .workspace-card-preview { gap: 5px; margin-bottom: 18px; }
 @media (max-width: 639px) { .workspace-card { min-height: 220px; } }
+
+/* Product ownership: keep branding readable without competing with navigation. */
+.product-brand { display:flex; align-items:center; justify-content:center; gap:10px; margin-top:24px; padding-top:16px; border-top:1px solid var(--color-line, #e2e8e4); text-decoration:none; color:#53645c; font-size:11px; flex-wrap:wrap; }
+.product-brand img { display:block; width:160px; height:auto; object-fit:contain; border-radius:4px; }
+.product-brand-compact { flex:none; margin:0; padding:0; border:0; gap:6px; }
+.product-brand-compact img { width:110px; max-height:44px; }
+.statusbar { flex-wrap:wrap; height:auto; min-height:32px; gap:8px; }
+@media (max-width:640px) { .product-brand-compact { width:100%; justify-content:flex-end; } }

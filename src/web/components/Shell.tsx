@@ -7,6 +7,7 @@ import { get, post } from '../lib/api'
 import { cls, fmtIsoStamp } from '../lib/format'
 import { Modal, useClickOutside } from '../ui/kit'
 import { tr } from '../lib/i18n'
+import { ProductBrand } from './ProductBrand'
 import { CommandPalette } from './CommandPalette'
 import { workspacePath } from '../pages/Workspaces'
 import { iconByName } from '../lib/icons'
@@ -59,7 +60,7 @@ export function Shell() {
   return (
     <div className="workspace-frame h-full flex flex-col">
       <header className="topbar no-print">
-        <Link to="/" className="flex items-center gap-2 mr-2" aria-label="Elvora Logistics OS home"><img src="/brand/icon-primary.svg" alt="" width="32" height="27" className="h-7 w-auto" /><span className="font-display font-extrabold text-[17px] tracking-tight hidden sm:block">Elvora <span className="font-semibold opacity-90">Logistics OS</span></span></Link>
+        <Link to="/" className="flex items-center gap-2 mr-2" aria-label="Elvora Logistics OS home"><img src="/brand/logo-primary.svg?v=elvora-e-3" alt="Elvora Shipping LLC" width="132" height="35" className="h-8 w-auto max-w-[132px] object-contain" /><span className="font-display font-extrabold text-[17px] tracking-tight hidden sm:block">Elvora <span className="font-semibold opacity-90">Logistics OS</span></span></Link>
         <nav className="primary-pills" aria-label="Primary navigation">
           <Link to="/dashboard" className={cls('primary-pill', loc.pathname === '/dashboard' && 'active')}><LayoutGrid size={15} />Dashboard</Link>
           <Link to="/" className={cls('primary-pill', (loc.pathname === '/' || loc.pathname.startsWith('/workspace/')) && 'active')}>Workspaces</Link>
@@ -83,7 +84,7 @@ export function Shell() {
             {!isPrint && loc.pathname !== '/' && <nav className="workspace-breadcrumb no-print" aria-label="Breadcrumb"><Link to="/"><LayoutGrid size={16} />Workspaces</Link>{activeGroup && <><ChevronRight size={14} /><Link to={workspacePath(activeGroup)}>{activeGroup.label}</Link></>}</nav>}
             <Outlet context={{ openGuide: () => setGuide(true), openSearch: () => setPalette(true), logout }} />
           </main>
-          <footer className="statusbar no-print"><span className="s1">User : {me?.email}</span><span className="s2"><Clock /></span><span className="s3 flex-1">Elvora Logistics OS · Elvora Shipping L.L.C.</span></footer>
+          <footer className="statusbar no-print"><span className="s1">User : {me?.email}</span><span className="s2"><Clock /></span><span className="s3 flex-1">Elvora Logistics OS</span><ProductBrand compact /></footer>
         </div>
       </div>
       {palette && <CommandPalette onClose={() => setPalette(false)} />}

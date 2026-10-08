@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LogIn, Eye, EyeOff } from 'lucide-react'
 import { get, post } from '../lib/api'
+import { ProductBrand } from '../components/ProductBrand'
 import { useMeta } from '../lib/meta'
 
 export function Login() {
@@ -30,7 +31,7 @@ export function Login() {
     <div className="login-world min-h-full grid lg:grid-cols-[1.05fr_1fr]">
       <div className="login-brand hidden lg:flex flex-col justify-between text-white p-12 relative overflow-hidden" style={{ background: 'linear-gradient(160deg,#025e3d 0%,#007b52 55%,#0b6e4c 100%)' }}>
         <img src="/brand/route-pattern.svg" alt="" className="absolute inset-0 w-full h-full object-cover opacity-20" aria-hidden />
-        <img src="/brand/logo-reverse.svg" alt="Elvora Shipping LLC" className="relative w-[280px]" />
+        <img src="/brand/logo-reverse.svg?v=elvora-e-3" alt="Elvora Shipping LLC" className="relative w-[280px]" />
         <div className="relative max-w-[460px]">
           <h1 className="text-white text-[38px] font-extrabold leading-[1.1] m-0">One system for every shipment.</h1>
           <p className="text-[17px] text-white/85 mt-4 leading-relaxed">Track and manage sales, shipments, jobs, accounts and warehouse — from enquiry to cash — in a single workspace built for Elvora Shipping.</p>
@@ -40,8 +41,8 @@ export function Login() {
       </div>
       <div className="flex items-center justify-center p-6 bg-pearl">
         <form onSubmit={submit} className="w-full max-w-[400px]" aria-labelledby="signin-h">
-          <img src="/brand/logo-primary.svg" alt="Elvora Shipping LLC" className="w-[210px] mb-8 lg:hidden" />
-          <img src="/brand/icon-primary.svg" alt="" aria-hidden width="46" className="mb-5 hidden lg:block" />
+          <img src="/brand/logo-primary.svg?v=elvora-e-3" alt="Elvora Shipping LLC" className="w-[210px] mb-8 lg:hidden" />
+          <img src="/brand/icon-primary.svg?v=elvora-e-3" alt="" aria-hidden width="46" className="mb-5 hidden lg:block" />
           <h2 id="signin-h" className="text-[28px] font-extrabold m-0">Sign in</h2>
           <p className="text-muted mt-1 mb-6">Welcome back to Elvora Logistics OS.</p>
           {err && <div role="alert" className="mb-4 px-3 py-2.5 rounded-lg bg-blush border border-[#f2bcc3] text-[#8f1325] text-sm font-medium">{err}</div>}
@@ -53,6 +54,7 @@ export function Login() {
           <button className="btn green w-full" style={{ minHeight: 46, fontSize: 15 }} disabled={busy}><LogIn /> {busy ? 'Signing in…' : needTotp ? 'Verify & sign in' : 'Sign in'}</button>
           {demo?.enabled && <div className="mt-5 pt-5 border-t border-line"><button type="button" className="btn outline w-full" style={{ minHeight: 44 }} disabled={busy} onClick={() => void login(demo.email, demo.password)}>Explore the demo workspace</button><p className="text-xs text-muted mt-2 mb-0">A separate, fictional company with sample customers, shipments, invoices and AI activity. It never touches real data and resets every night.</p></div>}
           <p className="text-xs text-muted mt-6 leading-relaxed">Access is limited to authorised Elvora staff and customers. Activity is logged. After five failed attempts the account is locked for 15 minutes.</p>
+          <ProductBrand />
         </form>
       </div>
     </div>
