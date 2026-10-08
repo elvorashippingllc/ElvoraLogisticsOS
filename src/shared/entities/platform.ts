@@ -97,14 +97,14 @@ export const platform: EntityDef[] = [
   },
   {
     key: 'automation_rules', label: 'Automation rule', plural: 'Automation rules', module: 'admin', icon: 'Workflow', title: ['name'],
-    description: 'When a record is created or changes, automatically create a follow-up task, notify someone or queue an e-mail. Message templates may use {field_name} placeholders.',
+    description: 'When a record is created or changes, queue a durable workflow to create a follow-up task, notify someone or queue an e-mail. Failed runs remain visible in Workflow runs. Message templates may use {field_name} placeholders.',
     fields: [
       T('name', 'Rule name', { required: true, list: true, search: true, span: 2, section: 'Trigger' }), T('entity', 'Record type (entity key)', { required: true, list: true, help: 'e.g. jobs, invoices, quotations, tickets' }),
       S('trigger', 'When', ['Record created', 'Record updated', 'Status / stage changed to'], { required: true, list: true }), T('field', 'Field to check', { help: 'Optional field name, e.g. job_status' }),
       S('operator', 'Condition', ['equals', 'not equals', 'contains', 'greater than', 'less than', 'is empty', 'is not empty'], { default: 'equals' }), T('value', 'Value', { list: true }),
       S('action', 'Then', ['Create follow-up task', 'Notify user', 'Queue e-mail to customer contact', 'Queue e-mail to address', 'Send WhatsApp to customer contact', 'Send WhatsApp to number', 'Ask an AI employee to review', 'Set field value'], { required: true, list: true, section: 'Action' }),
       R('assignee_id', 'Assign / notify user', 'users'), T('target', 'E-mail address / field=value', { help: 'For "Queue e-mail to address": address. For "Set field value": field=value' }),
-      T('message', 'Title / subject template', { span: 3, placeholder: 'Follow up job {job_no} – {job_status}' }), TA('body', 'Body template'), I('due_days', 'Task due in (days)', { default: 1 }), B('active', 'Active', { default: true, list: true }),
+      T('message', 'Title / subject template', { span: 3, placeholder: 'Follow up job {job_no} – {job_status}' }), TA('body', 'Body template'), I('due_days', 'Task due in (days)', { default: 1 }), I('delay_minutes','Delay (minutes)',{default:0}), I('max_attempts','Max attempts (internal actions)',{default:3}), B('active', 'Active', { default: true, list: true }),
     ],
   },
   {
@@ -128,3 +128,4 @@ export const platform: EntityDef[] = [
     defaultSort: { field: 'id', dir: 'desc' },
   },
 ]
+

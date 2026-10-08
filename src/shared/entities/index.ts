@@ -151,6 +151,7 @@ export const NAV: NavGroup[] = [
     { label: 'Integrations', to: '/admin/integrations', icon: 'Plug', module: 'admin' },
     { label: 'Integration Log', to: '/e/integration_logs', icon: 'Activity', module: 'admin' },
     { label: 'Custom Fields', to: '/e/custom_fields', icon: 'SlidersHorizontal', module: 'admin' },
+    { label: 'Workflow Runs', to: '/e/workflow_runs', icon: 'Activity', module: 'admin' },
     { label: 'Automation Rules', to: '/e/automation_rules', icon: 'Workflow', module: 'admin' },
     { label: 'E-mail Outbox', to: '/e/email_outbox', icon: 'Mail', module: 'admin' },
     { label: 'Webhooks', to: '/e/webhooks', icon: 'Webhook', module: 'admin' },

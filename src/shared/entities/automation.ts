@@ -6,6 +6,15 @@ export const AGENT_SCHEDULE = ['Manual only', 'Hourly', 'Daily', 'Weekly (Monday
 
 export const automation: EntityDef[] = [
   {
+    key:'workflow_runs',children:[{key:'attempts',label:'Attempt history',entity:'workflow_attempts',fk:'run_id'}],label:'Workflow run',plural:'Workflow runs',module:'admin',icon:'Workflow',title:['label'],readonlyApi:true,noDelete:true,statusField:'status',
+    fields:[T('label','Run',{list:true,search:true}),R('rule_id','Rule','automation_rules',{list:true}),T('source_entity','Record type',{list:true}),I('record_id','Record'),T('event_key','Event key',{unique:true}),S('status','Status',['Queued','Running','Succeeded','Failed','Needs review','Cancelled'],{default:'Queued',list:true}),I('attempts','Attempts',{default:0,list:true}),I('max_attempts','Max attempts',{default:3}),I('depth','Workflow depth',{default:0}),DT('next_at','Next attempt',{list:true}),DT('started_at','Started'),DT('finished_at','Finished'),TA('error','Last error',{list:true}),J('payload','Event snapshot')],
+    defaultSort:{field:'id',dir:'desc'},
+  },
+  {
+    key:'workflow_attempts',label:'Workflow attempt',plural:'Workflow attempts',module:'admin',icon:'Activity',title:['id'],readonlyApi:true,noDelete:true,child:true,
+    fields:[R('run_id','Run','workflow_runs',{hidden:true}),I('attempt_no','Attempt',{list:true}),DT('started_at','Started',{list:true}),DT('finished_at','Finished',{list:true}),S('status','Status',['Running','Succeeded','Failed','Needs review'],{list:true}),TA('error','Error',{list:true})],
+  },
+  {
     key: 'legal_entities', label: 'Legal entity', plural: 'Legal entities (companies)', module: 'finance', icon: 'Building2', title: ['code', 'name'], titleSep: ' – ',
     description: 'Run more than one company or free-zone licence in the same system. Each branch belongs to one entity; ledgers and statements can be filtered per entity.',
     fields: [

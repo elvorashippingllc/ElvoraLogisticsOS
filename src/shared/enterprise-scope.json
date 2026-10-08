@@ -949,13 +949,16 @@
       "id": 76,
       "title": "Workflow Engine",
       "status": "Partial",
-      "evidence": "Event-triggered rules, tasks and notifications exist; they do not establish a full enterprise workflow engine.",
+      "evidence": "Workflow events now enqueue atomically with source changes. Durable runs support delays, event deduplication, transaction-safe internal retries, attempt history, edited/disabled-rule cancellation, failed-run handling and independent database processing for the demo. Uncertain external outcomes require review and are not replayed automatically.",
       "sources": [
         "src/server/automation.ts",
         "src/shared/entities/platform.ts",
-        "src/shared/entities/people.ts"
+        "src/shared/entities/people.ts",
+        "src/server/routes/admin.ts",
+        "src/shared/entities/automation.ts",
+        "src/server/scheduler.ts"
       ],
-      "gap": "Durable workflow state, retries, delayed actions, escalation and monitoring.",
+      "gap": "Multi-step workflow templates, branching, business calendars, approval escalation, department/shift queues, SLA policies and company acceptance remain.",
       "specification": "# 76. Workflow Engine\n\nConfigurable:\n\n```text\nTrigger\nCondition\nAction\nDelay\nEscalation\nRetry\nApproval\nAudit\n```\n\n---"
     },
     {
@@ -1871,7 +1874,8 @@
         75,
         134,
         137,
-        138
+        138,
+        76
       ],
       "note": "Tested control layer added after baseline review; statuses remain Partial. See docs/scope/IMPLEMENTATION-PROGRESS.md."
     }

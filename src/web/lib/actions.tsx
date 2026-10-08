@@ -14,6 +14,11 @@ const run = async (h: ActionHelpers, fn: () => Promise<any>, ok: string) => { tr
 const fin = (h: ActionHelpers) => h.can('finance', 'edit')
 
 export const ACTIONS: Record<string, ActionDef[]> = {
+  workflow_runs:[
+    {key:'retry',label:'Retry internal workflow',tone:'orange',show:(r,h)=>r.status==='Failed'&&h.can('admin','edit'),run:async h=>{const reason=await h.dlg.prompt({title:'Retry workflow',label:'Reason (at least 10 characters)',required:true,multiline:true});if(reason)await run(h,()=>post(`/api/workflow-runs/${h.rec.id}/retry`,{reason}),'Retry queued')}},
+    ...(['Succeeded','Cancelled'] as const).map(outcome=>({key:outcome,label:outcome==='Succeeded'?'Confirm completed':'Cancel after review',tone:'outline' as const,show:(r:any,h:ActionHelpers)=>r.status==='Needs review'&&h.can('admin','edit'),run:async(h:ActionHelpers)=>{const reason=await h.dlg.prompt({title:'Resolve uncertain external outcome',label:'Verification evidence (at least 10 characters)',required:true,multiline:true,message:'Check the integration/provider log before resolving. This action records the outcome and does not replay the send.'});if(reason)await run(h,()=>post(`/api/workflow-runs/${h.rec.id}/resolve`,{outcome,reason}),'Review recorded')}})),
+  ],
+
   invoices: [
     { key: 'post', label: 'Post', tone: 'green', show: (r, h) => r.status === 'Draft' && fin(h), run: async h => { if (await h.dlg.confirm({ title: `Post ${h.rec.doc_type.toLowerCase()}?`, message: h.rec.doc_type === 'Proforma Invoice' ? 'The proforma will be issued with its final number. No ledger entry is created.' : 'This assigns the final sequential number and creates the ledger entry. Posted documents can only be voided or credited.', ok: 'Post' })) await run(h, () => post(`/api/finance/invoices/${h.rec.id}/post`), 'Posted') } },
     { key: 'receipt', label: 'Record receipt', tone: 'violet', show: (r, h) => ['Posted', 'Partially paid'].includes(r.status) && r.balance > 0 && ['Tax Invoice', 'Debit Note'].includes(r.doc_type) && h.can('finance', 'create'), run: h => h.dialog('pay', { kind: 'receipt', doc: h.rec }) },

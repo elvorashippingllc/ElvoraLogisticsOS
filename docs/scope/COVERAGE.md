@@ -754,11 +754,11 @@ Independent maker/checker requests and decisions now cover bills, payments, quot
 
 **Status: Partial**
 
-Event-triggered rules, tasks and notifications exist; they do not establish a full enterprise workflow engine.
+Workflow events now enqueue atomically with source changes. Durable runs support delays, event deduplication, transaction-safe internal retries, attempt history, edited/disabled-rule cancellation, failed-run handling and independent database processing for the demo. Uncertain external outcomes require review and are not replayed automatically.
 
-**Remaining acceptance work:** Durable workflow state, retries, delayed actions, escalation and monitoring.
+**Remaining acceptance work:** Multi-step workflow templates, branching, business calendars, approval escalation, department/shift queues, SLA policies and company acceptance remain.
 
-**Evidence:** `src/server/automation.ts`, `src/shared/entities/platform.ts`, `src/shared/entities/people.ts`
+**Evidence:** `src/server/automation.ts`, `src/shared/entities/platform.ts`, `src/shared/entities/people.ts`, `src/server/routes/admin.ts`, `src/shared/entities/automation.ts`, `src/server/scheduler.ts`
 
 ### 77. SLA Engine
 

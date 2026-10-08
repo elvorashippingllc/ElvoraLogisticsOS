@@ -1,6 +1,6 @@
 # Implementation progress — enterprise controls
 
-This checkpoint implements real workflows for parts of sections 75, 134, 137 and 138. The complete 147-area scope remains unfinished. Source-based status labels remain Partial; the original specification is unchanged.
+This checkpoint implements real workflows for parts of sections 75, 76, 134, 137 and 138. The complete 147-area scope remains unfinished. Source-based status labels remain Partial; the original specification is unchanged.
 
 ## Job closure and reopening
 
@@ -32,3 +32,15 @@ A crash during external execution leaves an Executing record requiring investiga
 - Original scope checksum, all 147 sections, lifecycle, product areas and evidence paths.
 
 The demo data now follows the new independent-review controls instead of closing a job with an unassigned/unbilled freight cost.
+
+## Durable workflow automation
+
+Rules now enqueue a durable event snapshot inside the source record transaction. Administration → Workflow Runs shows each queued/running/succeeded/failed/uncertain run and its attempt history. Rule forms support delay minutes and bounded internal attempts. Event keys prevent duplicate trigger enqueueing. Disabling or editing a rule cancels queued work from its old version. Deleted source records cancel their queued work. Recursive field-update chains stop at a bounded depth.
+
+Internal actions (task creation, notifications, email queuing and permitted ordinary field edits) execute transactionally. Failures roll back their effects and retry with backoff; exhausted runs remain Failed. An administrator can authorise another internal retry with a reason. An email-queuing run succeeding means the email reached the outbox, not that it was delivered: delivery remains tracked by the mail outbox.
+
+WhatsApp sends and AI reviews execute with an atomic claim. Failures or interrupted execution become Needs review. The administrator must inspect provider/integration evidence and confirm completion or cancel; these outcomes cannot be replayed through the retry action. A partly sent multi-recipient message must be checked recipient by recipient. There is no claim of exactly-once provider delivery.
+
+The worker processes production and isolated demo databases separately. Manual replay cannot bypass the domain's financial/status actions: Set field value accepts only ordinary editable text/textarea/bool fields and excludes status, approval, reference and financial state. Delayed field edits also reject stale record versions.
+
+Additional checks pass for atomic enqueue/rollback, event deduplication, internal execution concurrency, delays, edited-rule cancellation, retries/dead letters/attempt history, persistence across a process restart, protected-state rejection, external uncertainty without replay, authenticated retry/review endpoints and permissions. Multi-step branching, SLA calendars, escalation and department/shift work queues remain unimplemented.
