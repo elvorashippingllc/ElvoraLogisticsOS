@@ -1,28 +1,30 @@
 ---
 name: Elvora Logistics OS
-description: Permission-aware logistics workspaces with complete task access.
+description: A calm wallet-inspired operating workspace in the existing Elvora identity.
 colors:
   emerald: "#007b52"
   fold: "#025e3d"
   signal: "#c32135"
   graphite: "#161d1a"
-  workspace-ground: "#e8ece9"
-  bg: "#f5f6f5"
+  bg: "#f5f6f4"
   card: "#ffffff"
   ink: "#161d1a"
   body: "#3f4f47"
   muted: "#53655b"
-  line: "#e4e9e6"
-  line-strong: "#bac8bf"
-  soft: "#f1f4f2"
-  hover: "#edf5f0"
+  line: "#e6ebe7"
+  line-strong: "#cbd6ce"
+  soft: "#edf2ee"
+  hover: "#f0f5f1"
   focus: "#1fa06b"
-  dark-navigation: "#75d8a9"
+  green-tint: "#edf5f0"
+  champagne-tint: "#f5f1e9"
+  reverse-muted: "#d3eee0"
   ocean: "#15526b"
   teal: "#0f7f8c"
   aviation: "#344d77"
   copper: "#8c4329"
   violet: "#493d72"
+  champagne: "#e5d1a4"
   mint: "#dcf1e6"
   sky: "#dfecfa"
   sand: "#f7ead8"
@@ -30,15 +32,22 @@ colors:
   blush: "#fbe1e4"
   gold: "#f6e9c3"
 typography:
+  display:
+    fontFamily: "Plus Jakarta Sans, Instrument Sans, system-ui, sans-serif"
+    fontSize: "clamp(26px, 2.5vw, 36px)"
+    fontWeight: 700
+    lineHeight: 1.2
+    letterSpacing: "-.03em"
   headline:
     fontFamily: "Plus Jakarta Sans, Instrument Sans, system-ui, sans-serif"
-    fontSize: "clamp(24px, 2.3vw, 32px)"
-    fontWeight: 750
+    fontSize: "clamp(25px, 2.4vw, 34px)"
+    fontWeight: 700
     lineHeight: 1.3
     letterSpacing: "-.03em"
   title:
     fontFamily: "Plus Jakarta Sans, Instrument Sans, system-ui, sans-serif"
-    fontSize: "24px"
+    fontSize: "23px"
+    fontWeight: 650
     lineHeight: 1.2
     letterSpacing: "-.025em"
   body:
@@ -50,134 +59,170 @@ typography:
     fontSize: "12px"
     fontWeight: 600
     letterSpacing: ".01em"
+  navigation:
+    fontFamily: "Instrument Sans, system-ui, Arial, sans-serif"
+    fontSize: "12px"
+    fontWeight: 650
 rounded:
-  control: "10px"
-  search: "12px"
-  card: "16px"
+  surface: "16px"
+  field: "12px"
   record: "20px"
-  frame: "24px"
-  badge: "99px"
+  pill: "999px"
+  circle: "50%"
 spacing:
+  micro: "8px"
   compact: "12px"
-  feature-gap: "16px"
-  workspace-gap: "20px"
-  card-padding: "24px"
+  control-gap: "16px"
+  workspace-gap: "18px"
+  overview-gap: "20px"
+  surface-padding: "24px"
+  spacious: "32px"
 components:
   button-primary:
     backgroundColor: "{colors.emerald}"
     textColor: "{colors.card}"
-    rounded: "{rounded.control}"
-    padding: "7px 14px"
+    rounded: "{rounded.pill}"
+    padding: "9px 17px"
+    height: "40px"
+  button-dark:
+    backgroundColor: "{colors.graphite}"
+    textColor: "{colors.card}"
+    rounded: "{rounded.pill}"
+    padding: "9px 17px"
+    height: "40px"
   button-outline:
     backgroundColor: "{colors.card}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.control}"
-    padding: "7px 14px"
+    rounded: "{rounded.pill}"
+    padding: "9px 17px"
+    height: "40px"
   button-ghost:
+    backgroundColor: "transparent"
     textColor: "{colors.body}"
-    rounded: "{rounded.control}"
-    padding: "7px 14px"
+    rounded: "{rounded.pill}"
+    padding: "9px 17px"
+    height: "40px"
+  input:
+    backgroundColor: "{colors.card}"
+    textColor: "{colors.ink}"
+    rounded: "{rounded.field}"
+    padding: "9px 10px"
+    height: "42px"
+  navigation-pill:
+    backgroundColor: "{colors.card}"
+    textColor: "{colors.body}"
+    rounded: "{rounded.pill}"
+    padding: "11px 16px"
+    typography: "{typography.navigation}"
+  navigation-pill-active:
+    backgroundColor: "{colors.graphite}"
+    textColor: "{colors.card}"
+    rounded: "{rounded.pill}"
   workspace-card:
     backgroundColor: "{colors.card}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.card}"
+    rounded: "{rounded.surface}"
     padding: "24px"
   feature-card:
     backgroundColor: "{colors.card}"
     textColor: "{colors.ink}"
-    rounded: "{rounded.card}"
+    rounded: "{rounded.surface}"
     padding: "22px"
-  input:
-    backgroundColor: "{colors.card}"
-    textColor: "{colors.ink}"
-    rounded: "{rounded.control}"
-    padding: "6px 10px"
+  cash-card:
+    backgroundColor: "{colors.fold}"
+    textColor: "{colors.card}"
+    rounded: "{rounded.surface}"
+    padding: "24px"
+  status-chip:
+    rounded: "{rounded.pill}"
+    padding: "3px 9px"
 ---
-
 # Design System: Elvora Logistics OS
 
 ## Overview
 
-Elvora uses a light full-width workspace with emerald accents, generous card spacing and dense, readable operating surfaces. The approved navigation moves from workspace cards to feature cards to the existing task screens. Preserve all record types, routes, permission checks, workflow actions, labels, document content and brand assets.
+**Creative North Star: "The Calm Operating Wallet"**
 
-The invoice-dashboard reference informs composition only. It does not replace Elvora's identity or supply business data. Keep existing module colours and real account records; do not invent metrics, decorative charts, stock imagery or payment credentials.
+Elvora translates the supplied wallet reference into a calm operating workspace for the owner and operations team. Quiet pill navigation, a narrow icon rail and floating rounded surfaces create clear access to financial context and shipment work. Emerald, graphite and warm neutral tints retain the existing Elvora brand.
+
+The same surface language spans workspaces, dashboards, records, forms, dialogs and sign-in. Repository logos, icon marks and self-hosted fonts remain the only brand assets. The reference supplies composition; real API data and permission-filtered operational workflows supply the content.
 
 **Key Characteristics:**
-- Permission-filtered workspace and feature discovery.
-- Quiet neutral surfaces with Elvora emerald for navigation and actions.
-- Self-hosted brand typography and the existing curved E mark.
-- Wrapping content and contained table scrolling on narrow screens.
+- Capsule navigation and circular shortcuts.
+- Light neutral canvas, white floating surfaces and restrained brand tints.
+- Readable operating tables and wrapping labels.
+- Equal access to owner figures and operational actions.
 
 ## Colors
 
-The frontmatter records the effective light-theme palette from `src/web/index.css`, including later overrides. Emerald is the primary action accent; deep green supports emphasis and signal red communicates errors and destructive actions. Graphite supports dark backing and detailed operating surfaces. Ocean, teal, aviation, copper and violet retain their existing module roles; mint, sky, sand, lilac, blush and gold support status treatments.
+Elvora emerald leads actions; deep fold green anchors the cash card and first workspace card. Graphite identifies active navigation and strong secondary actions. Signal red remains reserved for errors and destructive operations. Ocean, teal, aviation, copper and violet preserve module and chart meanings; existing pastel status colours remain available.
 
-Neutral ground supports the content background, white cards and subdued borders. Ink, body and muted colours establish reading hierarchy. Dark navigation links and icons use the dedicated dark-navigation tint. Dark mode retains the CSS custom-property overrides; do not replace semantic variables with fixed light colours in new components.
+The light canvas, white surfaces, soft green and champagne tints create tonal separation. Ink, body and muted establish the reading hierarchy; line colours divide data and outline fields. Reverse-muted labels support green cards. Dark mode keeps semantic variable overrides from the stylesheets, including the dark canvas and card surfaces; use variables for shared surfaces.
+
+**The Brand Continuity Rule.** Translate the reference composition using Elvora's existing identity assets and palette.
 
 ## Typography
 
-The body uses self-hosted Instrument Sans; headings use self-hosted Plus Jakarta Sans with Instrument Sans fallback. RTL mode retains Noto Sans Arabic. Numeric data uses tabular figures. Preserve the supplied font files and the existing weights.
-
-Page headings use the frontmatter headline role; workspace titles use the title role, reducing to (23px) below (640px). Body copy uses the body role and field labels use the label role. Feature labels are bold, with muted group context beneath search results. Long names and values wrap instead of truncating task content.
+Self-hosted Plus Jakarta Sans supplies headings and financial emphasis; self-hosted Instrument Sans supplies body text, navigation and controls. RTL retains Noto Sans Arabic. The frontmatter records the effective shared hierarchy. Numeric data uses tabular figures. Dashboard and welcome titles use display; other page titles use headline; workspace names use title. Dense tables use smaller text (12.5px cells, 11px headers), while financial totals grow responsively.
 
 ## Layout
 
-The application fills the viewport edge-to-edge without an inset border, rounded frame or ambient frame shadow. The light header holds the brand link, notifications, search and account access. The main pane scrolls vertically; the status footer remains a separate flex item. At widths below (768px), the header uses a (62px) height. Main mobile padding is (20px 14px 28px).
+The application occupies the viewport edge-to-edge with no inset frame, rounding or frame shadow. A light header contains brand, primary pills, notifications, command search and account access. A narrow shortcut rail (74px) links to permission-filtered workspaces. The main pane scrolls independently; the quiet status footer remains separate. Default main padding is (20px 32px 40px 20px), widening above (1600px).
 
-The root route `/` presents metadata-derived workspace cards in business-flow order. `/workspace/:workspace` presents every permitted feature in the selected group. `/dashboard` remains separate and directly accessible. `/workspace-tools` contains profile, help, search, freight tools, blog, website, language and sign-out cards. No sidebar or duplicate module strip is rendered by the shell. Breadcrumbs lead back to Workspaces and the current metadata group.
+Workspace cards use three columns by default, two at narrower widths and one below (640px); feature cards retain their responsive grid. Cards grow with content; workspace minimum height is (230px), reducing to (215px) on small screens. The dashboard overview uses three unequal columns, becomes two below (1200px), then stacks below (640px). Metrics use four, three and two columns through their responsive states; the existing narrow-screen single-column rule remains below (360px).
 
-Workspace and dashboard pages use the full available content width. Workspace cards use four columns from (1280px), three from (1024px), two from (640px), and one below (640px). Feature grids retain three, two and one columns at their existing breakpoints. Workspace gaps are (20px); feature gaps are (16px), reducing to (12px) on mobile. Card heights are minimums, allowing content to grow.
-
-Dashboard metrics retain all items; the first four receive emphasis. Metrics use two columns on mobile and one below (360px). Tables scroll inside their work surfaces; numeric cells retain unbroken figures. Forms use one column, two from (768px), and three from (1280px). Modal field content scrolls independently of its action footer. Job routes wrap, then stack origin, direction indicator and destination below (640px).
+Below (640px), the shortcut rail disappears and primary pills form a visible full-width header row. Main padding becomes (18px 14px 30px). Tables scroll within their containers: entity tables keep a minimum width of (1080px); general mobile table wrappers keep (680px). Forms preserve responsive field grids and independently scrolling modal bodies with separate action footers. Breadcrumbs and long user values wrap.
 
 ## Elevation & Depth
 
-Use tonal layering and modest diffuse shadows rather than heavy borders. General cards and panels are flat; workspace and feature cards carry restrained lift. Detailed record workspaces retain dark backing. Shadow values and motion extensions are recorded in the sidecar.
+Depth comes from tinted ground and restrained diffuse green shadows. Resting cards use the raised surface shadow; workspace hover, sign-in and expanded demo details use the floating shadow. The viewport frame and header remain flat. The cash surface has its own subtle green lift. Print removes surface shadows.
 
-State transitions use the existing fast motion and easing. Reduced-motion CSS shortens transitions and animations, removes account-card tilt and disables printer-paper motion. PDF printer motion follows real loading states without artificial delays.
+State transitions use the existing fast duration (180ms) and ease curve. Preserve keyboard focus rings. Reduced-motion rules shorten animations and transitions, disable account tilt and printer motion, and remove smooth main scrolling. Printer motion follows real document loading.
+
+**The Surface Lift Rule.** Reserve diffuse lift for surfaces and state; keep the surrounding application canvas quiet.
 
 ## Shapes
 
-Use the frontmatter control, card and record radii according to their roles; the application frame has no rounding. Status badges remain capsules. Maintain clipping on the application frame and account carousel viewport, with scrolling inside data surfaces. Do not use fixed card heights to clip labels or values.
+Shared cards, panels and dialogs use soft surface corners; fields use the smaller field radius. Primary navigation, buttons, tabs and search use capsule silhouettes; icon shortcuts use circles. Record grouping retains its larger outer corners. The frame remains square and uncluttered. Borders are quiet field and data dividers rather than heavy card outlines.
 
 ## Components
 
 ### Buttons and inputs
 
-Primary buttons use emerald and white text; outlined buttons use card, ink and strong border colours; ghost buttons use transparent backgrounds and body text. Buttons wrap labels and grow vertically. Mobile buttons use at least (44px) height. Hover uses the existing brightness or surface treatment; active buttons shift down (1px). Disabled controls retain their existing opacity and interaction restrictions.
+Buttons are compact capsules with a shared minimum height (40px), small controls (34px), and circular icon variants. Primary uses emerald; dark uses graphite; outline uses white with the strong divider; ghost uses transparent ground. Hover changes brightness or soft surface and active presses move down (1px). Disabled controls retain opacity and interaction restrictions. Fields use visible labels, minimum height (42px), and emerald border plus translucent ring on focus; errors use signal red. Read-only fields use soft ground.
 
-Inputs, selects and textareas use card surfaces and strong borders. Focus changes the border to emerald with a translucent ring; invalid fields use signal red. Read-only and disabled fields use soft surfaces and muted text. Keep visible labels and required-field markers.
+### Navigation and tabs
 
-### Workspace card grid
+Primary pills are white at rest and graphite with white text when active. Circular rail items use the same active language. Hover uses soft ground and emerald emphasis. Accessible names remain on icon-only controls. Record tabs use soft grouping ground and graphite active capsules. Search keeps Ctrl/Cmd+K access.
 
-Each workspace card is one link with a group icon, label, up to three feature previews, a total feature count and an Open workspace cue. Previews are summaries; the destination grid exposes the complete permitted list. All permitted workspace cards are displayed in a responsive grid, with no carousel or view toggle. Cards have a minimum height of (220px) and grow to fit their content.
+### Workspace and feature cards
 
-### Feature cards and search
+Workspace cards show an icon, wrapping name, up to three previews, feature count and opening cue. All permitted features appear in the destination grid. Cards alternate white, green and champagne tints, with the first card deep green. Feature cards combine icon, wrapping label and directional arrow on a white lifted surface. Search retains direct links and clear empty-state actions.
 
-Feature cards use an icon, a wrapping strong label and a directional arrow. Links preserve metadata destinations, including query strings. Root search matches workspace and feature labels and offers direct feature links; group search filters its feature cards. Empty states expose Clear search or a return to permitted workspaces. Quote-to-cash shortcuts render only where their routes are present in permitted metadata.
+### Dashboard overview and cash card
 
-### Header, breadcrumbs and utilities
+Owner ledger and actual shipment mix sit alongside a deep green cash card and circular operational shortcuts. Charts retain real API values and existing module colours. Missing data uses existing empty states. Other operational panels, tasks and metrics remain accessible beneath the overview.
 
-Keep notifications, command search (Ctrl/Cmd+K), the existing Ctrl K shortcut hint and account access in the header. Narrow screens hide toolbar text while preserving named icon controls. Notifications use a viewport-constrained popover. Breadcrumbs wrap. Utility cards preserve the existing account, help, language and external-site actions, including Elvora Logistics OS v1.0 copy.
+### Status chips, tables and dialogs
 
-### Task surfaces and forms
+Chips remain small capsules with existing semantic status colours. Table headers use neutral ground, muted labels and thin dividers; numeric values stay legible in contained horizontal scrolling. Dialog corners match surfaces, with scrolling field content separated from footer actions. Demo status is a compact tinted strip with expandable details, preserving isolation and reset behaviour.
 
-Preserve the existing job tabs, collaboration rail, record fields, tables, dialogs and permission-controlled workflow actions. Entity-form actions occupy a dedicated footer outside the scrolling field area. The status footer wraps long user values. These containment rules support the card navigation without replacing task content.
+### Sign-in and brand
 
-### Brand and print
-
-The verified curved E is `public/brand/icon-primary.png`. The older `icon-primary.svg` is a different mark and must not be used for the favicon. Favicon exports derive directly from the PNG without redrawing the logo. Print output excludes shell navigation, carousel, breadcrumbs and loading animations; preserve existing document content and A4 geometry.
+Sign-in uses an existing brand-green panel and a floating white form. Existing repository logos and route pattern remain intact; no new imagery is introduced. Preserve the verified PNG-derived favicon separately from the SVG icon asset used by current page illustrations. Print keeps existing document content and A4 geometry while excluding shell navigation and loading visuals.
 
 ## Do's and Don'ts
 
 ### Do:
-- **Do** derive workspace and feature access from permission-filtered navigation metadata.
-- **Do** preserve Elvora fonts, module colours, logo assets and existing task routes.
-- **Do** wrap long labels and contain table scrolling within operating surfaces.
-- **Do** keep task actions visible outside scrolling modal field content.
+- **Do** use the supplied Elvora assets, fonts and brand palette.
+- **Do** derive navigation and displayed figures from permitted metadata and actual API data.
+- **Do** keep table scrolling inside its surface and labels able to wrap.
+- **Do** keep keyboard focus visible and respect reduced motion.
+- **Do** preserve existing routes, task actions, demo isolation and print document content.
 
 ### Don't:
-- **Don't** reintroduce the sidebar or crowded duplicate module strip into the approved shell.
-- **Don't** hide permitted features behind the three-item workspace preview.
-- **Don't** replace business content with fictional metrics, decorative charts or stock imagery.
-- **Don't** redraw the verified curved E or substitute the older SVG favicon.
+- **Don't** substitute reference branding, stock imagery or invented financial figures.
+- **Don't** hide permitted tasks behind workspace previews.
+- **Don't** turn the narrow shortcut rail into a competing full module sidebar.
+- **Don't** clip operational fields or hide modal actions inside scrolling field content.
+- **Don't** redraw the verified favicon mark; retain exports from public/brand/icon-primary.png.

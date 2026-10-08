@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { Bot, Plus, ArrowRight, AlertTriangle, Info, TriangleAlert, Plane, Ship } from 'lucide-react'
+import { Bot, Plus, ArrowRight, AlertTriangle, Info, TriangleAlert, Plane, Ship, Wallet, FileText, Truck, CalendarDays, LayoutGrid } from 'lucide-react'
 import { Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { get } from '../lib/api'
 import { useMeta } from '../lib/meta'
@@ -47,10 +47,11 @@ export function Dashboard() {
   return (
     <div className="fade-in dashboard-page">
       <Welcome name={me?.name} />
+      <DashboardOverview data={d} base={base} />
       {d.alerts?.length > 0 && <div className="grid gap-2 mb-5 md:grid-cols-2 xl:grid-cols-3">{d.alerts.slice(0, 6).map((a: any, i: number) => (
         <Link key={i} to={a.link} className={cls('flex items-center gap-3 px-4 py-2.5 rounded-xl border text-[13.5px] font-semibold', a.level === 'danger' ? 'bg-blush border-[#f2bcc3] text-[#8f1325]' : a.level === 'warn' ? 'bg-gold border-[#ead49a] text-[#6b4a00]' : 'bg-sky border-[#bcd6f0] text-[#1f4f85]')}>
           {a.level === 'danger' ? <AlertTriangle size={17} /> : a.level === 'warn' ? <TriangleAlert size={17} /> : <Info size={17} />}<span className="flex-1" dir="auto">{a.text}</span><ArrowRight size={15} /></Link>))}</div>}
-      <div className="dashboard-metrics">{tiles.map(t => <Kpi key={t.label} label={t.label} value={t.value ?? 0} hint={t.hint} tone={t.tone} onClick={t.to ? () => nav(t.to!) : undefined} />)}</div>
+
 
       {can('ai', 'view') && <AiBrief />}
 
@@ -78,14 +79,9 @@ export function Dashboard() {
           </Panel>)}
 
         {ch.revenue_trend && (
-          <Panel className="xl:col-span-7" title="Revenue, cost & profit by job month" color={C.emerald}>
+          <Panel className="xl:col-span-12" title="Revenue, cost & profit by job month" color={C.emerald}>
             <div className="p-3" style={{ height: 280 }}>{ch.revenue_trend.length === 0 ? <Empty title="No job financials yet" /> : (
               <ResponsiveContainer><ComposedChart data={ch.revenue_trend}><CartesianGrid strokeDasharray="3 3" stroke="#dbe3dc" vertical={false} /><XAxis dataKey="month" tick={{ fontSize: 12 }} /><YAxis tickFormatter={fmtCompact} tick={{ fontSize: 12 }} width={46} /><Tooltip formatter={money} /><Legend /><Bar dataKey="revenue" name="Revenue" fill={C.emerald} radius={[5, 5, 0, 0]} maxBarSize={44} /><Bar dataKey="cost" name="Cost" fill={C.copper} radius={[5, 5, 0, 0]} maxBarSize={44} /><Line type="monotone" dataKey="profit" name="Profit" stroke={C.graphite} strokeWidth={2.5} dot={{ r: 3 }} /></ComposedChart></ResponsiveContainer>)}</div>
-          </Panel>)}
-        {ch.jobs_by_mode && (
-          <Panel className="xl:col-span-5" title="Open jobs by mode" color={C.aviation}>
-            <div className="p-3 flex items-center" style={{ height: 280 }}>{ch.jobs_by_mode.length === 0 ? <Empty title="No open jobs" /> : (<><ResponsiveContainer width="55%" height="100%"><PieChart><Pie data={ch.jobs_by_mode} dataKey="value" nameKey="name" innerRadius={55} outerRadius={95} paddingAngle={2}>{ch.jobs_by_mode.map((_: any, i: number) => <Cell key={i} fill={PIE[i % PIE.length]} />)}</Pie><Tooltip /></PieChart></ResponsiveContainer>
-              <ul className="list-none m-0 p-0 text-sm flex-1">{ch.jobs_by_mode.map((m: any, i: number) => <li key={m.name} className="flex items-center gap-2 py-1"><span className="w-3 h-3 rounded-sm" style={{ background: PIE[i % PIE.length] }} />{m.name}<b className="ml-auto text-ink">{m.value}</b></li>)}</ul></>)}</div>
           </Panel>)}
         {ls.departures && (
           <Panel className="xl:col-span-6" title={<span className="flex items-center gap-2"><Ship size={16} /> Departures – next 7 days</span>} color={C.ocean} bodyClass="max-h-[300px] overflow-auto">
@@ -108,18 +104,48 @@ export function Dashboard() {
             <table className="grid"><tbody>{ls.my_tasks.map((t: any) => <tr key={t.id} className="clickable" onClick={() => nav(t.link_entity ? (t.link_entity === 'jobs' ? `/jobs/${t.link_id}` : `/e/${t.link_entity}/${t.link_id}`) : `/e/tasks/${t.id}`)}><td className="font-semibold">{t.title}</td><td className="text-muted text-xs">{t.link_label}</td><td className="whitespace-nowrap">{fmtDate(t.due_date)}</td><td><Badge value={t.priority} /></td></tr>)}</tbody></table>
           </Panel>)}
       </div>
+      <h2 className="text-lg mt-8 mb-4">Business at a glance</h2>
+      <div className="dashboard-metrics">{tiles.map(t => <Kpi key={t.label} label={t.label} value={t.value ?? 0} hint={t.hint} tone={t.tone} onClick={t.to ? () => nav(t.to!) : undefined} />)}</div>
     </div>
   )
 }
 
 function Welcome({ name, portal }: { name?: string; portal?: boolean }) {
-  return (
-    <div className="dashboard-welcome flex items-center gap-4 mb-5 flex-wrap">
-      <img src="/brand/icon-primary.png" alt="" width="54" height="46" className="h-[46px] w-auto" />
-      <div><h1 className="text-[24px] sm:text-[28px] font-extrabold m-0">Welcome to Elvora Logistics OS</h1>
-        <div className="text-muted text-[14.5px]">{portal ? 'Track your shipments, documents and invoices.' : 'Track and Manage Sales, Shipments, Jobs, Accounts and Warehouse'}</div></div>
-    </div>
-  )
+  const { can } = useMeta()
+  return <div className="dashboard-welcome flex items-center gap-4 flex-wrap">
+    <div><h1 className="m-0">{portal ? 'Your shipments' : 'Dashboard'}</h1><div className="text-muted">{name ? `Hello, ${name.split(' ')[0]}. ` : ''}{portal ? 'Your shipments, documents and invoices in one place.' : 'Your business and every shipment, in view.'}</div></div>
+    {!portal && <nav className="flex gap-2 flex-wrap" aria-label="Dashboard actions"><Link className="btn outline" to="/calendar"><CalendarDays size={16} />Schedule</Link>{can('jobs', 'create') && <Link className="btn dark" to="/e/jobs?new=1"><Plus size={16} />New job</Link>}</nav>}
+  </div>
+}
+
+function DashboardOverview({ data: d, base }: { data: any; base: string }) {
+  const { can } = useMeta()
+  const k = d.kpis ?? {}, ch = d.charts ?? {}
+  const modes = ch.jobs_by_mode ?? []
+  const total = modes.reduce((n: number, m: any) => n + Number(m.value || 0), 0)
+  const shortcuts = [
+    { label: 'Jobs', to: '/e/jobs', module: 'jobs', Icon: Ship },
+    { label: 'Quotations', to: '/e/quotations', module: 'sales', Icon: FileText },
+    { label: 'Warehouse', to: '/warehouse/stock', module: 'warehouse', Icon: Truck },
+    { label: 'Calendar', to: '/calendar', module: '', Icon: CalendarDays },
+    { label: 'All workspaces', to: '/', module: '', Icon: LayoutGrid },
+  ].filter(a => !a.module || can(a.module, 'view'))
+  return <section className="dashboard-top" aria-label="Business overview">
+    <section className="card overview-ledger"><h2>{k.revenue_month !== undefined ? 'Business balance' : 'Shipment activity'}</h2><img src="/brand/icon-primary.svg" alt="Elvora" /><dl>
+      {k.revenue_month !== undefined && <div className="ledger-main"><dt>Revenue this month · {base}</dt><dd>{fmtMoney(k.revenue_month, 0)}</dd></div>}
+      {k.profit_month !== undefined && <div><dt>Job profit · {base}</dt><dd>{fmtMoney(k.profit_month, 0)}</dd></div>}
+      {k.open_jobs !== undefined && <div><dt>Open jobs</dt><dd>{k.open_jobs}</dd></div>}
+      {k.in_transit !== undefined && <div><dt>In transit</dt><dd>{k.in_transit}</dd></div>}
+    </dl></section>
+    <section className="card overview-mix"><header><h2>Shipment mix</h2><span>{total} open jobs</span></header>
+      {modes.length ? <><div style={{ height: 230 }}><ResponsiveContainer><PieChart><Pie data={modes} dataKey="value" nameKey="name" innerRadius={66} outerRadius={96} cornerRadius={7} paddingAngle={5}>{modes.map((_: any, i: number) => <Cell key={i} fill={PIE[i % PIE.length]} />)}</Pie><Tooltip /></PieChart></ResponsiveContainer></div><ul className="mode-legend">{modes.map((m: any, i: number) => <li key={m.name}><i style={{ background: PIE[i % PIE.length] }} />{m.name}<strong>{m.value}</strong></li>)}</ul></> : <Empty title="No open shipments" hint="Your shipment mix appears as jobs are opened." />}
+    </section>
+    <aside className="overview-account">
+      {k.cash !== undefined && <section className="cash-card"><header><span>Cash &amp; bank</span><Wallet size={20} /></header><strong>{fmtMoney(k.cash, 0)} <span className="text-sm font-normal">{base}</span></strong><footer><span>Elvora Shipping L.L.C.</span><Link to="/e/bank_accounts">Accounts <ArrowRight size={14} /></Link></footer></section>}
+      <section className="card quick-work"><h2>Quick actions</h2><div>{shortcuts.map(({ label, to, Icon }) => <Link key={to} to={to} title={label} aria-label={label}><Icon size={18} /></Link>)}</div></section>
+      {k.ar_outstanding !== undefined && <Link className="card quick-work" to="/reports?r=ar_aging"><h2>Receivables · {base}</h2><div className="text-2xl font-bold text-ink">{fmtMoney(k.ar_outstanding, 0)}</div><p className="text-xs text-muted mb-0">{k.ar_overdue > 0 ? `${fmtMoney(k.ar_overdue, 0)} overdue` : 'Nothing overdue'} <ArrowRight size={13} className="inline ml-1" /></p></Link>}
+    </aside>
+  </section>
 }
 
 function AiBrief() {
@@ -132,4 +158,5 @@ function AiBrief() {
     </Link>
   )
 }
+
 
