@@ -84,7 +84,7 @@ export function JobPage() {
                 <div className="flex items-center gap-2 flex-wrap"><Badge value={j.department} tone="teal" /><Badge value={j.mode} tone="grey" />{j.is_hazardous === 'Yes' && <Badge value="DANGEROUS GOODS" tone="red" />}</div>
                 <div className="font-display font-extrabold text-[20px] text-ink leading-tight">{L.client_id}</div>
                 <div className="text-muted">Branch {L.branch_id} · Job date {fmtDate(j.job_date)}</div>
-                <div className="flex items-center gap-2 font-semibold text-ink pt-1 text-[15px]"><span>{L.pol_id?.split('-')[0] ?? '—'}</span><span className="text-muted">→</span><span>{L.pod_id?.split('-')[0] ?? '—'}</span><span className="text-xs text-muted font-normal ml-1">{j.carrier_id ? L.carrier_id : ''}{j.vessel_name ? ` · ${j.vessel_name} ${j.voyage_no ?? ''}` : ''}</span></div>
+                <div className="job-route flex items-center gap-2 font-semibold text-ink pt-1 text-[15px]"><span>{L.pol_id?.split('-')[0] ?? '—'}</span><span className="text-muted">→</span><span>{L.pod_id?.split('-')[0] ?? '—'}</span><span className="text-xs text-muted font-normal ml-1">{j.carrier_id ? L.carrier_id : ''}{j.vessel_name ? ` · ${j.vessel_name} ${j.voyage_no ?? ''}` : ''}</span></div>
                 <div className="text-xs text-muted">ETD {fmtDateTime(j.etd) || '—'} · ETA {fmtDateTime(j.eta) || '—'}{j.atd ? ` · ATD ${fmtDateTime(j.atd)}` : ''}{j.ata ? ` · ATA ${fmtDateTime(j.ata)}` : ''}</div>
               </div>
               <dl className="kv m-0 content-start">
@@ -337,3 +337,4 @@ export function MailPrintDialog({ jobIds, jobNo, air, onClose }: { jobIds: numbe
   )
 }
 void useMemo; void Upload
+

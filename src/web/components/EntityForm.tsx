@@ -90,7 +90,8 @@ export function EntityForm({ def, record, presets, onSaved, onCancel, lockedOnEd
   const locked = (f: FieldDef) => edit && lockedOnEdit.includes(f.name)
 
   return (
-    <form onSubmit={e => { e.preventDefault(); void submit() }}>
+    <form className="entity-form" onSubmit={e => { e.preventDefault(); void submit() }}>
+      <div className="entity-form-content">
       {banner && <div role="alert" className="mb-4 px-3 py-2.5 rounded-lg bg-blush border border-[#f2bcc3] text-[#8f1325] text-sm font-medium">{banner}</div>}
       {def.description && !edit && <p className="text-sm text-muted mb-4 mt-0">{def.description}</p>}
       {sections.map((s, si) => (
@@ -131,7 +132,8 @@ export function EntityForm({ def, record, presets, onSaved, onCancel, lockedOnEd
           <ChildEditor child={c} rows={kids[c.key] ?? []} onChange={r => setKids(k => ({ ...k, [c.key]: r }))} parent={parentView} />
         </div>
       ))}
-      <div className="flex items-center gap-3 mt-6 pt-4 border-t border-line sticky bottom-0 bg-card pb-1">
+      </div>
+      <div className="entity-form-actions flex items-center gap-3 border-t border-line bg-card">
         <button type="submit" className="btn green" disabled={saving}><Save /> {saving ? 'Saving…' : edit ? 'Save Changes' : `Create ${def.label}`}</button>
         <button type="button" className="btn red" onClick={onCancel}><X /> Cancel</button>
         <span className="text-xs text-muted ml-auto hidden md:block">Fields marked <span className="text-signal font-bold">*</span> are required</span>
@@ -188,3 +190,4 @@ export function EntityFormModal({ entity, id, presets, onClose, onSaved, lockedO
   )
 }
 void Badge
+
