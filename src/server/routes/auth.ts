@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
-import { q } from '../db'
+import { q, tx } from '../db'
 import { COOKIE, DEMO_PREFIX } from '../app'
 import { runInDb, inDemo } from '../db'
 import { getDemoDb } from '../demo/workspace'
@@ -9,7 +9,7 @@ import { attemptLogin, createSession, destroySession, destroyUserSessions, hashP
 import { bad, HttpError, nowIso } from '../util'
 import { audit, getDef } from '../engine'
 import { body } from './helpers'
-import { getSetting } from '../settings'
+import { getSetting, encryptSecret, decryptSecret } from '../settings'
 
 export default async function (app: FastifyInstance) {
   const setCookie = (req: any, reply: any, token: string, expires: Date) => {
@@ -60,36 +60,51 @@ export default async function (app: FastifyInstance) {
     if (b.next === b.current) throw bad('Choose a different password')
     q.run(`UPDATE users SET password_hash = ?, must_change_password = 0, updated_at = ? WHERE id = ?`, hashPassword(b.next), nowIso(), req.user!.id)
     destroyUserSessions(req.user!.id, req.sessionHash)
+    q.run('DELETE FROM settings WHERE key = ?', `totp-pending:${req.user!.id}`)
     audit(req.ctx, getDef('users'), req.user!.id, 'password-change', null, req.user!.name)
     return { ok: true }
   })
 
-  app.post('/api/auth/totp/setup', async (req) => {
+  const totpLimit = { config: { rateLimit: { max: 8, timeWindow: '1 minute' } } }
+  app.post('/api/auth/totp/setup', totpLimit, async (req) => {
+    const { password } = z.object({ password: z.string().min(1).max(200) }).parse(req.body)
+    const row = q.get('SELECT password_hash, totp_secret FROM users WHERE id = ?', req.user!.id)
+    if (!verifyPassword(password, row?.password_hash)) throw bad('Password is incorrect')
+    if (row?.totp_secret) throw bad('Two-step verification is already enabled. Disable it with your password and authenticator code before setting up a replacement.')
     const secret = newTotpSecret()
-    q.run(`UPDATE users SET totp_secret = NULL WHERE id = ?`, req.user!.id)
-    const pending = secret
-    // store pending secret in the session-less settings table keyed by user until verified
+    const pending = { secret: encryptSecret(secret), session: req.sessionHash, expires: Date.now() + 10 * 60_000 }
     q.run(`INSERT INTO settings(key, value, updated_at) VALUES (?,?,?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`, `totp-pending:${req.user!.id}`, JSON.stringify(pending), nowIso())
     const issuer = 'Elvora Logistics OS'
     return { secret, uri: `otpauth://totp/${encodeURIComponent(issuer)}:${encodeURIComponent(req.user!.email)}?secret=${secret}&issuer=${encodeURIComponent(issuer)}&digits=6&period=30` }
   })
-  app.post('/api/auth/totp/enable', async (req) => {
-    const { code } = z.object({ code: z.string().min(6).max(8) }).parse(req.body)
+  app.post('/api/auth/totp/enable', totpLimit, async (req) => {
+    const { code } = z.object({ code: z.string().regex(/^\d{6}$/) }).parse(req.body)
     const raw = q.val<string>(`SELECT value FROM settings WHERE key = ?`, `totp-pending:${req.user!.id}`)
     if (!raw) throw bad('Start the setup first')
-    const secret = JSON.parse(raw)
+    const pending = JSON.parse(raw)
+    if (!pending || typeof pending !== 'object' || pending.session !== req.sessionHash || !Number.isFinite(pending.expires) || pending.expires < Date.now()) throw bad('Authenticator setup expired or belongs to another session. Start setup again.')
+    if (q.val('SELECT totp_secret FROM users WHERE id = ?', req.user!.id)) throw bad('Two-step verification is already enabled')
+    const secret = decryptSecret(pending.secret)
     if (!verifyTotp(secret, code)) throw bad('That code is not valid — check your authenticator app clock')
-    q.run(`UPDATE users SET totp_secret = ? WHERE id = ?`, secret, req.user!.id)
-    q.run(`DELETE FROM settings WHERE key = ?`, `totp-pending:${req.user!.id}`)
-    audit(req.ctx, getDef('users'), req.user!.id, 'totp-enabled', null, req.user!.name)
+    tx(() => {
+      q.run(`UPDATE users SET totp_secret = ? WHERE id = ?`, encryptSecret(secret), req.user!.id)
+      q.run(`DELETE FROM settings WHERE key = ?`, `totp-pending:${req.user!.id}`)
+      destroyUserSessions(req.user!.id, req.sessionHash)
+      audit(req.ctx, getDef('users'), req.user!.id, 'totp-enabled', null, req.user!.name)
+    })
     return { ok: true }
   })
-  app.post('/api/auth/totp/disable', async (req) => {
-    const { password } = z.object({ password: z.string() }).parse(req.body)
-    const row = q.get(`SELECT password_hash FROM users WHERE id = ?`, req.user!.id)
+  app.post('/api/auth/totp/disable', totpLimit, async (req) => {
+    const { password, code } = z.object({ password: z.string().min(1).max(200), code: z.string().regex(/^\d{6}$/) }).parse(req.body)
+    const row = q.get(`SELECT password_hash, totp_secret FROM users WHERE id = ?`, req.user!.id)
     if (!verifyPassword(password, row?.password_hash)) throw bad('Password is incorrect')
-    q.run(`UPDATE users SET totp_secret = NULL WHERE id = ?`, req.user!.id)
-    audit(req.ctx, getDef('users'), req.user!.id, 'totp-disabled', null, req.user!.name)
+    if (!row?.totp_secret || !verifyTotp(decryptSecret(row.totp_secret), code)) throw bad('Authenticator code is incorrect')
+    tx(() => {
+      q.run(`UPDATE users SET totp_secret = NULL WHERE id = ?`, req.user!.id)
+      q.run('DELETE FROM settings WHERE key = ?', `totp-pending:${req.user!.id}`)
+      destroyUserSessions(req.user!.id, req.sessionHash)
+      audit(req.ctx, getDef('users'), req.user!.id, 'totp-disabled', null, req.user!.name)
+    })
     return { ok: true }
   })
 

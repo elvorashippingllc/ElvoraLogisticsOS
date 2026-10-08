@@ -1,3 +1,4 @@
+import { signInReady } from './login-ready'
 /* End-to-end API smoke test. Usage: BASE_URL=http://localhost:8080 npm test  (server must be running on an empty database) */
 const BASE = process.env.BASE_URL ?? 'http://localhost:8080'
 let cookie = ''
@@ -5,7 +6,7 @@ let pass = 0, fail = 0
 const failures: string[] = []
 
 async function api(method: string, path: string, body?: any, opts: { raw?: boolean; noAuth?: boolean } = {}): Promise<any> {
-  const res = await fetch(BASE + path, { method, headers: { 'content-type': 'application/json', 'x-elvora-client': 'web', ...(cookie && !opts.noAuth ? { cookie } : {}) }, body: body !== undefined ? JSON.stringify(body) : undefined })
+  const res = path === '/api/auth/login' ? await signInReady(BASE, body) : await fetch(BASE + path, { method, headers: { 'content-type': 'application/json', 'x-elvora-client': 'web', ...(cookie && !opts.noAuth ? { cookie } : {}) }, body: body !== undefined ? JSON.stringify(body) : undefined })
   const sc = res.headers.get('set-cookie'); if (sc && path.includes('/auth/login')) cookie = sc.split(';')[0]
   if (opts.raw) return res
   const text = await res.text()
@@ -23,7 +24,7 @@ async function main() {
   r = await api('POST', '/api/auth/login', { email: 'manager@elvorashipping.com', password: 'Elvora@Manager2026' }); ok('manager can sign in', r.status === 200 && r.data.ok, r.data)
   const mgrCookie = cookie
   r = await api('POST', '/api/auth/login', { email: 'admin@elvorashipping.com', password: 'Elvora@Admin2026' }); ok('admin can sign in', r.status === 200 && r.data.ok, r.data)
-  r = await api('GET', '/api/auth/me'); ok('me returns full permissions for admin', r.data.permissions === '*' && r.data.defaultPassword === true, r.data)
+  r = await api('GET', '/api/auth/me'); ok('me returns full permissions for admin', r.data.permissions === '*' && r.data.defaultPassword === false, r.data)
   r = await api('GET', '/api/meta'); ok('meta lists entities and navigation', r.data.entities.length > 70 && r.data.nav.length >= 8, Object.keys(r.data))
   const meta = r.data
   r = await api('PUT', '/api/admin/settings', { company_trn: '100123456700003' }); ok('company TRN saved (needed to post tax invoices)', r.status === 200 && r.data.company_trn === '100123456700003', r.data)

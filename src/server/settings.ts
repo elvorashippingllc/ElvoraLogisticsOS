@@ -84,7 +84,9 @@ export function setSettings(patch: Record<string, any>) {
   caches.delete(currentDb())
 }
 export function publicSettings(includeSecrets = false) {
-  const s = { ...loadSettings() }
+  // Internal settings (including pending authenticator secrets) never belong in an API response.
+  const loaded = loadSettings()
+  const s = Object.fromEntries(Object.keys(SETTING_DEFAULTS).map(k => [k, loaded[k]]))
   delete s.seeded; delete s.supabase_cursors
   if (!includeSecrets) for (const k of SECRET_SETTINGS) s[k] = s[k] ? '********' : ''
   return s

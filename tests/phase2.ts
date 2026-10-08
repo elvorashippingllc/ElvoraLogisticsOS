@@ -1,3 +1,4 @@
+import { signInReady } from './login-ready'
 /* Integration / AI / finance-extension tests against local mock providers.
    Start the API with:  WA_GRAPH_URL=http://localhost:9099/graph RESEND_API_URL=http://localhost:9099/resend R2_ENDPOINT=http://localhost:9099/r2  (fresh data dir)
    then: npx tsx tests/phase2.ts */
@@ -41,7 +42,7 @@ const server = http.createServer((req, res) => {
 })
 
 async function api(method: string, path: string, body?: any, raw = false): Promise<any> {
-  const res = await fetch(BASE + path, { method, headers: { 'content-type': 'application/json', 'x-elvora-client': 'web', ...(cookie ? { cookie } : {}) }, body: body !== undefined ? JSON.stringify(body) : undefined })
+  const res = path === '/api/auth/login' ? await signInReady(BASE, body) : await fetch(BASE + path, { method, headers: { 'content-type': 'application/json', 'x-elvora-client': 'web', ...(cookie ? { cookie } : {}) }, body: body !== undefined ? JSON.stringify(body) : undefined })
   const sc = res.headers.get('set-cookie'); if (sc && path.includes('/auth/login')) cookie = sc.split(';')[0]
   if (raw) return res
   const text = await res.text(); let data: any; try { data = JSON.parse(text) } catch { data = text }

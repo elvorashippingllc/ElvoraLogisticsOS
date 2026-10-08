@@ -2,19 +2,42 @@ name: Build Oracle Image
 
 on:
   workflow_dispatch:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
 
 permissions:
   contents: read
+  actions: read
   packages: write
 
 jobs:
   build:
+    if: github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     steps:
+      - name: Require successful CI for the release commit
+        id: release
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const sha = context.payload.workflow_run?.head_sha || context.sha;
+            const { owner, repo } = context.repo;
+            const { data } = await github.rest.actions.listWorkflowRuns({ owner, repo, workflow_id: 'ci.yml', head_sha: sha, per_page: 20 });
+            const run = data.workflow_runs.find(r => r.head_sha === sha && r.event === 'push' && r.head_branch === 'main');
+            if (!run || run.status !== 'completed' || run.conclusion !== 'success') {
+              core.setFailed('The release commit must pass CI on main before publishing an image.');
+              return;
+            }
+            core.setOutput('sha', sha);
+
       - name: Download repository
         uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.release.outputs.sha }}
 
       - name: Sign in to GitHub Container Registry
         env:
@@ -24,11 +47,24 @@ jobs:
             -u "${{ github.actor }}" --password-stdin
 
       - name: Build application image
+        env:
+          SOURCE_SHA: ${{ steps.release.outputs.sha }}
         run: |
           docker build --platform linux/amd64 \
             --label "org.opencontainers.image.source=https://github.com/${{ github.repository }}" \
+            --label "org.opencontainers.image.revision=$SOURCE_SHA" \
+            -t "ghcr.io/elvorashippingllc/elvoralogisticsos:sha-$SOURCE_SHA" \
             -t ghcr.io/elvorashippingllc/elvoralogisticsos:latest .
 
       - name: Upload application image
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SOURCE_SHA: ${{ steps.release.outputs.sha }}
         run: |
-          docker push ghcr.io/elvorashippingllc/elvoralogisticsos:latest
+          docker push "ghcr.io/elvorashippingllc/elvoralogisticsos:sha-$SOURCE_SHA"
+          current_sha=$(gh api "repos/${{ github.repository }}/git/ref/heads/main" --jq '.object.sha')
+          if [ "$current_sha" = "$SOURCE_SHA" ]; then
+            docker push ghcr.io/elvorashippingllc/elvoralogisticsos:latest
+          else
+            echo 'Main advanced during this build; keeping the versioned image without replacing latest.'
+          fi

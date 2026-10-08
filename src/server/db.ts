@@ -78,15 +78,24 @@ export class PgDatabase {
   }
   /** Logical snapshot (gzip-compressed NDJSON of every table) – there is no database file to copy. */
   async backup(dest: string): Promise<void> {
-    const tables = this.query(`SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_type = 'BASE TABLE' ORDER BY 1`).rows.map(r => r.table_name as string)
+    if (this.inTransaction) throw new Error('Create backups outside an active transaction')
+    const c = conn()
+    this.enter(c)
+    c.call('BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY', [], true)
+    c.depth++; c.txSchema = this.schema
     const lines: string[] = []
-    for (const t of tables) {
-      for (let off = 0; ; off += 5000) {
-        const rows = this.query(`SELECT * FROM ${ident(t)} ORDER BY 1 LIMIT 5000 OFFSET ${off}`).rows
-        for (const r of rows) lines.push(JSON.stringify({ t, r }))
-        if (rows.length < 5000) break
+    try {
+      const tables = this.query(`SELECT table_name FROM information_schema.tables WHERE table_schema = current_schema() AND table_type = 'BASE TABLE' ORDER BY 1`).rows.map(r => r.table_name as string)
+      for (const t of tables) {
+        for (let off = 0; ; off += 5000) {
+          const rows = this.query(`SELECT * FROM ${ident(t)} ORDER BY 1 LIMIT 5000 OFFSET ${off}`).rows
+          for (const r of rows) lines.push(JSON.stringify({ t, r }))
+          if (rows.length < 5000) break
+        }
       }
-    }
+      c.call('COMMIT', [], true)
+    } catch (e) { try { c.call('ROLLBACK', [], true) } catch { /* connection already gone */ } throw e }
+    finally { c.depth--; c.txSchema = '' }
     fs.writeFileSync(dest, zlib.gzipSync(lines.join('\n') + '\n'))
   }
   close() { /* the shared connection lives for the life of the process */ }

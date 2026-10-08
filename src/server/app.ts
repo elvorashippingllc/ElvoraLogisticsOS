@@ -9,7 +9,7 @@ import fstatic from '@fastify/static'
 import { config } from './config'
 import { HttpError } from './util'
 import { userFromToken, userFromApiKey } from './auth'
-import { enterDb } from './db'
+import { enterDb, q } from './db'
 import { getDemoDb } from './demo/workspace'
 import type { Ctx, SessionUser } from './engine'
 import { ZodError } from 'zod'
@@ -21,6 +21,7 @@ declare module 'fastify' {
 export const COOKIE = 'elvora_sid'
 export const DEMO_PREFIX = 'demo.'
 const PUBLIC = [/^\/api\/demo\/status$/, /^\/api\/health$/, /^\/api\/health\/db$/, /^\/api\/auth\/login$/, /^\/api\/public\//, /^\/api\/auth\/branding$/]
+const PASSWORD_SETUP = new Set(['/api/auth/me', '/api/meta', '/api/auth/change-password', '/api/auth/logout', '/api/auth/sessions', '/api/auth/login-history'])
 
 export async function buildApp(): Promise<FastifyInstance> {
   const app = Fastify({ logger: config.isProd ? { level: 'info' } : { level: 'warn' }, trustProxy: config.trustProxy, bodyLimit: 12 * 1024 * 1024 })
@@ -47,14 +48,20 @@ export async function buildApp(): Promise<FastifyInstance> {
   // Demo sessions (cookie prefix "demo.") and demo tracking links run against the isolated demo database.
   app.addHook('onRequest', (req: FastifyRequest, _reply, done) => {
     const raw = req.cookies?.[COOKIE]
-    const demoRequest = (!!raw && raw.startsWith(DEMO_PREFIX)) || req.url.startsWith('/api/public/track/demo-')
-    enterDb(demoRequest ? getDemoDb() ?? undefined : undefined, () => {
+    const url = req.url.split('?')[0]
+    const bearer = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.slice(7).trim() : undefined
+    const publicRequest = PUBLIC.some(r => r.test(url))
+    // Public links select their workspace by the link, never by an unrelated browser cookie.
+    // API keys always belong to production; a demo cookie must not change their database.
+    const demoRequest = url.startsWith('/api/public/track/demo-') || (!publicRequest && !bearer && !!raw?.startsWith(DEMO_PREFIX))
+    const demoDb = demoRequest ? getDemoDb() : null
+    if (demoRequest && !demoDb) return done(new HttpError(503, 'The demo workspace is unavailable'))
+    enterDb(demoDb ?? undefined, () => {
       try {
         req.user = null
-        const bearer = req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.slice(7).trim() : undefined
-        if (bearer) {
+        if (!publicRequest && bearer) {
           req.user = userFromApiKey(bearer)
-        } else {
+        } else if (!publicRequest) {
           const found = userFromToken(raw && raw.startsWith(DEMO_PREFIX) ? raw.slice(DEMO_PREFIX.length) : raw)
           if (found) { req.user = found.user; req.sessionHash = found.hash }
         }
@@ -71,6 +78,10 @@ export async function buildApp(): Promise<FastifyInstance> {
     if (!req.user) throw new HttpError(401, 'Please sign in')
     // CSRF: cookie-authenticated mutations must carry the custom header (cannot be set cross-site without CORS)
     if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && !req.user.apiKey && req.headers['x-elvora-client'] !== 'web') throw new HttpError(403, 'Missing client header')
+    const mustChange = q.val<number>('SELECT must_change_password FROM users WHERE id = ?', req.user.id)
+    if (mustChange && !(PASSWORD_SETUP.has(url) && !req.user.apiKey)) throw new HttpError(403, 'Change your temporary password before using the application')
+    // Account security changes require the browser session, not an integration key.
+    if (req.user.apiKey && url.startsWith('/api/auth/') && url !== '/api/auth/me') throw new HttpError(403, 'Use your signed-in browser to manage account security')
   })
 
   app.setErrorHandler((err: any, req, reply) => {
@@ -93,7 +104,7 @@ export async function buildApp(): Promise<FastifyInstance> {
   for (const m of mods) await app.register(m.default)
   app.get('/api/health', async () => ({ ok: true, time: new Date().toISOString() }))
   // Database round-trip time. The app talks to PostgreSQL synchronously, so this is the number that decides whether the host is close enough to the database.
-  app.get('/api/health/db', async () => {
+  app.get('/api/health/db', { config: { rateLimit: { max: 12, timeWindow: '1 minute' } } }, async () => {
     const { q, isPg } = await import('./db')
     const t = process.hrtime.bigint(); const n = 10
     for (let i = 0; i < n; i++) q.val('SELECT 1')

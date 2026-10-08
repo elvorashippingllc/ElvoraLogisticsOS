@@ -25,6 +25,9 @@ async function main() {
   r = await mgr.api('POST', '/api/auth/login', { email: 'manager@elvorashipping.com', password: 'Elvora@Manager2026' }); ok('manager signs in', r.data.ok && !r.data.demo); ok('manager must change password', r.data.mustChangePassword === true)
   r = await admin.api('GET', '/api/auth/me'); ok('admin has full access and is not flagged as demo', r.data.permissions === '*' && r.data.demo === false)
   r = await mgr.api('GET', '/api/auth/me'); ok('manager has full access', r.data.permissions === '*')
+  r = await admin.api('GET', '/api/admin/system'); ok('temporary password blocks business APIs', r.status === 403)
+  r = await admin.api('POST', '/api/auth/change-password', { current: 'Elvora@Admin2026', next: 'Admin-Personal2026!' }); ok('admin changes temporary password', r.status === 200)
+  r = await mgr.api('POST', '/api/auth/change-password', { current: 'Elvora@Manager2026', next: 'Manager-Personal2026!' }); ok('manager changes temporary password', r.status === 200)
   const counts: Record<string, number> = {}
   for (const e of BUSINESS) { const x = await admin.api('GET', `/api/e/${e}?pageSize=1`); counts[e] = x.data.total ?? -1 }
   const dirty = Object.entries(counts).filter(([, n]) => n !== 0)

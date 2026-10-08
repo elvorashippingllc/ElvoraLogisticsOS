@@ -3,10 +3,15 @@ import { ENTITY_LIST, NAV, MODULE_DEFS } from '../../shared/entities'
 import { can, customFieldsFor } from '../engine'
 import { publicSettings } from '../settings'
 import { ACTIONS } from '../../shared/types'
+import { q } from '../db'
 
 export default async function (app: FastifyInstance) {
   app.get('/api/meta', async (req) => {
     const user = req.user!
+    if (q.val<number>('SELECT must_change_password FROM users WHERE id = ?', user.id)) {
+      const s = publicSettings()
+      return { entities: [], nav: [], modules: [], perms: {}, settings: { company_name: s.company_name, base_currency: s.base_currency } }
+    }
     const entities = ENTITY_LIST.map(e => ({ ...e, customFieldDefs: e.customFields ? customFieldsFor(e.key) : [], fields: e.fields.filter(f => !f.secret) }))
     const nav = NAV.map(g => ({ ...g, items: g.items.filter(i => !i.module || can(user, i.module, 'view')) })).filter(g => g.items.length)
     const perms: Record<string, string[]> = {}

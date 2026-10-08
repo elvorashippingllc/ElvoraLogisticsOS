@@ -2,6 +2,7 @@ import crypto from 'node:crypto'
 import { q } from './db'
 import { config } from './config'
 import { nowIso, safeJson, bad, HttpError } from './util'
+import { decryptSecret } from './settings'
 import type { SessionUser, Perms } from './engine'
 
 // ---------------------------------------------------------------- passwords (scrypt)
@@ -91,7 +92,11 @@ export function attemptLogin(email: string, password: string, totp: string | und
   }
   if (row.totp_secret) {
     if (!totp) return { needsTotp: true }
-    if (!verifyTotp(row.totp_secret, totp)) { log(false, 'bad totp'); throw new HttpError(401, 'Invalid authenticator code') }
+    if (!verifyTotp(decryptSecret(row.totp_secret), totp)) {
+      const fails = (row.failed_logins ?? 0) + 1
+      q.run('UPDATE users SET failed_logins = ?, locked_until = ? WHERE id = ?', fails, fails >= MAX_FAILS ? new Date(Date.now() + 15 * 60_000).toISOString().slice(0, 16) : null, row.id)
+      log(false, 'bad totp'); throw new HttpError(401, 'Invalid authenticator code')
+    }
   }
   q.run(`UPDATE users SET failed_logins = 0, locked_until = NULL, last_login_at = ? WHERE id = ?`, nowIso().slice(0, 16), row.id)
   log(true, 'ok')

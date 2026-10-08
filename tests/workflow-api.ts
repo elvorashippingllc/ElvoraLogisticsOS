@@ -1,6 +1,7 @@
+import { signInReady } from './login-ready'
 import assert from 'node:assert/strict'
 const base=process.env.BASE_URL??'http://127.0.0.1:8098'
-async function login(email:string,password:string){const r=await fetch(base+'/api/auth/login',{method:'POST',headers:{'content-type':'application/json','x-elvora-client':'web'},body:JSON.stringify({email,password})});assert.equal(r.status,200);return r.headers.get('set-cookie')!.split(';')[0]}
+async function login(email:string,password:string){const r=await signInReady(base,{email,password});assert.equal(r.status,200);return r.headers.get('set-cookie')!.split(';')[0]}
 const admin=await login('admin@elvorashipping.com','Elvora@Admin2026')
 async function api(path:string,method='GET',body?:unknown,status=200,cookie=admin){const r=await fetch(base+path,{method,headers:{'content-type':'application/json','x-elvora-client':'web',cookie},body:body===undefined?undefined:JSON.stringify(body)});const data=await r.json() as any;assert.equal(r.status,status,JSON.stringify(data));return data}
 await api('/api/e/workflow_runs','POST',{label:'Forged run'},403)

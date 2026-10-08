@@ -15,12 +15,12 @@ const { workerData } = require('node:worker_threads')
 const { Client, types } = require(workerData.pgPath)
 types.setTypeParser(20, v => parseInt(v, 10))   // bigint
 types.setTypeParser(1700, v => parseFloat(v))   // numeric
-const { port, url, ssl } = workerData
+const { port, options } = workerData
 const sig = new Int32Array(workerData.sig)
 let client = null
 async function ensure() {
   if (client) return client
-  const c = new Client({ connectionString: url, ssl: ssl ? { rejectUnauthorized: false } : undefined, application_name: 'elvora-os', connectionTimeoutMillis: 15000 })
+  const c = new Client({ ...options, application_name: 'elvora-os', connectionTimeoutMillis: 15000 })
   c.on('error', () => { client = null })
   await c.connect()
   client = c
@@ -45,6 +45,16 @@ port.on('message', async (m) => {
 
 export interface PgResult { rows: any[]; rowCount: number }
 
+export function pgConnectionOptions(url: string, ca = process.env.PG_CA_CERT) {
+  const parsed = new URL(url)
+  const local = ['localhost', '127.0.0.1', '[::1]', '::1'].includes(parsed.hostname)
+  const tls = !local || (parsed.searchParams.has('sslmode') && parsed.searchParams.get('sslmode') !== 'disable')
+  // pg's URL SSL parameters can replace the explicit SSL options. Keep a single
+  // verified policy; private provider CAs can be supplied as PEM via PG_CA_CERT.
+  for (const key of ['sslmode', 'sslcert', 'sslkey', 'sslrootcert']) parsed.searchParams.delete(key)
+  return { connectionString: parsed.toString(), ssl: tls ? { rejectUnauthorized: true, ...(ca ? { ca: ca.replace(/\\n/g, '\n') } : {}) } : false as const }
+}
+
 export class PgConn {
   private worker: Worker
   private port: MessagePort
@@ -57,10 +67,9 @@ export class PgConn {
     this.sig = new Int32Array(sab)
     const { port1, port2 } = new MessageChannel()
     this.port = port1
-    const host = (() => { try { return new URL(url).hostname } catch { return '' } })()
-    const ssl = !/^(localhost|127\.0\.0\.1|::1|)$/.test(host) && !/sslmode=disable/.test(url)
+    const options = pgConnectionOptions(url)
     const pgPath = createRequire(import.meta.url).resolve('pg')
-    this.worker = new Worker(WORKER_SOURCE, { eval: true, workerData: { port: port2, sig: sab, url, ssl, pgPath }, transferList: [port2] })
+    this.worker = new Worker(WORKER_SOURCE, { eval: true, workerData: { port: port2, sig: sab, options, pgPath }, transferList: [port2] })
     this.worker.unref()
     this.worker.on('error', e => console.error('[pg worker]', e))
   }

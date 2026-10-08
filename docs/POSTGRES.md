@@ -1,6 +1,6 @@
 # Running on PostgreSQL (Supabase)
 
-Set `DATABASE_URL` and the app stores everything in PostgreSQL instead of the local SQLite file. Unset it and nothing changes (SQLite, `DATA_DIR`). Both drivers pass the same four test suites plus a 740-request endpoint sweep (`npm run test:all`; for Postgres set `TEST_PG_ADMIN_URL`, see `tests/run-all.sh`); CI runs both.
+Set `DATABASE_URL` and the app stores everything in PostgreSQL instead of the local SQLite file. Unset it and nothing changes (SQLite, `DATA_DIR`). Both drivers run the API/domain suites and endpoint sweep listed in `tests/run-all.sh`; CI runs SQLite and PostgreSQL. Authentication regression checks are included.
 
 ## Scoping – what the move involved
 
@@ -24,3 +24,9 @@ Each query blocks the Node process for one network round trip, so **host the app
 
 ## Upgrading existing SQLite data
 There is no automatic copy. A fresh Postgres workspace is seeded with the reference data; for a database that already holds live records, export from the old install (CSV export per entity, or ask for a one-off migration script) before switching.
+
+## Verified database TLS
+
+Remote connections now require certificate verification. For a provider using a private certificate authority, set `PG_CA_CERT` to its trusted PEM certificate (literal newlines or escaped `\\n` are accepted). SSL query parameters no longer override this verified policy. Loopback connections remain compatible with the local non-TLS test database.
+
+Logical backups read all tables within a repeatable-read, read-only transaction. Restore drills and a reconciled live-data migration are still required. Preserve `APP_SECRET` or the data directory's `.secret` file with protected recovery materials: encrypted credentials and authenticator secrets need the same key after restoration.

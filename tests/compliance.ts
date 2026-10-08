@@ -1,10 +1,11 @@
+import { signInReady } from './login-ready'
 /* UAE compliance suite. Usage: server running on an empty data directory, then: npx tsx tests/compliance.ts */
 export {}
 const BASE = process.env.BASE_URL ?? 'http://localhost:8080'
 let cookie = '', pass = 0, fail = 0
 const failures: string[] = []
 async function api(method: string, path: string, body?: any): Promise<any> {
-  const res = await fetch(BASE + path, { method, headers: { 'content-type': 'application/json', 'x-elvora-client': 'web', ...(cookie ? { cookie } : {}) }, body: body !== undefined ? JSON.stringify(body) : undefined })
+  const res = path === '/api/auth/login' ? await signInReady(BASE, body) : await fetch(BASE + path, { method, headers: { 'content-type': 'application/json', 'x-elvora-client': 'web', ...(cookie ? { cookie } : {}) }, body: body !== undefined ? JSON.stringify(body) : undefined })
   const sc = res.headers.get('set-cookie'); if (sc && path.includes('/auth/login')) cookie = sc.split(';')[0]
   const text = await res.text(); let data: any; try { data = JSON.parse(text) } catch { data = text }
   return { status: res.status, data }

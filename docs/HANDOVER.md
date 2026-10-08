@@ -56,5 +56,5 @@
 9. Decide whether to keep `DEMO_ENABLED=true` on this server (recommended only for sales demonstrations).
 
 ## Ownership and support materials
-* Source: this repository (React + Fastify + SQLite). `docs/` holds features, integrations, AI team, deployment and this guide; `corporate-templates/` holds the 82 document templates, 16 e-mails and marketing collateral.
+* Source: this repository (React + Fastify + SQLite/PostgreSQL). `docs/` holds features, integrations, AI team, deployment and this guide; `corporate-templates/` holds the 82 document templates, 16 e-mails and marketing collateral.
 * Automated checks: `npm run typecheck`, `npm test` (134), `npm run test:integrations` (83), `npm run test:handover` (48). A CI workflow runs them on every push.
