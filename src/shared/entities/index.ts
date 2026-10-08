@@ -7,13 +7,14 @@ import { transportWarehouse } from './operations2'
 import { finance } from './finance'
 import { people } from './people'
 import { automation } from './automation'
+import { work } from './work'
 import { compliance } from './compliance'
 
 export { MODULE_DEFS } from './platform'
 export * from './ops'
 export { INCOTERMS, PACKAGE_TYPES } from './masters'
 
-export const ENTITY_LIST: EntityDef[] = [...platform, ...masters, ...crm, ...ops, ...transportWarehouse, ...finance, ...people, ...automation, ...compliance]
+export const ENTITY_LIST: EntityDef[] = [...platform, ...masters, ...crm, ...ops, ...transportWarehouse, ...finance, ...people, ...automation, ...compliance, ...work]
 export const ENTITIES: Record<string, EntityDef> = Object.fromEntries(ENTITY_LIST.map(e => [e.key, e]))
 
 export function validateMeta(): string[] {
@@ -100,6 +101,8 @@ export const NAV: NavGroup[] = [
     { label: 'Cargo Insurance', to: '/e/insurance_certs', icon: 'Umbrella', module: 'support' },
   ] },
   { label: 'Work', icon: 'ListChecks', items: [
+    { label: 'Shift Handovers', to: '/work/handovers', icon: 'ArrowLeftRight', module: 'projects' },
+    { label: 'Work Queues', to: '/work/queues', icon: 'ListChecks', module: 'projects' },
     { label: 'Tasks & Follow-ups', to: '/e/tasks', icon: 'ListChecks', module: 'projects' },
     { label: 'Projects', to: '/e/projects', icon: 'FolderKanban', module: 'projects' },
     { label: 'Calendar', to: '/calendar', icon: 'CalendarDays', module: 'dashboard' },
@@ -152,6 +155,7 @@ export const NAV: NavGroup[] = [
     { label: 'Integration Log', to: '/e/integration_logs', icon: 'Activity', module: 'admin' },
     { label: 'Custom Fields', to: '/e/custom_fields', icon: 'SlidersHorizontal', module: 'admin' },
     { label: 'Workflow Runs', to: '/e/workflow_runs', icon: 'Activity', module: 'admin' },
+    { label: 'SLA Policies', to: '/e/sla_policies', icon: 'Timer', module: 'admin' },
     { label: 'Automation Rules', to: '/e/automation_rules', icon: 'Workflow', module: 'admin' },
     { label: 'E-mail Outbox', to: '/e/email_outbox', icon: 'Mail', module: 'admin' },
     { label: 'Webhooks', to: '/e/webhooks', icon: 'Webhook', module: 'admin' },

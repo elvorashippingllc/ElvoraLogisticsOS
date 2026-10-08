@@ -43,7 +43,7 @@ export const platform: EntityDef[] = [
       E('email', 'Login e-mail', { required: true, unique: true, list: true, search: true }),
       R('role_id', 'Role', 'roles', { required: true, list: true }),
       R('branch_id', 'Branch', 'branches', { list: true }), R('department_id', 'Department', 'departments'),
-      PH('phone', 'Phone'), T('designation', 'Designation'), R('party_id', 'Customer portal company', 'parties', { help: 'Only for customer-portal users: restricts the account to this company\'s own jobs, invoices and quotations' }),
+      I('work_capacity_points','Work capacity points',{default:40,help:'Capacity used by workload recommendations; configure per employee'}), PH('phone', 'Phone'), T('designation', 'Designation'), R('party_id', 'Customer portal company', 'parties', { help: 'Only for customer-portal users: restricts the account to this company\'s own jobs, invoices and quotations' }),
       T('password', 'Set password', { virtual: true, help: 'Leave blank to keep the current password. Min 10 characters.' }),
       B('active', 'Active', { default: true, list: true }),
       B('must_change_password', 'Must change password at next login'),
