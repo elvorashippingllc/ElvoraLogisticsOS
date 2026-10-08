@@ -90,7 +90,7 @@ export function Shell() {
           <footer className="statusbar no-print"><span className="s1">User : {me?.email}</span><span className="s2"><Clock /></span><span className="s3 flex-1">Elvora Logistics OS</span><ProductBrand compact /></footer>
         </div>
       </div>
-      <Modal open={!!workspaceMenu} onClose={() => setWorkspaceMenu(null)} title={workspaceMenu?.label} width={700}>
+      <Modal open={!!workspaceMenu} onClose={() => setWorkspaceMenu(null)} title={workspaceMenu?.label} width={700} className="workspace-popup">
         <p className="text-muted">{workspaceDescription(workspaceMenu?.icon)}</p>
         <nav className="workspace-menu-links" aria-label={workspaceMenu?.label}>{workspaceMenu?.items.map(item => <Link key={item.to} to={item.to} onClick={() => setWorkspaceMenu(null)}><span>{item.label}</span><ChevronRight size={18} /></Link>)}</nav>
         {workspaceMenu && <Link className="btn green mt-5" to={workspaceMenu.icon === 'LayoutGrid' ? '/' : workspacePath(workspaceMenu)} onClick={() => setWorkspaceMenu(null)}>Open {workspaceMenu.label}</Link>}

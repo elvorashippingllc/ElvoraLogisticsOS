@@ -21,9 +21,13 @@ try {
   const page = await context.newPage(), errors = []
   page.on('pageerror', e => errors.push(e.message))
   const demo = await (await context.request.get(base + '/api/demo/status')).json()
-  const auth = await context.request.post(base + '/api/auth/login', { data: { email: demo.email, password: demo.password, demo: true }, headers: { 'x-elvora-client': 'web' } })
-  assert.equal(auth.status(), 200)
-  await page.goto(base + '/dashboard'); await page.getByRole('heading', { name: 'Move each shipment forward' }).waitFor()
+  await page.goto(base + '/login')
+  await page.locator('input[type="email"]').fill(demo.email)
+  await page.locator('input[type="password"]').fill(demo.password)
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click()
+  await page.waitForURL('**/dashboard')
+  await page.getByRole('heading', { name: 'Move each shipment forward' }).waitFor()
+  await page.getByRole('heading', { name: 'Next on the shipment desk' }).waitFor()
   await page.evaluate(() => document.fonts.ready)
   const sidebarLabels = await page.locator('.rail-shortcut-label').evaluateAll(nodes => nodes.map(n => {
     const label = n.getBoundingClientRect(), button = n.parentElement.getBoundingClientRect()
@@ -32,11 +36,12 @@ try {
   assert.ok(sidebarLabels.length > 2 && sidebarLabels.every(n => n.text && n.fits), 'sidebar icons have readable labels contained within each button')
   const capture = async name => { const style = await page.addStyleTag({ content: '.workspace-frame { height:auto; min-height:100dvh; overflow:visible; } .app-main { overflow:visible; }' }); await page.screenshot({ path: `${out}/${name}.png`, fullPage: true }); await page.screenshot({ path: `${out}/${name}.jpg`, type: 'jpeg', quality: 65, fullPage: true }); await style.evaluate(el => el.remove()) }
   await capture('desktop')
+  await page.goto(base + '/'); assert.equal(await page.locator('.workspace-intro img').count(), 0, 'workspace mark is removed'); await page.goto(base + '/dashboard'); await page.getByRole('heading', { name: 'Move each shipment forward' }).waitFor()
   const checkDashboardContrast = async () => {
     const failures = await page.evaluate(() => {
       const rgb = value => value.match(/[\d.]+/g)?.slice(0, 3).map(Number)
       const luminance = color => rgb(color).map(v => { v /= 255; return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4 }).reduce((sum, v, i) => sum + v * [.2126, .7152, .0722][i], 0)
-      const selectors = '.dashboard-alert,.dashboard-brief > div:first-child,.quick-work a,.workflow-step h3,.workflow-step p,.workflow-step strong,.workflow-step-head,.workflow-open,.dashboard-metrics .kpi .l,.dashboard-metrics .kpi .v,.dashboard-metrics .kpi .text-muted,.overview-ledger dt,.overview-ledger dd,.overview-ledger h2,.overview-mix h2,.overview-mix header > span,.mode-legend li,.mode-legend strong,.daily-schedule b,.daily-schedule small'
+      const selectors = '.control-welcome h1,.control-welcome .text-muted,.control-welcome .btn,.desk-heading h2,.desk-heading p,.desk-summary,.movement-kind,.movement-client,.movement-action,.movement-ticket strong,.dashboard-alert,.dashboard-brief > div:first-child,.quick-work a,.workflow-step h3,.workflow-step p,.workflow-step strong,.workflow-step-head,.workflow-open,.dashboard-metrics .kpi .l,.dashboard-metrics .kpi .v,.dashboard-metrics .kpi .text-muted,.overview-ledger dt,.overview-ledger dd,.overview-ledger h2,.overview-mix h2,.overview-mix header > span,.mode-legend li,.mode-legend strong,.daily-schedule b,.daily-schedule small'
       return [...document.querySelectorAll(selectors)].filter(n => n.getClientRects().length).flatMap(n => {
         let surface = n
         while (surface && getComputedStyle(surface).backgroundColor === 'rgba(0, 0, 0, 0)') surface = surface.parentElement
@@ -59,10 +64,12 @@ try {
   await page.getByRole('button', { name: 'Next workflow steps' }).click()
   await page.waitForTimeout(300)
   assert.ok(await carousel.evaluate(el => el.scrollLeft > 0), 'carousel moves when requested')
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
   await page.getByRole('button', { name: 'Operations', exact: true }).click()
   const dialog = page.getByRole('dialog', { name: 'Operations' })
-  await dialog.waitFor(); assert.ok(await dialog.getByRole('link', { name: 'Master Jobs', exact: true }).isVisible())
+  await dialog.waitFor(); assert.equal(await dialog.evaluate(el => getComputedStyle(el).animationName), 'workspace-open', 'sidebar popup has authored motion'); assert.ok(await dialog.getByRole('link', { name: 'Master Jobs', exact: true }).isVisible())
   await page.screenshot({ path: `${out}/sidebar.png` }); await page.screenshot({ path: `${out}/sidebar.jpg`, type: 'jpeg', quality: 65 })
+  await page.emulateMedia({ reducedMotion: 'reduce' }); assert.equal(await dialog.evaluate(el => getComputedStyle(el).animationName), 'none', 'sidebar popup respects reduced motion');
   await page.keyboard.press('Escape'); assert.equal(await dialog.count(), 0)
   assert.equal(await page.evaluate(() => document.activeElement.getAttribute('aria-label')), 'Operations', 'focus returns to sidebar')
   await page.setViewportSize({ width: 390, height: 844 }); await page.goto(base + '/dashboard')
@@ -87,5 +94,6 @@ try {
   }
   assert.deepEqual(errors, [])
   console.log('PASS: dashboard desktop/mobile, carousel, sidebar popup, focus return, email empty state and vendor-service forms')
+  await page.goto(base + '/email'); await page.getByRole('button', { name: 'Help me write', exact: true }).click(); await page.getByLabel('What should this say?').fill('Ask for the delivery address'); await page.getByRole('button', { name: 'Create draft', exact: true }).click(); await page.getByText('AI writing requires a connected provider in your live workspace', { exact: true }).waitFor(); await page.getByLabel('Subject', { exact: true }).fill('Draft for review'); await page.getByLabel('Message', { exact: true }).fill('Please confirm the delivery address.'); await page.getByRole('button', { name: 'Save draft', exact: true }).click(); await page.getByRole('button', { name: /Saved drafts/ }).click(); await page.getByText('Draft for review', { exact: true }).waitFor(); await page.getByRole('button', { name: 'Continue writing', exact: true }).click(); assert.equal(await page.getByLabel('Message', { exact: true }).inputValue(), 'Please confirm the delivery address.');
   if (process.env.UI_CAPTURE_PRINT === 'true') for (const name of ['desktop', 'mobile', 'dark', 'sidebar', 'email']) console.log(`UI_CAPTURE:${name}:${fs.readFileSync(`${out}/${name}.jpg`).toString('base64')}`)
 } finally { await browser?.close(); server.kill('SIGTERM'); fs.rmSync(data, { recursive: true, force: true }) }

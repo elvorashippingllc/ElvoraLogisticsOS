@@ -66,6 +66,10 @@ const MIGRATIONS: { id: string; sql: string }[] = [
     CREATE TABLE approval_requests (id INTEGER PRIMARY KEY AUTOINCREMENT, entity TEXT NOT NULL, record_id INTEGER NOT NULL, requested_by INTEGER NOT NULL, requested_at TEXT NOT NULL, status TEXT NOT NULL, decided_by INTEGER, decided_at TEXT, reason TEXT);
     CREATE UNIQUE INDEX ix_approval_pending ON approval_requests(entity,record_id) WHERE status='Pending';
   ` },
+  { id: '003_email_drafts', sql: `
+    CREATE TABLE email_drafts (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, from_addr TEXT NOT NULL DEFAULT '', to_addr TEXT NOT NULL DEFAULT '', cc_addr TEXT NOT NULL DEFAULT '', subject TEXT NOT NULL DEFAULT '', body TEXT NOT NULL DEFAULT '', version INTEGER NOT NULL DEFAULT 1, updated_at TEXT NOT NULL);
+    CREATE INDEX ix_email_drafts_user ON email_drafts(user_id, updated_at);
+  ` },
 ]
 
 /** System-table DDL is written once in SQLite dialect and adapted for PostgreSQL. */

@@ -106,7 +106,7 @@ export function EntityForm({ def, record, presets, onSaved, onCancel, lockedOnEd
                 <div key={f.name} className={cls(f.span === 3 && 'md:col-span-2 xl:col-span-3', f.span === 2 && 'md:col-span-2')}>
                   <label className="label" htmlFor={`f-${f.name}`}>{f.label}{f.required && !ro && <span className="req">*</span>}</label>
                   {ro || locked(f) ? <div className="min-h-[36px] flex items-center font-bold text-ink text-[14px] px-0.5"><CellValue f={f} rec={{ ...vals, _labels: labels }} /></div>
-                    : <FieldInput f={f} value={vals[f.name]} label={labels[f.name]} invalid={errors[f.name]} onChange={(v, l) => set(f.name, v, l)} />}
+                    : <FieldInput writingModule={def.module} f={f} value={vals[f.name]} label={labels[f.name]} invalid={errors[f.name]} onChange={(v, l) => set(f.name, v, l)} />}
                   {f.help && <div className="help">{f.help}</div>}
                 </div>
               )
@@ -118,7 +118,7 @@ export function EntityForm({ def, record, presets, onSaved, onCancel, lockedOnEd
         <fieldset className="border-0 p-0 m-0 mt-5">
           <legend className="font-display font-extrabold text-[13px] uppercase tracking-wider text-fold mb-2 pb-1 border-b border-line w-full">Custom fields</legend>
           <div className="grid gap-x-5 gap-y-3 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-            {customDefs.map(f => <div key={f.name}><label className="label">{f.label}{f.required && <span className="req">*</span>}</label><FieldInput f={f} value={custom[f.name]} invalid={errors['cf:' + f.name]} onChange={v => setCustom(c => ({ ...c, [f.name]: v }))} /></div>)}
+            {customDefs.map(f => <div key={f.name}><label className="label">{f.label}{f.required && <span className="req">*</span>}</label><FieldInput writingModule={def.module} f={f} value={custom[f.name]} invalid={errors['cf:' + f.name]} onChange={v => setCustom(c => ({ ...c, [f.name]: v }))} /></div>)}
           </div>
         </fieldset>
       )}

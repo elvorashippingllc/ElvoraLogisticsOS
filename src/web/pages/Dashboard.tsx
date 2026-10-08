@@ -47,7 +47,7 @@ export function Dashboard() {
   const ch = d.charts ?? {}, ls = d.lists ?? {}
   return (
     <div className="fade-in dashboard-page">
-      <Welcome name={me?.name} />
+      <Welcome name={me?.name} /><OperationsDesk data={d} />
       <section aria-label="Business at a glance"><div className="dashboard-metrics">{tiles.slice(0, 4).map(t => <Kpi key={t.label} className={t.surface ? `metric-${t.surface}` : undefined} label={t.label} value={t.value ?? 0} hint={t.hint} tone={t.tone} onClick={t.to && (!t.to.startsWith('/reports') || (can('reports', 'view') && can('finance', 'view'))) ? () => nav(t.to!) : undefined} />)}</div></section>
       {d.alerts?.length > 0 && <div className="grid gap-2 mb-5 md:grid-cols-2 xl:grid-cols-3">{d.alerts.slice(0, 6).map((a: any, i: number) => (
         <Link key={i} to={a.link} data-level={a.level} className={cls('dashboard-alert flex items-center gap-3 px-4 py-2.5 rounded-xl border text-[13.5px] font-semibold', a.level === 'danger' ? 'bg-blush border-[#f2bcc3] text-[#8f1325]' : a.level === 'warn' ? 'bg-gold border-[#ead49a] text-[#6b4a00]' : 'bg-sky border-[#bcd6f0] text-[#1f4f85]')}>
@@ -115,8 +115,8 @@ export function Dashboard() {
 
 function Welcome({ name, portal }: { name?: string; portal?: boolean }) {
   const { can } = useMeta()
-  return <div className="dashboard-welcome flex items-center gap-4 flex-wrap">
-    <div><h1 className="m-0">{portal ? 'Your shipments' : 'Dashboard'}</h1><div className="text-muted">{name ? `Hello, ${name.split(' ')[0]}. ` : ''}{portal ? 'Your shipments, documents and invoices in one place.' : 'See what needs attention, keep shipments moving and stay on top of payments.'}</div></div>
+  return <div className={cls('dashboard-welcome flex items-center gap-4 flex-wrap', !portal && 'control-welcome')}>
+    <div><h1 className="m-0">{portal ? 'Your shipments' : 'Your logistics control desk'}</h1><div className="text-muted">{name ? `Hello, ${name.split(' ')[0]}. ` : ''}{portal ? 'Your shipments, documents and invoices in one place.' : 'See what needs attention, keep shipments moving and stay on top of payments.'}</div></div>
     {!portal && <nav className="flex gap-2 flex-wrap" aria-label="Dashboard actions">{(can('crm', 'view') || can('finance', 'view') || can('admin', 'view')) && <Link className="btn outline" to="/email"><Mail size={16} />Email</Link>}<Link className="btn outline" to="/calendar"><CalendarDays size={16} />Schedule</Link>{can('jobs', 'create') && <Link className="btn dark" to="/e/jobs?new=1"><Plus size={16} />New job</Link>}</nav>}
   </div>
 }
@@ -179,5 +179,19 @@ function DailyWorkflow({ data, base }: { data: any; base: string }) {
   return <section className="daily-workflow" aria-label="Daily workflow"><header className="workflow-header"><div><h2>Move each shipment forward</h2><p>Start with anything that needs attention, then follow the job through to payment.</p></div><div className="flex gap-2"><button className="btn outline icon" aria-label="Previous workflow steps" disabled={position.start} onClick={() => move(-1)}><ChevronLeft /></button><button className="btn outline icon" aria-label="Next workflow steps" disabled={position.end || steps.length < 2} onClick={() => move(1)}><ChevronRight /></button></div></header>
     <div className="workflow-carousel" ref={rail} tabIndex={0} aria-label="Shipment workflow steps" onScroll={e => { const r = e.currentTarget; setPosition({ start: r.scrollLeft < 2, end: r.scrollLeft + r.clientWidth >= r.scrollWidth - 2 }) }}>{steps.map((s, i) => <Link key={s.title} to={s.to} className={`workflow-step workflow-${s.surface}`}><div className="workflow-step-head"><span>{i + 1}</span><s.Icon size={22} /></div><h3>{s.title}</h3><p>{s.detail}</p><strong>{s.value}</strong><span className="workflow-open">Open <ArrowRight size={16} /></span></Link>)}</div>
     {(ls.departures || ls.arrivals || ls.my_tasks) && <div className="daily-schedule"><h3>Plan shipments and follow-ups</h3><div>{ls.departures && <Link to="/calendar"><Ship size={18} /><span><b>Upcoming departures</b><small>Confirm bookings and documents</small></span><ArrowRight size={16} /></Link>}{ls.arrivals && <Link to="/calendar"><Plane size={18} /><span><b>Upcoming arrivals</b><small>Prepare clearance and delivery</small></span><ArrowRight size={16} /></Link>}{ls.my_tasks && can('projects', 'view') && <Link to="/e/tasks"><CalendarDays size={18} /><span><b>{k.my_tasks ?? ls.my_tasks.length} open tasks</b><small>Check your follow-ups and due dates</small></span><ArrowRight size={16} /></Link>}</div></div>}
+  </section>
+}
+
+function OperationsDesk({ data }: { data: any }) {
+  const { can } = useMeta()
+  const lists = data.lists ?? {}, k = data.kpis ?? {}
+  const events = [
+    ...(lists.departures ?? []).map((j: any) => ({ ...j, direction: 'Departure', at: j.etd, Icon: Ship })),
+    ...(lists.arrivals ?? []).map((j: any) => ({ ...j, direction: 'Arrival', at: j.eta, Icon: Plane })),
+  ].sort((a, b) => String(a.at ?? '').localeCompare(String(b.at ?? ''))).slice(0, 5)
+  return <section className="operations-desk" aria-label="Shipment desk">
+    <div className="desk-heading"><div><h2>Next on the shipment desk</h2><p>Departures and arrivals planned over the next seven days.</p></div><Link className="btn outline" to="/calendar"><CalendarDays size={17} />Open schedule</Link></div>
+    {can('jobs', 'view') && <div className="movement-rail" aria-label="Upcoming shipment movements">{events.length ? events.map((j, i) => <Link className="movement-ticket" key={`${j.direction}-${j.id}-${i}`} to={`/jobs/${j.id}`}><span className="movement-kind"><j.Icon size={19} />{j.direction}<span>{fmtDate(j.at)}</span></span><strong>{j.pol || 'Origin pending'}<ArrowRight size={18} />{j.pod || 'Destination pending'}</strong><span className="movement-client">{j.client || 'Customer'} · {j.job_no}</span><span className="movement-action">Review job <ChevronRight size={16} /></span></Link>) : <div className="movement-empty"><Ship size={28} /><div><strong>Your next movements will appear here</strong><p>Add departure and arrival dates to a job to plan the week ahead.</p></div>{can('jobs', 'create') && <Link className="btn dark" to="/e/jobs?new=1">Open a job <ArrowRight size={16} /></Link>}</div>}</div>}
+    <div className="desk-summary">{k.open_jobs !== undefined && <span><Ship size={17} /><b>{k.open_jobs}</b> open jobs</span>}{k.in_transit !== undefined && <span><Truck size={17} /><b>{k.in_transit}</b> in transit</span>}{k.my_tasks !== undefined && <span><CalendarDays size={17} /><b>{k.my_tasks}</b> follow-ups to do</span>}<span className="desk-owner">Elvora Shipping L.L.C.</span></div>
   </section>
 }
