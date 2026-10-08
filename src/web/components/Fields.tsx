@@ -3,12 +3,13 @@ import { optLabel, optValue } from '@shared/types'
 import { RefSelect } from './RefSelect'
 import { cls, fmtDate, fmtDateTime, fmtMoney, fmtNum } from '../lib/format'
 import { Badge } from '../ui/kit'
+import { AIWriting } from './AIWriting'
 import { Check } from 'lucide-react'
 
-export function FieldInput({ f, value, label, onChange, disabled, invalid, compact, onRef }: { f: FieldDef; value: any; label?: string; onChange: (v: any, label?: string) => void; disabled?: boolean; invalid?: boolean; compact?: boolean; onRef?: (id: number | null) => void }) {
+export function FieldInput({ f, value, label, onChange, disabled, invalid, compact, onRef, writingModule }: { f: FieldDef; value: any; label?: string; onChange: (v: any, label?: string) => void; disabled?: boolean; invalid?: boolean; compact?: boolean; onRef?: (id: number | null) => void; writingModule?: string }) {
   const common = { disabled, 'aria-invalid': invalid || undefined, id: `f-${f.name}` } as const
   switch (f.type) {
-    case 'textarea': return <textarea className={cls('textarea', invalid && 'invalid')} {...common} value={value ?? ''} onChange={e => onChange(e.target.value)} rows={compact ? 1 : 3} />
+    case 'textarea': return <><textarea className={cls('textarea', invalid && 'invalid')} {...common} value={value ?? ''} onChange={e => onChange(e.target.value)} rows={compact ? 1 : 3} />{!compact && !disabled && !f.secret && <AIWriting module={writingModule} maxLength={f.max} label={f.label} value={String(value ?? "")} onChange={onChange} />}</>
     case 'int': case 'number': case 'percent': case 'money':
       return <input className={cls('input', invalid && 'invalid', compact && 'text-right')} {...common} type="number" inputMode="decimal" step={f.type === 'int' ? 1 : f.type === 'money' ? 0.01 : 'any'} min={f.min} max={f.max} value={value ?? ''} placeholder={f.placeholder} onChange={e => onChange(e.target.value === '' ? null : Number(e.target.value))} />
     case 'date': return <input className={cls('input', invalid && 'invalid')} {...common} type="date" value={value ?? ''} onChange={e => onChange(e.target.value || null)} />

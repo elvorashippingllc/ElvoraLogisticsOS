@@ -3,7 +3,7 @@ import { X, ChevronDown, Loader2, Inbox, ChevronLeft, ChevronRight } from 'lucid
 import { cls } from '../lib/format'
 import { statusTone } from '../lib/status'
 
-export function Modal({ open, onClose, title, children, footer, width = 560, persistent = false }: { open: boolean; onClose: () => void; title: ReactNode; children: ReactNode; footer?: ReactNode; width?: number; persistent?: boolean }) {
+export function Modal({ open, onClose, title, children, footer, width = 560, persistent = false, className }: { open: boolean; onClose: () => void; title: ReactNode; children: ReactNode; footer?: ReactNode; width?: number; persistent?: boolean; className?: string }) {
   const dialog = useRef<HTMLDivElement>(null), titleId = useId(), close = useRef(onClose)
   close.current = onClose
   useEffect(() => {
@@ -26,7 +26,7 @@ export function Modal({ open, onClose, title, children, footer, width = 560, per
   if (!open) return null
   return (
     <div className="overlay" onMouseDown={e => { if (e.target === e.currentTarget && !persistent) onClose() }}>
-      <div ref={dialog} className="modal" style={{ maxWidth: width }} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}>
+      <div ref={dialog} className={cls("modal", className)} style={{ maxWidth: width }} role="dialog" aria-modal="true" aria-labelledby={titleId} tabIndex={-1}>
         <div className="modal-head"><span id={titleId}>{title}</span><button className="btn ghost icon sm" onClick={onClose} aria-label="Close"><X /></button></div>
         <div className="modal-body">{children}</div>
         {footer && <div className="modal-foot">{footer}</div>}

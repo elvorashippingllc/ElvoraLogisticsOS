@@ -74,3 +74,9 @@ The Email screen uses the same typography and controls. Write email contains exp
 ## Dashboard color roles
 
 Shipment cards use deep ocean blue and cool blue-green surfaces. The monthly ledger uses Elvora green; sales and collection work uses warm ochre. Documents and delivery have quieter neutral and green surfaces. These roles are attached to the work itself, so permission-based filtering does not change their meaning. Detailed tables and chart bodies remain calm reading surfaces. Both light and dark themes retain labeled states and readable contrast; no new assets or dashboard actions are introduced.
+
+## Ocean control desk refresh
+
+The staff welcome now uses an ocean-blue control desk with warm action highlights. A shipment desk shows the next five scheduled departures and arrivals, sorted by date, using the existing seven-day lists. Each ticket opens its job. Missing movement dates produce a useful empty state; no figures are invented. The existing manual workflow carousel, charts and permission-based metrics remain available. The dashboard stays the default after sign-in, including the demo sign-in; password setup and two-factor authentication still apply.
+
+The extra E image in the Workspace introduction has been removed. Sidebar workspace dialogs enter from the sidebar direction over 280 ms; link arrows acknowledge hover. Reduced-motion settings disable those effects. Keyboard focus and Escape handling remain in the shared dialog.
