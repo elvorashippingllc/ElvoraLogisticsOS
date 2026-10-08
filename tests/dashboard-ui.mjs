@@ -49,9 +49,11 @@ try {
   }
   await checkDashboardContrast()
   await page.evaluate(() => document.documentElement.dataset.theme = 'dark')
+  await page.waitForTimeout(300)
   await checkDashboardContrast()
   await capture('dark')
   await page.evaluate(() => delete document.documentElement.dataset.theme)
+  await page.waitForTimeout(300)
 
   const carousel = page.getByLabel('Shipment workflow steps')
   await page.getByRole('button', { name: 'Next workflow steps' }).click()

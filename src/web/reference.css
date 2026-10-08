@@ -279,3 +279,10 @@ table.grid td { font-size: 14px; }
 }
 .dashboard-page :is(.workflow-shipment,.workflow-collections,.metric-ocean[role='button']):focus-visible { outline-color: #f5e5bf; }
 :root[data-theme='dark'] .dashboard-page :is(.workflow-step,.daily-schedule a,.kpi[role='button']):focus-visible { outline-color: #f5e5bf; }
+/* Override older position-based dark KPI rules with the dashboard's named roles. */
+:root[data-theme='dark'] .dashboard-page .dashboard-metrics .kpi :is(.l,.v,.text-muted) { color: #dceee1; }
+:root[data-theme='dark'] .dashboard-page .dashboard-metrics .kpi.metric-ocean { background: var(--dash-ocean); }
+:root[data-theme='dark'] .dashboard-page .dashboard-metrics .kpi.metric-transit { background: var(--dash-transit); }
+:root[data-theme='dark'] .dashboard-page .dashboard-metrics .kpi.metric-revenue { background: var(--dash-revenue); }
+:root[data-theme='dark'] .dashboard-page .dashboard-metrics .kpi.metric-collections { background: var(--dash-collections); }
+:root[data-theme='dark'] .dashboard-page .dashboard-metrics .kpi.metric-collections :is(.l,.v,.text-muted) { color: var(--dash-collections-text); }
