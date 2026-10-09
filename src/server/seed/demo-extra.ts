@@ -1,4 +1,5 @@
 import { loadUser } from '../auth'
+import { demoSickLeaveDates } from './dates'
 /** Additional demo scenarios layered on the core demo data: every status, exception and workflow the product supports. */
 import fs from 'node:fs'
 import path from 'node:path'
@@ -180,7 +181,7 @@ export async function seedExtras(ctx: Ctx) {
     buildWps(period, { save: true })
     const e = (n: string) => q.val<number>(`SELECT id FROM employees WHERE name LIKE ?`, n + '%')!
     mk('leave_requests', { employee_id: e('Omar'), type: 'Annual', from_date: d(14), to_date: d(21), days: 6, reason: 'Family travel' })
-    const lr = mk('leave_requests', { employee_id: e('Priya'), type: 'Sick', from_date: d(-6), to_date: d(-5), days: 2, reason: 'Medical certificate attached' }); patchRecord(getDef('leave_requests'), lr.id, { status: 'Approved', approver_id: sara }, ctx)
+    const lr = mk('leave_requests', { employee_id: e('Priya'), type: 'Sick', ...demoSickLeaveDates(today), reason: 'Medical certificate attached' }); patchRecord(getDef('leave_requests'), lr.id, { status: 'Approved', approver_id: sara }, ctx)
     for (let k = 1; k <= 5; k++) for (const n of ['Layla', 'Omar', 'Priya', 'Khalid']) { try { mk('attendance', { employee_id: e(n), att_date: d(-k), check_in: `${d(-k)}T08:${50 - k}`, check_out: `${d(-k)}T17:${10 + k}`, status: k === 3 && n === 'Omar' ? 'Late' : 'Present' }) } catch { /* weekends or duplicates */ } }
     mk('fixed_assets', { name: 'Isuzu NPR 7-ton truck DXB K 44721', category: 'Vehicles', purchase_date: d(-500), cost: 145000, life_years: 7, salvage_value: 20000, vendor_id: v1, warranty_expiry: d(220), next_maintenance: d(35) })
     const po = mk('purchase_orders', { vendor_id: v4, po_date: d(-4), expected_date: d(6), requested_by: omar, children: { lines: [{ description: 'Pallets (EUR) × 200', qty: 200, rate: 32, vat_pct: 5 }, { description: 'Stretch wrap rolls', qty: 120, rate: 14, vat_pct: 5 }] } })

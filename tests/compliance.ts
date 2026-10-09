@@ -1,4 +1,5 @@
 import { signInReady } from './login-ready'
+import { todayStr } from '../src/server/util'
 /* UAE compliance suite. Usage: server running on an empty data directory, then: npx tsx tests/compliance.ts */
 export {}
 const BASE = process.env.BASE_URL ?? 'http://localhost:8080'
@@ -12,7 +13,7 @@ async function api(method: string, path: string, body?: any): Promise<any> {
 }
 function ok(name: string, cond: any, extra?: any) { if (cond) { pass++; console.log('  ✓', name) } else { fail++; failures.push(name); console.log('  ✗', name, extra !== undefined ? JSON.stringify(extra).slice(0, 400) : '') } }
 const sec = (t: string) => console.log('\n' + t)
-const today = new Date().toLocaleDateString('sv-SE')
+const today = todayStr()
 
 async function main() {
   let r = await api('POST', '/api/auth/login', { email: 'admin@elvorashipping.com', password: 'Elvora@Admin2026' }); ok('admin signs in', r.data.ok)
