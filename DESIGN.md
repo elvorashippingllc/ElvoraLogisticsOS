@@ -226,3 +226,9 @@ Sign-in uses an existing brand-green panel and a floating white form. Existing r
 - **Don't** turn the narrow shortcut rail into a competing full module sidebar.
 - **Don't** clip operational fields or hide modal actions inside scrolling field content.
 - **Don't** redraw the verified favicon mark; retain exports from public/brand/icon-primary.png.
+
+### Company calendar
+
+The calendar is an operating surface using Month, Week, Day and Agenda views. Emerald identifies selection, today and scheduling actions; module colors identify event groups with text labels and a filterable legend. Event chips use matching pastel backgrounds and dark text; dark mode uses tinted dark surfaces with light text. Red overdue and ochre due-soon labels remain separate from activity colors. The shared Back navigation and existing Elvora assets remain visible.
+
+A full selected-day schedule sits beside the desktop month/week board; on mobile, compact day counts lead to details below. Search, assignment, completion and deadline filters reduce dense schedules without hiding access to full records. Personal notifications occupy a separate alert panel. Civil date arithmetic follows the company timezone and preserves multi-day ranges. See docs/CALENDAR.md for coverage and behavior.
