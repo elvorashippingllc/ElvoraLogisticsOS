@@ -6,7 +6,7 @@ colors:
   fold: "#025e3d"
   signal: "#c32135"
   graphite: "#161d1a"
-  bg: "#f5f6f4"
+  bg: "#f1f6f3"
   card: "#ffffff"
   ink: "#161d1a"
   body: "#3f4f47"
@@ -115,7 +115,7 @@ components:
     padding: "11px 16px"
     typography: "{typography.navigation}"
   navigation-pill-active:
-    backgroundColor: "{colors.graphite}"
+    backgroundColor: "{colors.emerald}"
     textColor: "{colors.card}"
     rounded: "{rounded.pill}"
   workspace-card:
@@ -155,7 +155,7 @@ The same surface language spans workspaces, dashboards, records, forms, dialogs 
 
 ## Colors
 
-Elvora emerald leads actions; deep fold green anchors the cash card and first workspace card. Graphite identifies active navigation and strong secondary actions. Signal red remains reserved for errors and destructive operations. Ocean, teal, aviation, copper and violet preserve module and chart meanings; existing pastel status colours remain available.
+Elvora emerald leads actions; deep fold green anchors the cash card and first workspace card. Emerald and fold green identify active primary navigation and workspace shortcuts; graphite remains available for strong secondary actions. Signal red remains reserved for errors and destructive operations. Ocean, teal, aviation, copper and violet preserve module and chart meanings; existing pastel status colours remain available.
 
 The light canvas, white surfaces, soft green and champagne tints create tonal separation. Ink, body and muted establish the reading hierarchy; line colours divide data and outline fields. Reverse-muted labels support green cards. Dark mode keeps semantic variable overrides from the stylesheets, including the dark canvas and card surfaces; use variables for shared surfaces.
 
@@ -193,15 +193,15 @@ Buttons are compact capsules with a shared minimum height (40px), small controls
 
 ### Navigation and tabs
 
-Primary pills are white at rest and graphite with white text when active. Circular rail items use the same active language. Hover uses soft ground and emerald emphasis. Accessible names remain on icon-only controls. Record tabs use soft grouping ground and graphite active capsules. Search keeps Ctrl/Cmd+K access.
+Primary pills are white at rest and emerald with white text when active. Rail shortcuts use fold green with white text when active. A shared Back button precedes each working section, including Workspaces and Dashboard. It returns through in-app history; a direct entry falls back to the related workspace, the workspace index, or Dashboard from the index. Printed documents omit this navigation. Hover uses soft ground and emerald emphasis. Accessible names remain on icon-only controls. Record tabs use soft grouping ground and graphite active capsules. Search keeps Ctrl/Cmd+K access.
 
 ### Workspace and feature cards
 
-Workspace cards show an icon, wrapping name, up to three previews, feature count and opening cue. All permitted features appear in the destination grid. Cards alternate white, green and champagne tints, with the first card deep green. Feature cards combine icon, wrapping label and directional arrow on a white lifted surface. Search retains direct links and clear empty-state actions.
+Workspace cards show an icon, wrapping name, up to three previews, feature count and opening cue. All permitted features appear in the destination grid. Cards alternate mint, champagne and sky tints, with the first card deep green; dark mode uses corresponding green, warm and blue surfaces. Feature cards combine a mint icon tile, wrapping label and directional arrow on a white lifted surface. Search retains direct links and clear empty-state actions.
 
 ### Dashboard overview and cash card
 
-Owner ledger and actual shipment mix sit alongside a deep green cash card and circular operational shortcuts. Charts retain real API values and existing module colours. Missing data uses existing empty states. Other operational panels, tasks and metrics remain accessible beneath the overview.
+Owner ledger and actual shipment mix sit alongside a deep green cash card and circular operational shortcuts. Charts retain real API values and existing module colours. Missing data uses existing empty states. The dashboard welcome uses fold green, metrics and workflow stages use richer semantic tints, and shared panel headers use a light tint of their module accent. Other operational panels, tasks and metrics remain accessible beneath the overview.
 
 ### Status chips, tables and dialogs
 

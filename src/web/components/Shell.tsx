@@ -1,8 +1,8 @@
 import type { NavGroup } from '@shared/types'
 import { useEffect, useState, type ReactNode } from 'react'
-import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { Link, Outlet, useLocation, useNavigate, useNavigationType } from 'react-router-dom'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Bell, Search, User, Mail, LayoutGrid, ChevronRight, Check } from 'lucide-react'
+import { ArrowLeft, Bell, Search, User, Mail, LayoutGrid, ChevronRight, Check } from 'lucide-react'
 import { useMeta } from '../lib/meta'
 import { get, post } from '../lib/api'
 import { cls, fmtIsoStamp } from '../lib/format'
@@ -45,6 +45,22 @@ function NotificationBell() {
   )
 }
 
+function SectionBack({ fallback }: { fallback: string }) {
+  const location = useLocation(), navigate = useNavigate(), navigationType = useNavigationType()
+  const [history, setHistory] = useState({ keys: [location.key], index: 0 })
+  useEffect(() => {
+    setHistory(history => {
+      const { keys, index } = history
+      if (keys[index] === location.key) return history
+      const previousIndex = keys.indexOf(location.key)
+      if (navigationType === 'POP') return previousIndex >= 0 ? { keys, index: previousIndex } : { keys: [location.key], index: 0 }
+      if (navigationType === 'REPLACE') return { keys: keys.map((key, i) => i === index ? location.key : key), index }
+      return { keys: [...keys.slice(0, index + 1), location.key], index: index + 1 }
+    })
+  }, [location.key, navigationType])
+  return <button type="button" className="btn outline section-back" aria-label="Back to previous section" onClick={() => history.index > 0 ? navigate(-1) : navigate(fallback, { replace: true })}><ArrowLeft size={17} /><span>Back</span></button>
+}
+
 export function Shell() {
   const { me, setMe, meta } = useMeta()
   const nav = useNavigate()
@@ -84,7 +100,7 @@ export function Shell() {
           {me?.demo && !isPrint && <div className="demo-notice no-print"><span><strong>Demo workspace</strong> · fictional data · external sending disabled</span><details><summary>Details</summary><p>Isolated from production. Resets every night. External e-mail, WhatsApp and integrations are switched off.</p><button className="btn outline sm" onClick={async () => { if (confirm('Restore the demo to its original state and sign out?')) { await post('/api/demo/reset'); window.location.href = '/login' } }}>Reset demo</button></details></div>}
           {me?.defaultPassword && !me?.demo && !isPrint && <div className="no-print bg-gold text-[#6b4a00] px-4 py-2 text-sm font-semibold flex items-center gap-3 flex-wrap">⚠ You are signed in with the default password. <Link to="/profile" className="underline">Change it now</Link></div>}
           <main className="app-main flex-1 overflow-y-auto p-4 md:p-6" id="main">
-            {!isPrint && loc.pathname !== '/' && <nav className="workspace-breadcrumb no-print" aria-label="Breadcrumb"><Link to="/"><LayoutGrid size={16} />Workspaces</Link>{activeGroup && <><ChevronRight size={14} /><Link to={workspacePath(activeGroup)}>{activeGroup.label}</Link></>}</nav>}
+            {!isPrint && <div className="section-navigation no-print"><SectionBack fallback={loc.pathname === '/' ? '/dashboard' : activeGroup && loc.pathname !== workspacePath(activeGroup) ? workspacePath(activeGroup) : '/'} />{loc.pathname !== '/' && <nav className="workspace-breadcrumb" aria-label="Breadcrumb"><Link to="/"><LayoutGrid size={16} />Workspaces</Link>{activeGroup && <><ChevronRight size={14} /><Link to={workspacePath(activeGroup)}>{activeGroup.label}</Link></>}</nav>}</div>}
             <Outlet context={{ openGuide: () => setGuide(true), openSearch: () => setPalette(true), logout }} />
           </main>
           <footer className="statusbar no-print"><span className="s1">User : {me?.email}</span><span className="s2"><Clock /></span><span className="s3 flex-1">Elvora Logistics OS</span><ProductBrand compact /></footer>

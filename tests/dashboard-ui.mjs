@@ -28,6 +28,34 @@ try {
   await page.waitForURL('**/dashboard')
   await page.getByRole('heading', { name: 'Move each shipment forward' }).waitFor()
   await page.getByRole('heading', { name: 'Next on the shipment desk' }).waitFor()
+  const back = page.getByRole('button', { name: 'Back to previous section', exact: true })
+  await back.waitFor()
+  await page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: 'Workspaces', exact: true }).click()
+  await page.locator('.workspace-card').first().click()
+  await back.click(); await page.waitForURL(base + '/')
+  await back.click(); await page.waitForURL(base + '/dashboard')
+  await page.goForward(); await page.waitForURL(base + '/')
+  await back.click(); await page.waitForURL(base + '/dashboard')
+  // A fresh shell has no prior in-app section; its fallback must stay inside the app.
+  const direct = await context.newPage()
+  await direct.goto(base + '/email')
+  await direct.getByRole('button', { name: 'Back to previous section', exact: true }).click()
+  await direct.waitForURL(/\/(workspace\/[^/]+)?$/)
+  assert.notEqual(new URL(direct.url()).pathname, '/email')
+  await direct.close()
+  const checkBackContrast = async () => {
+    const ratio = await back.evaluate(el => {
+      const canvas = document.createElement('canvas'), ctx = canvas.getContext('2d')
+      const luminance = color => {
+        ctx.fillStyle = color; ctx.fillRect(0, 0, 1, 1)
+        return Array.from(ctx.getImageData(0, 0, 1, 1).data).slice(0, 3).map(v => { v /= 255; return v <= .04045 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4 }).reduce((sum, v, i) => sum + v * [.2126, .7152, .0722][i], 0)
+      }
+      const style = getComputedStyle(el), a = luminance(style.color), b = luminance(style.backgroundColor)
+      return (Math.max(a, b) + .05) / (Math.min(a, b) + .05)
+    })
+    assert.ok(ratio >= 4.5, 'Back button text meets 4.5:1 contrast')
+  }
+  await back.hover(); await checkBackContrast(); await page.mouse.move(0, 0); await checkBackContrast()
   await page.evaluate(() => document.fonts.ready)
   const sidebarLabels = await page.locator('.rail-shortcut-label').evaluateAll(nodes => nodes.map(n => {
     const label = n.getBoundingClientRect(), button = n.parentElement.getBoundingClientRect()
@@ -57,6 +85,7 @@ try {
   await page.waitForFunction(() => getComputedStyle(document.querySelector('.metric-transit .v')).color === 'rgb(220, 238, 225)')
   await checkDashboardContrast()
   await capture('dark')
+  await back.hover(); await checkBackContrast(); await page.mouse.move(0, 0); await checkBackContrast()
   await page.evaluate(() => delete document.documentElement.dataset.theme)
   await page.waitForTimeout(300)
 
