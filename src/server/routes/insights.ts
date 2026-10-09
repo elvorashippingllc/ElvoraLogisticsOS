@@ -1,3 +1,5 @@
+import { calendarEvents } from '../calendar'
+import { config } from '../config'
 import type { FastifyInstance } from 'fastify'
 import { q } from '../db'
 import { ENTITIES } from '../../shared/entities'
@@ -135,31 +137,16 @@ export default async function (app: FastifyInstance) {
   })
 
   // ------------------------------------------------------------------ calendar
+  app.get('/api/calendar/context', async (req) => {
+    need(req, 'dashboard', 'view')
+    return { today: todayStr(), timezone: config.timezone }
+  })
   app.get('/api/calendar', async (req) => {
-    const s = req.query as any
-    const from = String(s.from ?? monthStart()), to = String(s.to ?? addDays(monthStart(), 42))
-    const user = req.user!
-    const ev: any[] = []
-    const add = (type: string, color: string, id: number, title: string, start: string | null, link: string, end?: string | null) => { if (start) ev.push({ type, color, id, title, start, end: end ?? null, link }) }
-    if (can(user, 'jobs', 'view')) {
-      for (const j of q.all(`SELECT id, job_no, etd, eta, department FROM jobs WHERE deleted_at IS NULL AND job_status NOT IN ('CANCELLED') AND ((substr(etd,1,10) BETWEEN ? AND ?) OR (substr(eta,1,10) BETWEEN ? AND ?))`, from, to, from, to)) {
-        if (j.etd && j.etd.slice(0, 10) >= from && j.etd.slice(0, 10) <= to) add('ETD', '#007B52', j.id, `ETD ${j.job_no}`, j.etd, `/jobs/${j.id}`)
-        if (j.eta && j.eta.slice(0, 10) >= from && j.eta.slice(0, 10) <= to) add('ETA', '#344D77', j.id, `ETA ${j.job_no}`, j.eta, `/jobs/${j.id}`)
-      }
-    }
-    if (can(user, 'crm', 'view')) for (const a of q.all(`SELECT id, type, subject, start_at, end_at FROM activities WHERE deleted_at IS NULL AND status <> 'Cancelled' AND substr(start_at,1,10) BETWEEN ? AND ?`, from, to)) add(a.type, '#8C4329', a.id, `${a.type}: ${a.subject}`, a.start_at, `/e/activities/${a.id}`, a.end_at)
-    if (can(user, 'projects', 'view')) for (const t of q.all(`SELECT id, title, due_date FROM tasks WHERE deleted_at IS NULL AND status <> 'Done' AND due_date BETWEEN ? AND ?`, from, to)) add('Task', '#C32135', t.id, `Task: ${t.title}`, t.due_date, `/e/tasks/${t.id}`)
-    if (can(user, 'transport', 'view')) for (const t of q.all(`SELECT id, order_no, pickup_at, delivery_location FROM transport_orders WHERE deleted_at IS NULL AND status NOT IN ('Cancelled') AND substr(pickup_at,1,10) BETWEEN ? AND ?`, from, to)) add('Trip', '#0F7F8C', t.id, `Trip ${t.order_no} → ${t.delivery_location ?? ''}`, t.pickup_at, `/e/transport_orders/${t.id}`)
-    if (can(user, 'hr', 'view')) for (const l of q.all(`SELECT l.id, e.name, l.type, l.from_date, l.to_date FROM leave_requests l JOIN employees e ON e.id = l.employee_id WHERE l.deleted_at IS NULL AND l.status IN ('Approved','Pending') AND l.from_date <= ? AND l.to_date >= ?`, to, from)) add('Leave', '#493D72', l.id, `${l.name} – ${l.type} leave`, l.from_date, `/e/leave_requests/${l.id}`, l.to_date)
-    if (can(user, 'finance', 'view')) {
-      for (const i of q.all(`SELECT id, invoice_no, due_date, balance FROM invoices WHERE deleted_at IS NULL AND status IN ('Posted','Partially paid') AND balance > 0 AND doc_type IN ('Tax Invoice','Debit Note') AND due_date BETWEEN ? AND ?`, from, to)) add('Invoice due', '#C32135', i.id, `Invoice ${i.invoice_no} due`, i.due_date, `/e/invoices/${i.id}`)
-      for (const b of q.all(`SELECT id, bill_no, due_date FROM bills WHERE deleted_at IS NULL AND status IN ('Posted','Partially paid') AND balance > 0 AND due_date BETWEEN ? AND ?`, from, to)) add('Bill due', '#161D1A', b.id, `Bill ${b.bill_no} due`, b.due_date, `/e/bills/${b.id}`)
-    }
-    if (can(user, 'sales', 'view')) {
-      for (const c of q.all(`SELECT id, contract_no, end_date FROM contracts WHERE deleted_at IS NULL AND status = 'Active' AND end_date BETWEEN ? AND ?`, from, to)) add('Contract end', '#8C4329', c.id, `Contract ${c.contract_no} ends`, c.end_date, `/e/contracts/${c.id}`)
-      for (const qt of q.all(`SELECT id, quote_no, valid_until FROM quotations WHERE deleted_at IS NULL AND status = 'Sent' AND valid_until BETWEEN ? AND ?`, from, to)) add('Quote expiry', '#E5D1A4', qt.id, `Quote ${qt.quote_no} expires`, qt.valid_until, `/e/quotations/${qt.id}`)
-    }
-    return ev
+    need(req, 'dashboard', 'view')
+    const range = z.object({ from: z.string().date().optional(), to: z.string().date().optional() }).parse(req.query)
+    const from = range.from ?? monthStart(), to = range.to ?? addDays(from, 41)
+    if (to < from || daysBetween(from, to) > 93) throw bad('Choose a calendar range of up to 94 days.')
+    return calendarEvents(from, to, req.ctx)
   })
 
   // ------------------------------------------------------------------ notifications

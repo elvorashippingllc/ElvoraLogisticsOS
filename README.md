@@ -44,6 +44,10 @@ UAE compliance (licence register, licensed-activity guard, VAT/TRN rules, sancti
 
 See [docs/FEATURES.md](docs/FEATURES.md) (features & limits), [docs/INTEGRATIONS.md](docs/INTEGRATIONS.md) (Resend, R2, Supabase, WhatsApp, e-invoicing…), [docs/AI-TEAM.md](docs/AI-TEAM.md) (Jarvis & AI employees) and [docs/DEPLOY.md](docs/DEPLOY.md).
 
+## Company calendar
+
+Open Calendar to view dated records across the OS in Month, Week, Day or Agenda view. Filter by activity color, assignment and urgency; schedule meetings, calls, visits and tasks; review your unread alerts. See [docs/CALENDAR.md](docs/CALENDAR.md).
+
 ## Tests
 
 `npm run typecheck`; with the server running on an empty database: `npm test` (135 API checks). Integrations/AI/finance extensions: start the API with `WA_GRAPH_URL=http://localhost:9099/graph RESEND_API_URL=http://localhost:9099/resend R2_ENDPOINT=http://localhost:9099/r2` on a fresh data dir, then `npm run test:integrations` (83 checks against built-in mock providers). `npm run test:compliance` (65 checks, UAE rules) and `npm run test:handover` (48 checks) proves production is empty, the demo is rich and the two are isolated; run it on a fresh data directory.
