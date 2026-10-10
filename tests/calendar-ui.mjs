@@ -51,6 +51,12 @@ try {
   await page.evaluate(() => document.documentElement.dataset.theme = 'dark'); await page.waitForTimeout(200); await check(); await page.screenshot({ path: out + '/dark.png', fullPage: true })
   await page.evaluate(() => delete document.documentElement.dataset.theme)
   await page.setViewportSize({ width: 390, height: 844 }); await check(); await page.locator('.calendar-board').scrollIntoViewIfNeeded(); await page.screenshot({ path: out + '/mobile.png', fullPage: true })
+  // Counts are hidden on desktop: they must inherit the current cell text color
+  // when a theme switch is followed by the mobile breakpoint.
+  await page.evaluate(() => document.documentElement.dataset.theme = 'dark'); await check()
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.evaluate(() => delete document.documentElement.dataset.theme)
+  await page.setViewportSize({ width: 390, height: 844 }); await check()
   assert.ok(await page.locator('.calendar-mobile-dots .calendar-dot').count() > 0, 'mobile days retain activity colors')
   await page.locator('.calendar-mobile-count').filter({ hasText: /events/ }).first().click(); await page.locator('.calendar-day-detail .calendar-event-row').first().waitFor()
   assert.deepEqual(errors, [])
