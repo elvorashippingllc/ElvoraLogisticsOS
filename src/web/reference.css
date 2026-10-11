@@ -454,3 +454,57 @@ table.grid td { font-size: 14px; }
 :root[data-theme='dark'] .calendar-page input { color-scheme: dark; }
 
 :root[data-theme='dark'] .dashboard-page :is(.workflow-open,.quick-work a) { color: #b9dec9; }
+
+/* Seal-blue wayfinding and emerald actions: a quiet Elvora shipment desk. */
+.dashboard-page {
+  --desk-blue: #172b85;
+  --desk-blue-soft: #edf1fb;
+  --desk-green-soft: #edf5f0;
+  --desk-rule: #cbd5ef;
+}
+:root[data-theme='dark'] .dashboard-page {
+  --desk-blue: #b9c8ff;
+  --desk-blue-soft: #1c2945;
+  --desk-green-soft: #19362b;
+  --desk-rule: #40557d;
+}
+.dashboard-page .control-welcome {
+  padding: 22px 24px;
+  border-radius: 16px;
+  border-inline-start: 4px solid var(--desk-blue);
+  background: var(--desk-blue-soft);
+  position: relative;
+  overflow: hidden;
+}
+.dashboard-page .control-welcome h1 { color: var(--desk-blue); }
+.dashboard-page .control-welcome::after {
+  content: ''; position: absolute; width: 180px; height: 180px;
+  border: 1px solid var(--desk-rule); border-radius: 50%;
+  inset-inline-end: -90px; top: -100px; pointer-events: none;
+  box-shadow: 0 0 0 18px var(--desk-blue-soft), 0 0 0 19px var(--desk-rule);
+}
+.dashboard-page .control-welcome > * { position: relative; z-index: 1; }
+.dashboard-page .dashboard-metrics .kpi { border-block-start: 3px solid var(--desk-rule); }
+.dashboard-page .dashboard-metrics .metric-ocean { background: var(--desk-blue-soft); border-block-start-color: var(--desk-blue); }
+.dashboard-page .dashboard-metrics .metric-ocean .v { color: var(--desk-blue); }
+.dashboard-page .dashboard-metrics .metric-revenue { background: var(--desk-green-soft); border-block-start-color: var(--emerald); }
+.dashboard-page .panel-head { border-inline-start: 3px solid var(--desk-blue); }
+.dashboard-page .dashboard-attention > summary { background: var(--desk-blue-soft); border-radius: 12px 12px 0 0; }
+.dashboard-page .dashboard-disclosure > summary::before { color: var(--desk-blue); transition: transform 180ms var(--ease); }
+.dashboard-page .movement-ticket { border-inline-start: 3px solid var(--desk-rule); }
+.dashboard-page :is(.dashboard-alert,.workflow-step,.movement-ticket,.kpi[role='button']) {
+  transition: background 180ms, border-color 180ms, transform 180ms var(--ease), box-shadow 180ms;
+}
+.dashboard-page :is(.dashboard-alert,.movement-ticket):hover { background: var(--desk-blue-soft); }
+.dashboard-page :is(.kpi[role='button'],.workflow-step,.movement-ticket):hover { box-shadow: 0 6px 16px -12px var(--desk-blue); }
+:is(.btn,.primary-pill,.rail-link):not(:disabled):active,
+.dashboard-page :is(.kpi[role='button'],.workflow-step,.movement-ticket,.dashboard-alert):active { transform: translateY(1px) scale(.985); }
+.dashboard-page .desk-arrive { animation: desk-arrive 440ms cubic-bezier(.2,.7,.2,1) both; }
+@keyframes desk-arrive { from { opacity: .65; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@media (max-width: 640px) { .dashboard-page .control-welcome { padding: 18px; } }
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-page .desk-arrive { animation: none; }
+  :is(.btn,.primary-pill,.rail-link):active,
+  .dashboard-page :is(.kpi[role='button'],.workflow-step,.movement-ticket,.dashboard-alert):active { transform: none; }
+}
+@media print { .dashboard-page .desk-arrive { animation: none; } }

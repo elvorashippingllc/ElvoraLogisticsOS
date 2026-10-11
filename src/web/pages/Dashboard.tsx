@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Bot, Plus, ArrowRight, AlertTriangle, Info, TriangleAlert, Plane, Ship, Wallet, FileText, Truck, CalendarDays, LayoutGrid, ChevronLeft, ChevronRight, Mail } from 'lucide-react'
@@ -16,13 +16,26 @@ export function Dashboard() {
   const { me, can, meta } = useMeta()
   const nav = useNavigate()
   const q = useQuery({ queryKey: ['dashboard'], queryFn: () => get<any>('/api/dashboard'), refetchInterval: 120000 })
+  const dashboardRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const root = dashboardRef.current
+    if (!root || !window.IntersectionObserver || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) if (entry.isIntersecting) {
+        entry.target.classList.add('desk-arrive')
+        observer.unobserve(entry.target)
+      }
+    }, { threshold: 0.08 })
+    root.querySelectorAll(':scope > section, :scope > .panel, :scope > details, :scope > .dashboard-top').forEach(el => observer.observe(el))
+    return () => observer.disconnect()
+  }, [q.data])
   if (q.error) return <ErrorBox error={q.error} onRetry={() => void q.refetch()} />
   if (!q.data) return <Loading />
   const d = q.data, k = d.kpis ?? {}
   const base = meta?.settings.base_currency ?? 'AED'
 
   if (d.portal) return (
-    <div className="fade-in dashboard-page">
+    <div ref={dashboardRef} className="fade-in dashboard-page">
       <Welcome name={me?.name} portal />
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5"><Kpi label="Open shipments" value={k.open_jobs} /><Kpi label="Delivered" value={k.delivered} /><Kpi label={`Outstanding (${base})`} value={fmtMoney(k.outstanding)} /></div>
       <Panel title="Your recent shipments" color={C.teal} bodyClass="table-wrap"><table className="grid"><thead><tr><th>Job No</th><th>From</th><th>To</th><th>Departure</th><th>Arrival</th><th>Status</th></tr></thead><tbody>{d.recent_jobs.map((j: any) => <tr key={j.id} className="clickable" onClick={() => nav(`/jobs/${j.id}`)}><td><Link className="link" to={`/jobs/${j.id}`}>{j.job_no}</Link></td><td>{j.pol}</td><td>{j.pod}</td><td>{fmtDateTime(j.etd)}</td><td>{fmtDateTime(j.eta)}</td><td><Badge value={j.operational_status ?? j.job_status} /></td></tr>)}</tbody></table></Panel>
@@ -46,7 +59,7 @@ export function Dashboard() {
 
   const ch = d.charts ?? {}, ls = d.lists ?? {}
   return (
-    <div className="fade-in dashboard-page">
+    <div ref={dashboardRef} className="fade-in dashboard-page">
       <Welcome name={me?.name} />
       <section aria-label="Business at a glance"><div className="dashboard-metrics">{tiles.slice(0, 4).map(t => <Kpi key={t.label} className={t.surface ? `metric-${t.surface}` : undefined} label={t.label} value={t.value ?? 0} hint={t.hint} onClick={t.to && (!t.to.startsWith('/reports') || (can('reports', 'view') && can('finance', 'view'))) ? () => nav(t.to!) : undefined} />)}</div></section>
       {d.alerts?.length > 0 && <details className="dashboard-disclosure dashboard-attention" open><summary>Needs attention <span>{d.alerts.length}</span></summary><div className="dashboard-alerts">{d.alerts.map((a: any, i: number) => (

@@ -132,6 +132,15 @@ try {
     await serviceForm.getByRole('button', { name: 'Cancel', exact: true }).click()
   }
   await page.goto(base + '/email'); await page.getByRole('button', { name: 'Help me write', exact: true }).click(); await page.getByLabel('What should this say?').fill('Ask for the delivery address'); await page.getByRole('button', { name: 'Create draft', exact: true }).click(); await page.getByText('AI writing requires a connected provider in your live workspace', { exact: true }).waitFor(); await page.getByLabel('Subject', { exact: true }).fill('Draft for review'); await page.getByLabel('Message', { exact: true }).fill('Please confirm the delivery address.'); await page.getByRole('button', { name: 'Save draft', exact: true }).click(); await page.getByRole('button', { name: /Saved drafts/ }).click(); await page.getByText('Draft for review', { exact: true }).waitFor(); await page.getByRole('button', { name: 'Continue writing', exact: true }).click(); assert.equal(await page.getByLabel('Message', { exact: true }).inputValue(), 'Please confirm the delivery address.');
+  await page.emulateMedia({ reducedMotion: 'no-preference' })
+  await page.goto(base + '/dashboard')
+  await page.locator('.dashboard-metrics').first().waitFor()
+  await page.waitForFunction(() => !!document.querySelector('.dashboard-page .desk-arrive'))
+  assert.notEqual(await page.locator('.control-welcome').evaluate(el => getComputedStyle(el).backgroundColor), 'rgba(0, 0, 0, 0)', 'welcome has a brand tint')
+  await page.locator('.dashboard-business').scrollIntoViewIfNeeded()
+  await page.waitForFunction(() => document.querySelector('.dashboard-business')?.classList.contains('desk-arrive'))
+  await page.emulateMedia({ reducedMotion: 'reduce' })
+  assert.equal(await page.locator('.desk-arrive').first().evaluate(el => getComputedStyle(el).animationName), 'none', 'reduced motion disables scroll reveal')
   assert.deepEqual(errors, []); console.log('PASS: sign-in dashboard landing, desktop/mobile contrast and layout, carousel, sidebar motion and focus, saved email drafts, AI demo guidance and vendor-service forms');
   if (process.env.UI_CAPTURE_PRINT === 'true') for (const name of ['desktop', 'mobile', 'dark', 'sidebar', 'email']) console.log(`UI_CAPTURE:${name}:${fs.readFileSync(`${out}/${name}.jpg`).toString('base64')}`)
 } finally { await browser?.close(); server.kill('SIGTERM'); fs.rmSync(data, { recursive: true, force: true }) }

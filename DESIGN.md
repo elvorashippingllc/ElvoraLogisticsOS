@@ -201,7 +201,7 @@ Workspace cards show an icon, wrapping name, up to three previews, feature count
 
 ### Dashboard operating desk
 
-The dashboard uses neutral surfaces and dividers, with emerald action/navigation accents and red urgent-exception icons. The default view prioritizes key figures, all actionable alerts, upcoming movements and latest jobs. Shipment workflow guidance, AI briefings and detailed business reports use keyboard-accessible disclosure sections, collapsed by default. Duplicate financial overview cards are removed. Chart series use restrained grey/green tones and labels. Finance view permission gates financial metrics and charts. Light and dark themes retain readable contrast.
+The dashboard uses seal blue (#172b85) for the welcome panel and shipment wayfinding, soft blue and emerald KPI grounds, emerald action/navigation accents and red urgent-exception icons. Concentric outlines echo the supplied company seal without reproducing it as decoration. Sections reveal once on entering the scroll viewport, while clickable controls have a brief press response; reduced-motion users see the full content without movement. The default view prioritizes key figures, all actionable alerts, upcoming movements and latest jobs. Shipment workflow guidance, AI briefings and detailed business reports use keyboard-accessible disclosure sections, collapsed by default. Duplicate financial overview cards are removed. Chart series use restrained grey/green tones and labels. Finance view permission gates financial metrics and charts. Light and dark themes retain readable contrast.
 
 ### Status chips, tables and dialogs
 
