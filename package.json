@@ -20,6 +20,7 @@
     "test:integrations": "tsx --env-file-if-exists=.env tests/phase2.ts",
     "docs:build": "node tools/docs/build.mjs && node tools/docs/build-all.mjs && node tools/docs/readme.mjs",
     "test:compliance": "tsx --env-file-if-exists=.env tests/compliance.ts",
+    "test:documents": "node tests/documents-ui.mjs",
     "test:handover": "tsx --env-file-if-exists=.env tests/handover.ts",
     "test:all": "bash tests/run-all.sh"
   },

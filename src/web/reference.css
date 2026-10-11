@@ -225,93 +225,66 @@ table.grid td { font-size: 14px; }
 .dashboard-page .badge, .email-page .badge { max-width: none; white-space: nowrap; overflow-wrap: normal; }
 .dashboard-page .panel { min-width: 0; }
 .dashboard-page .panel > div:not(.panel-head) { overflow-x: auto; }
-.dashboard-page table.grid { min-width: 520px; }
+.dashboard-page table.grid { min-width: 700px; }
+.dashboard-page table.grid td { overflow-wrap: normal; }
+.dashboard-page table.grid td .link { white-space: nowrap; }
+.dashboard-page .badge { background: var(--soft); color: var(--body); }
 
-/* Dashboard color follows the work: shipment blue, Elvora green, collections ochre. */
+/* Daily operations use neutral surfaces; color is reserved for actions and exceptions. */
 .dashboard-page {
-  --dash-ocean: #173f50; --dash-ocean-text: #fff; --dash-ocean-muted: #d8e9ef;
-  --dash-green: #07533e; --dash-green-text: #fff; --dash-green-muted: #d7ecdf;
-  --dash-transit: #dcecf5; --dash-transit-text: #214656;
-  --dash-revenue: #cdebdc; --dash-revenue-text: #174c35;
-  --dash-collections: #f6e9c3; --dash-collections-text: #65441b;
-  --dash-documents: #e8e3f7; --dash-documents-text: #493d72;
-  --dash-delivery: #d4eeea; --dash-delivery-text: #255147;
+  --dash-transit: var(--card); --dash-transit-text: var(--ink);
 }
-.dashboard-page .dashboard-metrics .metric-ocean { background: var(--dash-ocean); }
-.dashboard-page .dashboard-metrics .metric-ocean .l,
-.dashboard-page .dashboard-metrics .metric-ocean .text-muted { color: var(--dash-ocean-muted); }
-.dashboard-page .dashboard-metrics .metric-ocean .v { color: var(--dash-ocean-text); }
-.dashboard-page .dashboard-metrics .metric-transit { background: var(--dash-transit); }
-.dashboard-page .dashboard-metrics .metric-transit :is(.l,.v,.text-muted) { color: var(--dash-transit-text); }
-.dashboard-page .dashboard-metrics .metric-revenue { background: var(--dash-revenue); }
-.dashboard-page .dashboard-metrics .metric-revenue :is(.l,.v,.text-muted) { color: var(--dash-revenue-text); }
-.dashboard-page .dashboard-metrics .metric-collections { background: var(--dash-collections); }
-.dashboard-page .dashboard-metrics .metric-collections :is(.l,.v,.text-muted) { color: var(--dash-collections-text); }
-.dashboard-page .overview-ledger { background: var(--dash-green); color: var(--dash-green-text); }
-.dashboard-page .overview-ledger dt { color: var(--dash-green-muted); }
-.dashboard-page .overview-ledger :is(dd,h2) { color: var(--dash-green-text); }
-.dashboard-page .overview-ledger dl > div { border-color: #497b65; }
-.dashboard-page .overview-ledger > img { background: #fff; border-radius: 14px; padding: 12px; }
-.dashboard-page .overview-mix { background: var(--dash-transit); color: var(--dash-transit-text); }
-.dashboard-page .overview-mix :is(h2,header > span,.mode-legend li,.mode-legend strong) { color: var(--dash-transit-text); }
-.dashboard-page .workflow-step { --step-surface: var(--card); --step-text: var(--ink); background: var(--step-surface); color: var(--step-text); border: 0; box-shadow: var(--surface-raised); }
-.dashboard-page .workflow-step :is(h3,p,.workflow-step-head,.workflow-open) { color: var(--step-text); }
-.dashboard-page .workflow-sales, .dashboard-page .workflow-billing { --step-surface: var(--dash-collections); --step-text: var(--dash-collections-text); }
-.dashboard-page .workflow-shipment { --step-surface: var(--dash-ocean); --step-text: var(--dash-ocean-text); }
-.dashboard-page .workflow-shipment p { color: var(--dash-ocean-muted); }
-.dashboard-page .workflow-documents { --step-surface: var(--dash-documents); --step-text: var(--dash-documents-text); }
-.dashboard-page .workflow-delivery { --step-surface: var(--dash-delivery); --step-text: var(--dash-delivery-text); }
-.dashboard-page .workflow-collections { --step-surface: var(--dash-green); --step-text: var(--dash-green-text); }
-.dashboard-page .workflow-collections p { color: var(--dash-green-muted); }
-.dashboard-page .workflow-step:hover { box-shadow: var(--surface-floating); }
-.dashboard-page .daily-schedule a { background: var(--dash-transit); color: var(--dash-transit-text); padding: 16px; border: 0; border-radius: 12px; }
-.dashboard-page .daily-schedule small { color: var(--dash-transit-text); }
-.dashboard-page .dashboard-sales-panel .panel-head { background: var(--dash-transit); color: var(--dash-transit-text); padding-bottom: 16px; border-radius: 16px 16px 0 0; }
-.dashboard-page .dashboard-financial-panel .panel-head { background: var(--dash-revenue); color: var(--dash-revenue-text); padding-bottom: 16px; border-radius: 16px 16px 0 0; }
-.dashboard-page :is(.workflow-step,.daily-schedule a,.kpi[role='button']):focus-visible { outline: 3px solid #b47816; outline-offset: 3px; }
-:root[data-theme='dark'] .dashboard-page {
-  --dash-ocean: #193f50; --dash-ocean-muted: #d8e9ef;
-  --dash-green: #154d3a; --dash-green-muted: #d7ecdf;
-  --dash-transit: #233c48; --dash-transit-text: #e0edf4;
-  --dash-revenue: #253e30; --dash-revenue-text: #dceee1;
-  --dash-collections: #453920; --dash-collections-text: #f5e5bf;
-  --dash-documents: #393a32; --dash-documents-text: #e8e8d9;
-  --dash-delivery: #263e38; --dash-delivery-text: #dceee7;
+.dashboard-page .dashboard-metrics .kpi { background: var(--card); color: var(--ink); border: 1px solid var(--line); box-shadow: none; }
+.dashboard-page .dashboard-metrics .kpi :is(.l,.text-muted) { color: var(--muted); }
+.dashboard-page .dashboard-metrics .kpi .v { color: var(--ink); font-weight: 650; }
+.dashboard-page .workflow-step { background: var(--card); color: var(--ink); border: 1px solid var(--line); box-shadow: none; }
+.dashboard-page .workflow-step :is(h3,strong,.workflow-step-head) { color: var(--ink); }
+.dashboard-page .workflow-step p { color: var(--muted); }
+.dashboard-page :is(.workflow-open,.quick-work a) { color: var(--fold); }
+.dashboard-page .workflow-step:hover { background: var(--hover); border-color: var(--line-strong); box-shadow: none; }
+.dashboard-page .daily-schedule a { background: var(--soft); color: var(--ink); }
+.dashboard-page .daily-schedule small { color: var(--muted); }
+.dashboard-page :is(.panel,.card) { background: var(--card); border: 1px solid var(--line); box-shadow: none; }
+.dashboard-page .panel-head { background: transparent; color: var(--ink); border-bottom: 1px solid var(--line); padding: 16px 20px; }
+.dashboard-page .panel-head .tools { color: var(--muted); }
+.dashboard-page .dashboard-top { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); }
+.dashboard-page .dashboard-alert { color: var(--body); border-bottom: 1px solid var(--line); text-decoration: none; background: transparent; }
+.dashboard-page .dashboard-alert:hover { background: var(--hover); }
+.dashboard-page .dashboard-alert[data-level='danger'] > svg:first-child { color: var(--signal); }
+.dashboard-page .dashboard-alert[data-level='warn'] > svg:first-child { color: var(--muted); }
+.dashboard-page .dashboard-brief > div:first-child { color: var(--ink); }
+.dashboard-page :is(.workflow-step,.daily-schedule a,.kpi[role='button']):focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+.dashboard-disclosure { border-block-end: 1px solid var(--line); margin: 20px 0; }
+.dashboard-disclosure > summary { display: flex; align-items: center; gap: 12px; padding: 16px 0; color: var(--ink); font-size: 16px; font-weight: 600; cursor: pointer; list-style: none; }
+.dashboard-disclosure > summary::before { content: ''; width: 8px; height: 8px; border-right: 1.5px solid currentColor; border-bottom: 1.5px solid currentColor; transform: rotate(-45deg); margin-inline: 3px 6px; flex: none; }
+.dashboard-disclosure[open] > summary::before { transform: rotate(45deg); }
+.dashboard-disclosure > summary span { color: var(--muted); font-size: 13px; font-weight: 400; margin-inline-start: auto; text-align: end; }
+.dashboard-disclosure > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.dashboard-attention { background: var(--card); border: 1px solid var(--line); border-radius: 12px; margin: 0 0 24px; }
+.dashboard-attention > summary { padding: 14px 16px; }
+.dashboard-alerts { padding: 0 4px 8px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.dashboard-business .dashboard-section-title { margin-top: 12px; }
+.dashboard-business .overview-account { grid-column: auto; }
+@media (max-width: 640px) {
+  .dashboard-page .dashboard-top, .dashboard-alerts { grid-template-columns: minmax(0, 1fr); }
+  .dashboard-disclosure > summary { align-items: start; }
+  .dashboard-disclosure > summary span { max-width: 45%; }
 }
-.dashboard-page :is(.workflow-shipment,.workflow-collections,.metric-ocean[role='button']):focus-visible { outline-color: #f5e5bf; }
-:root[data-theme='dark'] .dashboard-page :is(.workflow-step,.daily-schedule a,.kpi[role='button']):focus-visible { outline-color: #f5e5bf; }
-/* Override older position-based dark KPI rules with the dashboard's named roles. */
-:root[data-theme='dark'] .dashboard-page .dashboard-metrics .kpi :is(.l,.v,.text-muted) { color: #dceee1; }
-:root[data-theme='dark'] .dashboard-page .dashboard-metrics .kpi.metric-ocean { background: var(--dash-ocean); }
-:root[data-theme='dark'] .dashboard-page .dashboard-metrics .kpi.metric-transit { background: var(--dash-transit); }
-:root[data-theme='dark'] .dashboard-page .dashboard-metrics .kpi.metric-revenue { background: var(--dash-revenue); }
-:root[data-theme='dark'] .dashboard-page .dashboard-metrics .kpi.metric-collections { background: var(--dash-collections); }
-:root[data-theme='dark'] .dashboard-page .dashboard-metrics .kpi.metric-collections :is(.l,.v,.text-muted) { color: var(--dash-collections-text); }
-.dashboard-page .dashboard-alert { color: #1f4f85; }
-.dashboard-page .dashboard-alert[data-level='danger'] { color: #8f1325; }
-.dashboard-page .dashboard-alert[data-level='warn'] { color: #65441b; }
-.dashboard-page .dashboard-brief > div:first-child { color: var(--dash-revenue-text); }
-:root[data-theme='dark'] .dashboard-page .dashboard-alert { background: #233c48; color: #e0edf4; border-color: #4e7383; }
-:root[data-theme='dark'] .dashboard-page .dashboard-alert[data-level='danger'] { background: #482d33; color: #f3d8dc; border-color: #85535e; }
-:root[data-theme='dark'] .dashboard-page .dashboard-alert[data-level='warn'] { background: #463b21; color: #f5e5bf; border-color: #897347; }
-:root[data-theme='dark'] .dashboard-page .quick-work a { color: #b9dec9; }
-:root[data-theme='dark'] .dashboard-page .quick-work a:hover { color: #fff; }
 
-/* Ocean control desk: shipment tickets, a clear weekly agenda and purposeful motion. */
-.dashboard-page .control-welcome { padding: 26px 28px; background: var(--fold); color: #fff; border-radius: 18px; margin-bottom: 18px; }
-.dashboard-page .control-welcome h1 { color: #fff; font-size: clamp(25px, 2.3vw, 35px); letter-spacing: -.025em; }
-.dashboard-page .control-welcome .text-muted { color: #d3eee0; max-width: 64ch; line-height: 1.6; margin-top: 7px; }
-.dashboard-page .control-welcome .btn { color: #fff; border-color: #9bcbb6; background: transparent; }
-.dashboard-page .control-welcome .btn.dark { background: #f0cd83; color: #243b3f; border-color: #f0cd83; }
-.dashboard-page .control-welcome .btn:hover { background: #007b52; }
-.dashboard-page .control-welcome .btn.dark:hover { background: #ffe0a2; }
-.operations-desk { border-radius: 18px; background: var(--dash-transit); color: var(--dash-transit-text); margin-bottom: 20px; overflow: hidden; }
+.dashboard-page .control-welcome { padding: 6px 0 20px; background: transparent; color: var(--ink); border-radius: 0; margin-bottom: 12px; }
+.dashboard-page .control-welcome h1 { color: var(--ink); font-size: clamp(24px, 2.3vw, 30px); letter-spacing: -.025em; }
+.dashboard-page .control-welcome .text-muted { color: var(--muted); max-width: 64ch; line-height: 1.6; margin-top: 7px; }
+.dashboard-page .control-welcome .btn { color: var(--ink); border-color: var(--line-strong); background: var(--card); }
+.dashboard-page .control-welcome .btn.dark { background: var(--graphite); color: #fff; border-color: var(--graphite); }
+.dashboard-page .control-welcome .btn:hover { background: var(--hover); }
+.dashboard-page .control-welcome .btn.dark:hover { background: var(--fold); }
+.operations-desk { border: 1px solid var(--line); border-radius: 12px; background: var(--dash-transit); color: var(--dash-transit-text); margin-bottom: 20px; overflow: hidden; }
 .desk-heading { padding: 22px 24px 16px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
 .desk-heading h2 { margin: 0; font-size: 20px; color: inherit; }
 .desk-heading p { margin: 6px 0 0; line-height: 1.5; font-size: 15px; }
 .movement-rail { display: flex; overflow-x: auto; scroll-snap-type: x proximity; gap: 14px; padding: 0 24px 20px; }
-.movement-ticket { flex: 1 0 300px; max-width: 430px; scroll-snap-align: start; background: var(--card); color: var(--ink); padding: 18px; border-radius: 12px; text-decoration: none; box-shadow: 0 8px 20px -14px #153e5266; transition: border-color 180ms, box-shadow 180ms; }
-.movement-ticket:hover { background: var(--hover); box-shadow: 0 12px 25px -14px #153e5277; }
+.movement-ticket { flex: 1 0 300px; max-width: 430px; scroll-snap-align: start; background: var(--card); color: var(--ink); padding: 18px; border-radius: 12px; text-decoration: none; box-shadow: none; border: 1px solid var(--line); transition: border-color 180ms, box-shadow 180ms; }
+.movement-ticket:hover { background: var(--hover); box-shadow: none; border-color: var(--line-strong); }
 .movement-kind { display: flex; align-items: center; gap: 8px; color: var(--body); font-size: 13px; }
 .movement-kind > span { margin-inline-start: auto; }
 .movement-ticket > strong { display: flex; align-items: center; gap: 12px; margin: 18px 0 12px; font-size: 20px; overflow-wrap: anywhere; }
@@ -320,10 +293,10 @@ table.grid td { font-size: 14px; }
 .movement-action { display: flex; align-items: center; gap: 4px; color: var(--fold); font-weight: 650; font-size: 14px; margin-top: 15px; }
 .movement-empty { display: flex; align-items: center; gap: 16px; width: 100%; padding: 18px 0; }
 .movement-empty p { margin: 6px 0 0; font-size: 15px; }
-.desk-summary { display: flex; flex-wrap: wrap; gap: 14px 24px; background: #143e50; color: #e5eff3; padding: 14px 24px; font-size: 14px; }
+.desk-summary { display: flex; flex-wrap: wrap; gap: 14px 24px; background: var(--soft); color: var(--body); padding: 14px 24px; font-size: 14px; }
 .desk-summary > span { display: flex; align-items: center; gap: 7px; }
 .desk-owner { margin-inline-start: auto; }
-.dashboard-page .dashboard-metrics .kpi { min-height: 126px; }
+.dashboard-page .dashboard-metrics .kpi { min-height: 100px; }
 .dashboard-page .workflow-step { transition: box-shadow 180ms, outline-color 180ms; }
 .dashboard-page .workflow-step-head { padding-bottom: 12px; border-bottom: 1px solid currentColor; }
 .workspace-popup { transform-origin: 15% 50%; animation: workspace-open 280ms cubic-bezier(.16,1,.3,1) both; }
@@ -342,7 +315,7 @@ table.grid td { font-size: 14px; }
 .sender-presets h3 { margin-top: 0; }
 .sender-presets .btn { margin: 0 8px 8px 0; }
 @media (max-width: 700px) {
- .dashboard-page .control-welcome { padding: 22px 18px; }
+ .dashboard-page .control-welcome { padding: 4px 0 16px; }
  .desk-heading { padding: 20px 18px; align-items: flex-start; flex-direction: column; }
  .movement-rail { padding-inline: 18px; }
  .movement-ticket { flex-basis: 88%; min-width: 0; }
@@ -479,3 +452,5 @@ table.grid td { font-size: 14px; }
 .calendar-mobile-dots .calendar-dot { width: 5px; height: 5px; }
 .calendar-page input { color-scheme: light; }
 :root[data-theme='dark'] .calendar-page input { color-scheme: dark; }
+
+:root[data-theme='dark'] .dashboard-page :is(.workflow-open,.quick-work a) { color: #b9dec9; }

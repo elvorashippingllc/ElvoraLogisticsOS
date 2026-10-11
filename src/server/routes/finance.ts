@@ -2,7 +2,7 @@ import type { FastifyInstance } from 'fastify'
 import { z } from 'zod'
 import { q, tx } from '../db'
 import { assertCan, createRecord, getDef, getRecord, patchRecord, SYSTEM_CTX } from '../engine'
-import { bad, fromCents, parseCsv, r2, toCents, todayStr } from '../util'
+import { bad, forbidden, fromCents, parseCsv, r2, toCents, todayStr } from '../util'
 import { body, idOf, need } from './helpers'
 import { allocateOnAccount, expenseAction, postBill, postInvoice, postPayment, postReceipt, reverseEntry, voidBill, voidInvoice, voidPayment, voidReceipt } from '../domain/finance'
 
@@ -48,8 +48,10 @@ export default async function (app: FastifyInstance) {
     need(req, 'finance', 'view')
     const pid = idOf((req.params as any).partyId)
     const s = req.query as any
-    const from = String(s.from ?? '2000-01-01'), to = String(s.to ?? todayStr())
-    const party = q.get(`SELECT id, code, name, trn, address1, city FROM parties WHERE id = ?`, pid)
+    if (req.user!.party_id && req.user!.party_id !== pid) throw forbidden('You can only view your own company statement')
+    const { from, to } = z.object({ from: z.string().date().default('2000-01-01'), to: z.string().date().default(todayStr()) }).parse(s)
+    if (from > to) throw bad('Statement start date must be on or before the end date')
+    const party = q.get(`SELECT id, code, name, trn, address1, city FROM parties WHERE id = ? AND deleted_at IS NULL`, pid)
     if (!party) throw bad('Party not found')
     const lines = q.all(`
       SELECT l.id, e.entry_date AS date, e.entry_no, e.source_type AS type, e.source_no AS doc_no, l.description, l.debit, l.credit, e.id AS entry_id

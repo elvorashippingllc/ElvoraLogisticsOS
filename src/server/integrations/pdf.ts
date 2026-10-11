@@ -34,7 +34,13 @@ export async function renderPrintPdf(printPath: string, cookie: { name: string; 
     await ctx.addCookies([{ name: cookie.name, value: cookie.value, domain: '127.0.0.1', path: '/', httpOnly: true, secure: false }])
     const page = await ctx.newPage()
     await page.goto(`http://127.0.0.1:${config.port}${printPath}`, { waitUntil: 'networkidle', timeout: 30000 })
-    await page.waitForSelector('.print-sheet', { timeout: 15000 })
+    await page.waitForSelector('.print-sheet[data-print-ready="true"]', { timeout: 15000 }).catch(async () => {
+      const message = await page.locator('.print-sheet [role=alert]').first().textContent().catch(() => '')
+      throw bad(message || 'The document could not finish loading. Check the record and try again.')
+    })
+    await page.evaluate(async () => {
+      await Promise.all(Array.from(document.querySelectorAll<HTMLImageElement>('.print-sheet img')).map(img => img.decode()))
+    })
     await page.evaluate(() => (document as any).fonts?.ready)
     await page.waitForTimeout(250)
     return Buffer.from(await page.pdf({ format: 'A4', printBackground: true, preferCSSPageSize: true, landscape: opts.landscape, margin: { top: '10mm', bottom: '10mm', left: '10mm', right: '10mm' } }))

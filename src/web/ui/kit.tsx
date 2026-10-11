@@ -70,7 +70,7 @@ export function Empty({ title, hint, action, icon }: { title: string; hint?: Rea
   return <div className="flex flex-col items-center text-center gap-2 py-12 px-4"><div className="text-muted">{icon ?? <Inbox size={34} strokeWidth={1.5} />}</div><div className="font-display font-bold text-ink">{title}</div>{hint && <div className="text-sm text-muted max-w-md">{hint}</div>}{action}</div>
 }
 export function ErrorBox({ error, onRetry }: { error: any; onRetry?: () => void }) {
-  return <div className="m-4 p-4 rounded-xl border border-[#f2bcc3] bg-blush text-[#8f1325] text-sm flex items-center gap-3"><span className="flex-1">{error?.message ?? String(error)}</span>{onRetry && <button className="btn sm outline" onClick={onRetry}>Retry</button>}</div>
+  return <div role="alert" className="m-4 p-4 rounded-xl border border-[#f2bcc3] bg-blush text-[#8f1325] text-sm flex items-center gap-3"><span className="flex-1">{error?.message ?? String(error)}</span>{onRetry && <button className="btn sm outline" onClick={onRetry}>Retry</button>}</div>
 }
 
 export function useClickOutside<T extends HTMLElement>(cb: () => void) {

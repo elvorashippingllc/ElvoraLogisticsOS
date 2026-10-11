@@ -1,12 +1,13 @@
+import { documentNotice, documentRecipient, useDocumentSeal } from '@shared/document-presentation'
 import { DocumentPrinter } from '../components/ui/document-printer'
-import { useEffect, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+import { useIsFetching, useQuery } from '@tanstack/react-query'
 import QRCode from 'qrcode'
 import { ArrowLeft, Printer } from 'lucide-react'
 import { get } from '../lib/api'
 import { useMeta } from '../lib/meta'
-import { Loading, ErrorBox } from '../ui/kit'
+import { ErrorBox } from '../ui/kit'
 import { fmtDate, fmtDateTime, fmtMoney, fmtNum, todayIso } from '../lib/format'
 
 const S = () => useMeta().meta!.settings
@@ -25,16 +26,30 @@ const Box = ({ label, children, className }: { label: string; children: ReactNod
 const Grid = ({ cols = 3, children }: { cols?: number; children: ReactNode }) => <div style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: 8, marginBottom: 10 }}>{children}</div>
 const Kv = ({ items }: { items: [string, ReactNode][] }) => <div className="box" style={{ padding: 0 }}><table style={{ margin: 0 }}><tbody>{items.filter(([, v]) => v !== null && v !== undefined && v !== '').map(([k, v]) => <tr key={k}><td className="lbl" style={{ width: '42%', border: 0, padding: '3px 10px' }}>{k}</td><td style={{ border: 0, padding: '3px 10px', fontWeight: 600 }}>{v}</td></tr>)}</tbody></table></div>
 const R = ({ children }: { children: ReactNode }) => <td style={{ textAlign: 'right' }}>{children}</td>
-function Sign({ labels }: { labels: string[] }) { return <div style={{ display: 'grid', gridTemplateColumns: `repeat(${labels.length}, 1fr)`, gap: 28, marginTop: 46 }}>{labels.map(l => <div key={l} style={{ borderTop: '1px solid #444', paddingTop: 4, fontSize: 10, textAlign: 'center' }}>{l}</div>)}</div> }
-const Foot = ({ children }: { children?: ReactNode }) => <div style={{ marginTop: 18, paddingTop: 8, borderTop: '1px solid #dfe6e1', fontSize: 9.5, color: '#5b6c63' }}>{children ?? S().invoice_footer}</div>
+function Sign({ labels }: { labels: string[] }) { labels = labels.filter(l => !['For Elvora Shipping L.L.C.', 'Prepared by', 'Reviewed by', 'Approved by', 'Received by'].includes(l)); if (!labels.length) return null; return <div style={{ display: 'grid', gridTemplateColumns: `repeat(${labels.length}, 1fr)`, gap: 28, marginTop: 46 }}>{labels.map(l => <div key={l} style={{ borderTop: '1px solid #444', paddingTop: 4, fontSize: 10, textAlign: 'center' }}>{l}</div>)}</div> }
+const Presentation = createContext<{ entity: string; record?: any; seal: boolean }>({ entity: '', seal: false })
+function Foot({ children }: { children?: ReactNode }) {
+  const settings = S(), presentation = useContext(Presentation)
+  const footer = children ?? settings.invoice_footer
+  return <footer className="document-footer">
+    {footer && footer !== 'This is a computer-generated document.' && <div>{footer}</div>}
+    <div className="document-issuance"><div><strong>{documentNotice(presentation.entity, presentation.record)}</strong>{['delivery_orders', 'transport_orders', 'grns', 'dispatches', 'freight_documents'].includes(presentation.entity) && <p>Required receipt, delivery, custody and carrier acknowledgements remain applicable.</p>}</div>
+      {presentation.seal && settings.document_seal && <img className="document-seal" src={settings.document_seal} alt="Elvora Shipping L.L.C. company seal" />}
+    </div>
+  </footer>
+}
+function Recipient({ record }: { record: any }) {
+  return <div className="document-recipient"><span>To</span><strong>{documentRecipient(record)}</strong>{record?._labels?.contact_id && <div>Attention: {record._labels.contact_id}</div>}</div>
+}
 const addr = (p: any) => [p?.address1, p?.address2, [p?.city, p?.state].filter(Boolean).join(', '), p?._labels?.country_id, p?.po_box && `PO Box ${p.po_box}`].filter(Boolean).join('\n')
 const party = (p: any) => p ? `${p.name}\n${addr(p)}${p.trn ? `\nTRN ${p.trn}` : ''}${p.phone ? `\nTel ${p.phone}` : ''}` : ''
 
 function useRec(entity: string, id: string) { return useQuery({ queryKey: ['print', entity, id], queryFn: () => get<any>(`/api/e/${entity}/${id}`) }) }
 
 function InvoiceDoc({ r }: { r: any }) {
-  const s = S(); const p = useQuery({ queryKey: ['print-party', r.party_id], queryFn: () => get<any>(`/api/e/parties/${r.party_id}`) })
+  const s = S(); const p = useQuery({ queryKey: ['print-party', r.party_id], queryFn: async () => (await get<any>(`/api/print/invoices/${r.id}/parties`))[r.party_id] })
   const bank = useQuery({ queryKey: ['print-bank', r.bank_account_id], enabled: !!r.bank_account_id, queryFn: () => get<any>(`/api/e/bank_accounts/${r.bank_account_id}`) })
+  if (p.error || bank.error) return <ErrorBox error={p.error || bank.error} />
   const lines = r.children.lines as any[]; const credit = r.doc_type === 'Credit Note'
   return (<>
     <Title watermark={r.status === 'Draft' ? 'DRAFT' : r.status === 'Void' ? 'VOID' : undefined} sub={<><div style={{ fontSize: 15, fontWeight: 800 }}>{r.invoice_no}</div><div style={{ color: '#5b6c63' }}>{r.status}</div></>}>{r.doc_type === 'Tax Invoice' ? (s.vat_registered === false ? 'INVOICE' : 'TAX INVOICE') : r.doc_type.toUpperCase()}</Title>
@@ -48,7 +63,8 @@ function InvoiceDoc({ r }: { r: any }) {
 }
 
 function QuoteDoc({ r }: { r: any }) {
-  const p = useQuery({ queryKey: ['print-party', r.customer_id], queryFn: () => get<any>(`/api/e/parties/${r.customer_id}`) })
+  const p = useQuery({ queryKey: ['print-party', r.customer_id], queryFn: async () => (await get<any>(`/api/print/quotations/${r.id}/parties`))[r.customer_id] })
+  if (p.error) return <ErrorBox error={p.error} />
   const lines = r.children.lines as any[]; const L = r._labels
   return (<>
     <Title watermark={r.status === 'Draft' ? 'DRAFT' : undefined} sub={<><div style={{ fontSize: 15, fontWeight: 800 }}>{r.quote_no}</div><div style={{ color: '#5b6c63' }}>Revision {r.revision}</div></>}>QUOTATION</Title>
@@ -85,6 +101,7 @@ function StockDoc({ r, kind }: { r: any; kind: 'grn' | 'dispatch' }) {
 
 function DoDoc({ r }: { r: any }) {
   const job = useQuery({ queryKey: ['print-job', r.job_id], queryFn: () => get<any>(`/api/e/jobs/${r.job_id}`) })
+  if (job.error) return <ErrorBox error={job.error} />
   const j = job.data; const L = j?._labels ?? {}
   return (<>
     <Title sub={<div style={{ fontSize: 15, fontWeight: 800 }}>{r.do_no}</div>} watermark={r.status === 'Draft' ? 'DRAFT' : r.status === 'Cancelled' ? 'CANCELLED' : undefined}>DELIVERY ORDER</Title>
@@ -118,7 +135,8 @@ function GenericDoc({ r, title, items, lines, cols }: { r: any; title: string; i
 function JobDoc({ j, doc }: { j: any; doc: string | null }) {
   const L = j._labels; const [qr, setQr] = useState('')
   useEffect(() => { void QRCode.toDataURL(`${location.origin}/jobs/${j.id}`, { margin: 0, width: 140 }).then(setQr) }, [j.id])
-  const parties = useQuery({ queryKey: ['print-jobparties', j.id], queryFn: async () => { const ids = [j.shipper_id ?? j.client_id, j.consignee_id, j.notify_id].filter(Boolean); const out: Record<number, any> = {}; await Promise.all(ids.map(async (id: number) => { out[id] = await get<any>(`/api/e/parties/${id}`) })); return out } })
+  const parties = useQuery({ queryKey: ['print-jobparties', j.id], queryFn: () => get<Record<number, any>>(`/api/print/jobs/${j.id}/parties`) })
+  if (parties.error) return <ErrorBox error={parties.error} />
   const pp = (id?: number) => (id && parties.data?.[id] ? party(parties.data[id]) : id === j.shipper_id ? L.shipper_id : id === j.consignee_id ? L.consignee_id : '')
   const cont = j.children.containers as any[]; const air = j.mode === 'Air'
   if (doc === 'bl' || doc === 'awb') {
@@ -150,11 +168,15 @@ function JobDoc({ j, doc }: { j: any; doc: string | null }) {
 }
 
 function StatementDoc({ partyId }: { partyId: string }) {
-  const [from, setFrom] = useState(todayIso().slice(0, 4) + '-01-01'); const [to, setTo] = useState(todayIso())
+  const [params, setParams] = useSearchParams()
+  const from = params.get('from') || todayIso().slice(0, 4) + '-01-01', to = params.get('to') || todayIso()
+  const setRange = (key: string, value: string) => setParams(p => { p.set(key, value); return p }, { replace: true })
   const q = useQuery({ queryKey: ['statement', partyId, from, to], queryFn: () => get<any>(`/api/finance/statement/${partyId}`, { from, to }) })
   const s = q.data
+  if (q.error) return <ErrorBox error={q.error} />
   return (<>
-    <div className="no-print" style={{ display: 'flex', gap: 8, marginBottom: 12 }}><input className="input" type="date" value={from} onChange={e => setFrom(e.target.value)} style={{ width: 160 }} /><input className="input" type="date" value={to} onChange={e => setTo(e.target.value)} style={{ width: 160 }} /></div>
+    <div className="no-print" style={{ display: 'flex', gap: 8, marginBottom: 12 }}><input className="input" type="date" value={from} aria-label="Statement from date" onChange={e => setRange('from', e.target.value)} style={{ width: 160 }} /><input className="input" type="date" value={to} aria-label="Statement to date" onChange={e => setRange('to', e.target.value)} style={{ width: 160 }} /></div>
+    {s && <Recipient record={{ _labels: { party_id: s.party.name } }} />}
     <Title sub={<div>{fmtDate(from)} – {fmtDate(to)}</div>}>STATEMENT OF ACCOUNT</Title>
     {!s ? <DocumentPrinter /> : <><Grid cols={2}><Box label="Account">{`${s.party.name}\n${s.party.code}${s.party.trn ? `\nTRN ${s.party.trn}` : ''}`}</Box><Kv items={[['Opening balance (AED)', fmtMoney(s.opening)], ['Closing balance (AED)', fmtMoney(s.closing)]]} /></Grid>
       <table><thead><tr><th>Date</th><th>Type</th><th>Document</th><th>Description</th><th style={{ textAlign: 'right' }}>Debit</th><th style={{ textAlign: 'right' }}>Credit</th><th style={{ textAlign: 'right' }}>Balance</th></tr></thead><tbody><tr><td colSpan={6}><i>Opening balance</i></td><R>{fmtMoney(s.opening)}</R></tr>{s.rows.map((r: any, i: number) => <tr key={i}><td>{fmtDate(r.date)}</td><td>{r.type}</td><td>{r.doc_no}</td><td>{r.description}</td><R>{r.debit ? fmtMoney(r.debit) : ''}</R><R>{r.credit ? fmtMoney(r.credit) : ''}</R><R>{fmtMoney(r.balance)}</R></tr>)}<tr style={{ fontWeight: 800, background: '#dcf1e6' }}><td colSpan={6}>Closing balance (AED) — positive = amount due to Elvora</td><R>{fmtMoney(s.closing)}</R></tr></tbody></table><Foot>Please notify us of any discrepancy within 7 days. {S().invoice_footer}</Foot></>}
@@ -164,22 +186,31 @@ function StatementDoc({ partyId }: { partyId: string }) {
 function FreightDoc({r}:{r:any}) {return <><Title sub={`${r.doc_no} · revision ${r.revision}`} watermark={r.status==='Draft'?'DRAFT':'COPY'}>{r.kind==='HAWB'||r.kind==='MAWB'?'AIR WAYBILL WORKSHEET':'BILL OF LADING WORKSHEET'}</Title><Grid cols={2}><Box label="Shipper">{r.shipper}</Box><Box label="Consignee">{r.consignee}</Box><Box label="Notify party">{r.notify_party}</Box><Kv items={[['Job',r._labels.job_id],['Carrier document',r.carrier_document_no],['Vessel / flight',r.vessel_flight],['Origin',r.origin],['Destination',r.destination],['Release mode',r.release_mode],['Approval',r.status]]}/></Grid><Box label="Description of goods">{r.goods}</Box><Grid><Box label="Packages">{r.packages}</Box><Box label="Gross weight kg">{r.gross_weight}</Box><Box label="Volume CBM">{r.volume_cbm}</Box></Grid><Box label="Terms">{r.terms}</Box><Sign labels={['Prepared by','Reviewed by']}/><Foot>This is a controlled internal worksheet copy. Carrier originals and negotiable documents require the authorised carrier form and issuance process. Printing does not issue an original or authorise cargo release.</Foot></>}
 
 export function PrintPage() {
-  const { entity = '', id = '' } = useParams(); const [sp] = useSearchParams(); const nav = useNavigate()
+  const { entity = '', id = '' } = useParams(); const [sp, setSp] = useSearchParams(); const nav = useNavigate()
   const { meta } = useMeta()
+  const seal = useDocumentSeal(sp.get('seal'), !!meta?.settings.document_seal_default)
+  const sheet = useRef<HTMLDivElement>(null), [ready, setReady] = useState(false)
+  const fetching = useIsFetching({ predicate: query => /^(print|statement)/.test(String(query.queryKey[0])) })
+  useEffect(() => {
+    setReady(false)
+    const timer = window.setTimeout(() => setReady(!!sheet.current && !sheet.current.querySelector('.document-loading, [role=alert]') && fetching === 0), 0)
+    return () => window.clearTimeout(timer)
+  }, [fetching, entity, id, sp.toString(), meta])
   const ids = entity === 'jobs' ? id.split(',') : [id]
   const q = useQuery({ queryKey: ['print-all', entity, id], enabled: entity !== 'statement' && entity !== 'parties', queryFn: () => Promise.all(ids.map(i => get<any>(`/api/e/${entity}/${i}`))) })
   const doc = sp.get('doc')
   const doDoc = useQuery({ queryKey: ['print-do', id], enabled: entity === 'jobs' && doc === 'do', queryFn: () => get<{ rows: any[] }>('/api/e/delivery_orders', { filters: JSON.stringify([{ field: 'job_id', op: 'eq', value: Number(id) }]), pageSize: 1 }) })
-  useEffect(() => { if (doDoc.data?.rows[0]) nav(`/print/delivery_orders/${doDoc.data.rows[0].id}`, { replace: true }) }, [doDoc.data])
+  useEffect(() => { if (doDoc.data?.rows[0]) nav(`/print/delivery_orders/${doDoc.data.rows[0].id}?${sp.toString()}`, { replace: true }) }, [doDoc.data])
   if (!meta) return <DocumentPrinter />
   const body = (() => {
-    if (entity === 'statement' || entity === 'parties') return <StatementDoc partyId={id} />
-    if (entity === 'jobs' && doc === 'do') return doDoc.data && !doDoc.data.rows.length ? <p>No delivery order exists for this job yet. Create one from the job's Create menu.</p> : <DocumentPrinter />
+    if (entity === 'statement' || entity === 'parties') return <Presentation.Provider value={{ entity, seal }}><Letterhead /><StatementDoc partyId={id} /></Presentation.Provider>
+    if (entity === 'jobs' && doc === 'do' && doDoc.error) return <ErrorBox error={doDoc.error} />
+    if (entity === 'jobs' && doc === 'do') return doDoc.data && !doDoc.data.rows.length ? <ErrorBox error={new Error("No delivery order exists for this job yet. Create one from the job’s Create menu.")} /> : <DocumentPrinter />
     if (q.error) return <ErrorBox error={q.error} />
     if (!q.data) return <DocumentPrinter />
     const rs = q.data
     return rs.map((r, i) => {
-      const e = <div key={i} style={{ pageBreakAfter: i < rs.length - 1 ? 'always' : 'auto' }}>{(() => { switch (entity) {
+      const e = <Presentation.Provider key={r.id} value={{ entity, record: r, seal }}><div className="print-document" style={{ pageBreakAfter: i < rs.length - 1 ? 'always' : 'auto' }}><Letterhead /><Recipient record={r} />{(() => { switch (entity) {
         case 'freight_documents': return <FreightDoc r={r} />
         case 'invoices': return <InvoiceDoc r={r} />
         case 'quotations': return <QuoteDoc r={r} />
@@ -196,14 +227,14 @@ export function PrintPage() {
         case 'purchase_orders': return <GenericDoc r={r} title="PURCHASE ORDER" items={[['PO no.', r.po_no], ['Supplier', r._labels.vendor_id], ['Date', fmtDate(r.po_date)], ['Expected', fmtDate(r.expected_date)], ['Total', `${r.currency} ${fmtMoney(r.total)}`]]} lines={r.children.lines} cols={[{ h: 'Description', f: (l: any) => l.description }, { h: 'Qty', f: (l: any) => fmtNum(l.qty), right: true }, { h: 'Rate', f: (l: any) => fmtMoney(l.rate), right: true }, { h: 'Amount', f: (l: any) => fmtMoney(l.amount), right: true }, { h: 'VAT', f: (l: any) => fmtMoney(l.vat_amount), right: true }]} />
         case 'insurance_certs': return <GenericDoc r={r} title="CARGO INSURANCE CERTIFICATE (RECORD)" items={[['Certificate no.', r.certificate_no], ['Insured', r._labels.customer_id], ['Insurer', r.insurer], ['Policy no.', r.policy_no], ['Cover', r.cover_type], ['Voyage', r.voyage], ['Sum insured', `${r.currency} ${fmtMoney(r.insured_value)}`], ['Premium', fmtMoney(r.premium)], ['Cover period', `${fmtDate(r.cover_from)} – ${fmtDate(r.cover_to)}`], ['Commodity', r.commodity]]} />
         default: return <GenericDoc r={r} title={r._title} items={Object.entries(r).filter(([k, v]) => !k.startsWith('_') && typeof v !== 'object' && v !== null && !['id', 'version', 'created_by', 'updated_by'].includes(k)).slice(0, 24).map(([k, v]) => [k.replace(/_/g, ' '), String(v)] as [string, ReactNode])} />
-      } })()}</div>
+      } })()}</div></Presentation.Provider>
       return e
     })
   })()
   return (
     <div>
-      <div className="no-print flex gap-2 mb-4 items-center"><button className="btn grey" onClick={() => nav(-1)}><ArrowLeft /> Back</button><button className="btn green" onClick={() => window.print()}><Printer /> Print / Save as PDF</button><span className="text-xs text-muted">In the print dialog choose “Save as PDF” to create a file.</span></div>
-      <div className="print-sheet"><Letterhead />{body}</div>
+      <div className="no-print flex gap-2 mb-4 items-center flex-wrap"><button className="btn grey" onClick={() => nav(-1)}><ArrowLeft /> Back</button><button className="btn green" disabled={!ready} onClick={() => window.print()}><Printer /> Print / Save as PDF</button><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={seal} disabled={!meta.settings.document_seal} onChange={e => setSp(p => { p.set('seal', e.target.checked ? '1' : '0'); return p }, { replace: true })} />Include company seal</label>{!meta.settings.document_seal && <span className="text-xs text-muted">Upload the seal in Company settings → Document text.</span>}<span className="text-xs text-muted">In the print dialog choose “Save as PDF” to create a file.</span></div>
+      <div className="print-preview"><div ref={sheet} className="print-sheet" data-print-ready={ready ? "true" : "false"}>{body}</div></div>
     </div>
   )
 }

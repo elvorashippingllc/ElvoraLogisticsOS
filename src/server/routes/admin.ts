@@ -1,3 +1,4 @@
+import { validateDocumentSeal } from '../document-seal'
 import type { FastifyInstance } from 'fastify'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -53,11 +54,13 @@ export default async function (app: FastifyInstance) {
     for (const [k, opts] of [['compliance_mode', ['enforce', 'advisory']], ['activity_scope_mode', ['off', 'warn', 'block']], ['vat_filing_frequency', ['Quarterly', 'Monthly']]] as const) if (k in patch && !(opts as readonly string[]).includes(patch[k])) throw bad(`${k} must be one of ${opts.join(', ')}`)
     if ('financial_year_end' in patch && !/^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(patch.financial_year_end)) throw bad('Financial year end must be MM-DD, e.g. 12-31')
     if ('lock_date' in patch && patch.lock_date && !/^\d{4}-\d{2}-\d{2}$/.test(patch.lock_date)) throw bad('Lock date must be YYYY-MM-DD')
+    if ('document_seal' in patch) patch.document_seal = validateDocumentSeal(patch.document_seal)
+    if ('document_seal_default' in patch && typeof patch.document_seal_default !== 'boolean') throw bad('Document seal default must be true or false')
     const before = publicSettings()
     setSettings(patch)
     const after = publicSettings()
     const changes: Record<string, [any, any]> = {}
-    for (const k of Object.keys(patch)) if (k in SETTING_DEFAULTS && JSON.stringify(before[k]) !== JSON.stringify(after[k])) changes[k] = SECRET_SETTINGS.has(k) ? ['***', '***'] : [before[k], after[k]]
+    for (const k of Object.keys(patch)) if (k in SETTING_DEFAULTS && JSON.stringify(before[k]) !== JSON.stringify(after[k])) changes[k] = SECRET_SETTINGS.has(k) ? ['***', '***'] : k === 'document_seal' ? [before[k] ? 'Image configured' : 'No image', after[k] ? 'Image configured' : 'No image'] : [before[k], after[k]]
     if (Object.keys(changes).length) audit(req.ctx, getDef('branches'), 0, 'settings', changes, 'Company settings')
     return publicSettings()
   })

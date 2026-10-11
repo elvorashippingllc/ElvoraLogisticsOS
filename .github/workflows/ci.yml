@@ -16,6 +16,7 @@ jobs:
         run: |
           node tests/dashboard-ui.mjs
           node tests/calendar-ui.mjs
+          node tests/documents-ui.mjs
         env: { UI_CAPTURE_PRINT: 'true', CALENDAR_CAPTURE_DIR: '.impeccable/review/calendar' }
       - uses: actions/upload-artifact@v4
         if: always()

@@ -37,24 +37,28 @@ export default async function (app: FastifyInstance) {
       k.open_jobs = n(`SELECT COUNT(*) FROM jobs WHERE job_status IN ('OPENED','IN PROGRESS','ON HOLD') AND deleted_at IS NULL`)
       k.in_transit = n(`SELECT COUNT(*) FROM jobs WHERE operational_status IN ('DEPARTED','IN TRANSIT') AND job_status NOT IN ('CLOSED','CANCELLED') AND deleted_at IS NULL`)
       k.jobs_month = n(`SELECT COUNT(*) FROM jobs WHERE job_date BETWEEN ? AND ? AND deleted_at IS NULL AND job_status <> 'CANCELLED'`, mStart, today)
-      k.profit_month = m(n(`SELECT COALESCE(SUM(profit),0) FROM jobs WHERE job_date BETWEEN ? AND ? AND deleted_at IS NULL AND job_status <> 'CANCELLED'`, mStart, today))
-      k.unbilled = m(n(`SELECT COALESCE(SUM(c.base_amount),0) FROM job_charges c JOIN jobs j ON j.id = c.job_id WHERE c.kind='Revenue' AND c.status='Unbilled' AND c.deleted_at IS NULL AND j.deleted_at IS NULL AND j.job_status <> 'CANCELLED'`))
+      if (can_('finance')) {
+        k.profit_month = m(n(`SELECT COALESCE(SUM(profit),0) FROM jobs WHERE job_date BETWEEN ? AND ? AND deleted_at IS NULL AND job_status <> 'CANCELLED'`, mStart, today))
+        k.unbilled = m(n(`SELECT COALESCE(SUM(c.base_amount),0) FROM job_charges c JOIN jobs j ON j.id = c.job_id WHERE c.kind='Revenue' AND c.status='Unbilled' AND c.deleted_at IS NULL AND j.deleted_at IS NULL AND j.job_status <> 'CANCELLED'`))
+      }
       data.lists.recent_jobs = q.all(`SELECT j.id, j.job_no, j.job_status, j.operational_status, pr.name client, pol.code pol, pod.code pod, j.etd, j.job_date FROM jobs j LEFT JOIN parties pr ON pr.id = j.client_id LEFT JOIN locations pol ON pol.id = j.pol_id LEFT JOIN locations pod ON pod.id = j.pod_id WHERE j.deleted_at IS NULL ORDER BY j.id DESC LIMIT 12`)
       data.lists.recent_shipments = q.all(`SELECT s.id, s.shipment_no, s.status, s.hbl_no, sh.name shipper, cn.name consignee, j.job_no, s.commodity FROM shipments s JOIN jobs j ON j.id = s.job_id LEFT JOIN parties sh ON sh.id = s.shipper_id LEFT JOIN parties cn ON cn.id = s.consignee_id WHERE s.deleted_at IS NULL ORDER BY s.id DESC LIMIT 12`)
       data.lists.departures = q.all(`SELECT j.id, j.job_no, pr.name client, pol.code pol, pod.code pod, j.etd, j.department FROM jobs j LEFT JOIN parties pr ON pr.id = j.client_id LEFT JOIN locations pol ON pol.id = j.pol_id LEFT JOIN locations pod ON pod.id = j.pod_id WHERE j.deleted_at IS NULL AND j.atd IS NULL AND j.job_status NOT IN ('CLOSED','CANCELLED') AND substr(j.etd,1,10) BETWEEN ? AND ? ORDER BY j.etd LIMIT 10`, today, addDays(today, 7))
       data.lists.arrivals = q.all(`SELECT j.id, j.job_no, pr.name client, pol.code pol, pod.code pod, j.eta, j.department FROM jobs j LEFT JOIN parties pr ON pr.id = j.client_id LEFT JOIN locations pol ON pol.id = j.pol_id LEFT JOIN locations pod ON pod.id = j.pod_id WHERE j.deleted_at IS NULL AND j.ata IS NULL AND j.job_status NOT IN ('CLOSED','CANCELLED') AND substr(j.eta,1,10) BETWEEN ? AND ? ORDER BY j.eta LIMIT 10`, today, addDays(today, 7))
       data.charts.jobs_by_mode = q.all(`SELECT COALESCE(mode,'Other') name, COUNT(*) value FROM jobs WHERE deleted_at IS NULL AND job_status IN ('OPENED','IN PROGRESS','ON HOLD') GROUP BY mode`)
       data.charts.jobs_by_status = q.all(`SELECT job_status name, COUNT(*) value FROM jobs WHERE deleted_at IS NULL GROUP BY job_status`)
-      data.charts.top_customers = q.all(`SELECT pr.name, SUM(j.total_revenue) v FROM jobs j JOIN parties pr ON pr.id = j.client_id WHERE j.deleted_at IS NULL AND j.job_status <> 'CANCELLED' AND j.job_date BETWEEN ? AND ? GROUP BY j.client_id, pr.name ORDER BY v DESC LIMIT 6`, addDays(today, -90), today).map(r => ({ name: r.name, value: m(r.v) }))
-      data.charts.revenue_trend = (() => {
-        const rows = q.all(`SELECT substr(job_date,1,7) AS month, SUM(total_revenue) rev, SUM(total_cost) cost, SUM(profit) profit FROM jobs WHERE deleted_at IS NULL AND job_status <> 'CANCELLED' AND job_date BETWEEN ? AND ? GROUP BY month ORDER BY month`, addDays(monthStart(), -150), today)
-        return rows.map(r => ({ month: r.month, revenue: m(r.rev), cost: m(r.cost), profit: m(r.profit) }))
-      })()
-      // "Sales (Branch)": invoiced vs unbilled work per branch for the current month
-      const inv = q.all(`SELECT COALESCE(b.name,'Unassigned') branch, SUM(${SIGN} * i.subtotal * i.ex_rate) v FROM invoices i LEFT JOIN branches b ON b.id = i.branch_id WHERE ${SALES} AND i.invoice_date BETWEEN ? AND ? GROUP BY i.branch_id, b.name`, mStart, today)
-      const unb = q.all(`SELECT COALESCE(b.name,'Unassigned') branch, SUM(c.base_amount) v FROM job_charges c JOIN jobs j ON j.id = c.job_id LEFT JOIN branches b ON b.id = j.branch_id WHERE c.kind='Revenue' AND c.status='Unbilled' AND c.deleted_at IS NULL AND j.deleted_at IS NULL AND j.job_status <> 'CANCELLED' GROUP BY j.branch_id, b.name`)
-      const names = [...new Set([...inv.map(x => x.branch), ...unb.map(x => x.branch)])]
-      data.charts.sales_branch = names.map(name => ({ branch: name, invoiced: m(Math.round(inv.find(x => x.branch === name)?.v ?? 0)), unbilled: m(Math.round(unb.find(x => x.branch === name)?.v ?? 0)) }))
+      if (can_('finance')) {
+        data.charts.top_customers = q.all(`SELECT pr.name, SUM(j.total_revenue) v FROM jobs j JOIN parties pr ON pr.id = j.client_id WHERE j.deleted_at IS NULL AND j.job_status <> 'CANCELLED' AND j.job_date BETWEEN ? AND ? GROUP BY j.client_id, pr.name ORDER BY v DESC LIMIT 6`, addDays(today, -90), today).map(r => ({ name: r.name, value: m(r.v) }))
+        data.charts.revenue_trend = (() => {
+          const rows = q.all(`SELECT substr(job_date,1,7) AS month, SUM(total_revenue) rev, SUM(total_cost) cost, SUM(profit) profit FROM jobs WHERE deleted_at IS NULL AND job_status <> 'CANCELLED' AND job_date BETWEEN ? AND ? GROUP BY month ORDER BY month`, addDays(monthStart(), -150), today)
+          return rows.map(r => ({ month: r.month, revenue: m(r.rev), cost: m(r.cost), profit: m(r.profit) }))
+        })()
+        // "Sales (Branch)": invoiced vs unbilled work per branch for the current month
+        const inv = q.all(`SELECT COALESCE(b.name,'Unassigned') branch, SUM(${SIGN} * i.subtotal * i.ex_rate) v FROM invoices i LEFT JOIN branches b ON b.id = i.branch_id WHERE ${SALES} AND i.invoice_date BETWEEN ? AND ? GROUP BY i.branch_id, b.name`, mStart, today)
+        const unb = q.all(`SELECT COALESCE(b.name,'Unassigned') branch, SUM(c.base_amount) v FROM job_charges c JOIN jobs j ON j.id = c.job_id LEFT JOIN branches b ON b.id = j.branch_id WHERE c.kind='Revenue' AND c.status='Unbilled' AND c.deleted_at IS NULL AND j.deleted_at IS NULL AND j.job_status <> 'CANCELLED' GROUP BY j.branch_id, b.name`)
+        const names = [...new Set([...inv.map(x => x.branch), ...unb.map(x => x.branch)])]
+        data.charts.sales_branch = names.map(name => ({ branch: name, invoiced: m(Math.round(inv.find(x => x.branch === name)?.v ?? 0)), unbilled: m(Math.round(unb.find(x => x.branch === name)?.v ?? 0)) }))
+      }
     }
     if (can_('finance')) {
       k.revenue_month = m(Math.round(n(`SELECT COALESCE(SUM(${SIGN} * i.subtotal * i.ex_rate),0) FROM invoices i WHERE ${SALES} AND i.invoice_date BETWEEN ? AND ?`, mStart, today)))
@@ -83,11 +87,11 @@ export default async function (app: FastifyInstance) {
     // alerts
     const a = data.alerts as { level: 'danger' | 'warn' | 'info'; text: string; link: string }[]
     if (can_('projects')) { const o = n(`SELECT COUNT(*) FROM tasks WHERE assignee_id = ? AND status <> 'Done' AND due_date < ? AND deleted_at IS NULL`, user.id, today); if (o) a.push({ level: 'danger', text: `${o} of your tasks are overdue`, link: '/e/tasks' }) }
-    if (can_('finance') && k.ar_overdue > 0) a.push({ level: 'warn', text: `Overdue receivables: AED ${k.ar_overdue.toLocaleString()}`, link: '/reports?r=ar_aging' })
+    if (can_('finance') && can_('reports') && k.ar_overdue > 0) a.push({ level: 'warn', text: `Overdue receivables: AED ${k.ar_overdue.toLocaleString()}`, link: '/reports?r=ar_aging' })
     if (can_('finance')) { const bills = n(`SELECT COUNT(*) FROM bills WHERE status IN ('Posted','Partially paid') AND balance > 0 AND due_date <= ? AND deleted_at IS NULL`, addDays(today, 7)); if (bills) a.push({ level: 'warn', text: `${bills} vendor bills due within 7 days`, link: '/e/bills' }) }
     if (can_('jobs')) {
-      const u = n(`SELECT COUNT(DISTINCT c.job_id) FROM job_charges c JOIN jobs j ON j.id = c.job_id WHERE c.kind='Revenue' AND c.status='Unbilled' AND j.job_status IN ('DELIVERED','CLOSED') AND c.deleted_at IS NULL AND j.deleted_at IS NULL`); if (u) a.push({ level: 'warn', text: `${u} delivered jobs still have unbilled revenue`, link: '/reports?r=unbilled_charges' })
-      const f = n(`SELECT COUNT(*) FROM job_containers c JOIN jobs j ON j.id = c.job_id WHERE c.deleted_at IS NULL AND j.deleted_at IS NULL AND j.job_status NOT IN ('CLOSED','CANCELLED') AND c.status <> 'Empty returned' AND c.free_time_until IS NOT NULL AND c.free_time_until <= ?`, addDays(today, 3)); if (f) a.push({ level: 'danger', text: `${f} containers reach end of free time within 3 days`, link: '/reports?r=container_status' })
+      const u = n(`SELECT COUNT(DISTINCT c.job_id) FROM job_charges c JOIN jobs j ON j.id = c.job_id WHERE c.kind='Revenue' AND c.status='Unbilled' AND j.job_status IN ('DELIVERED','CLOSED') AND c.deleted_at IS NULL AND j.deleted_at IS NULL`); if (u && can_('finance') && can_('reports')) a.push({ level: 'warn', text: `${u} delivered jobs still have unbilled revenue`, link: '/reports?r=unbilled_charges' })
+      const f = n(`SELECT COUNT(*) FROM job_containers c JOIN jobs j ON j.id = c.job_id WHERE c.deleted_at IS NULL AND j.deleted_at IS NULL AND j.job_status NOT IN ('CLOSED','CANCELLED') AND c.status <> 'Empty returned' AND c.free_time_until IS NOT NULL AND c.free_time_until <= ?`, addDays(today, 3)); if (f && can_('reports')) a.push({ level: 'danger', text: `${f} containers reach end of free time within 3 days`, link: '/reports?r=container_status' })
     }
     if (can_('sales')) { const x = n(`SELECT COUNT(*) FROM quotations WHERE status = 'Sent' AND valid_until BETWEEN ? AND ? AND deleted_at IS NULL`, today, addDays(today, 3)); if (x) a.push({ level: 'info', text: `${x} sent quotations expire within 3 days`, link: '/e/quotations' }); const pa = n(`SELECT COUNT(*) FROM quotations WHERE approval_status = 'Pending' AND deleted_at IS NULL`); if (pa) a.push({ level: 'warn', text: `${pa} quotations awaiting margin approval`, link: '/e/quotations' }) }
     if (can_('reports')) { const dx = runReport('document_expiries', { days: 30 }).rows.length; if (dx) a.push({ level: 'warn', text: `${dx} documents expire within 30 days`, link: '/reports?r=document_expiries' }) }

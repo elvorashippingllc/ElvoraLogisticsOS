@@ -31,6 +31,7 @@ export function MetaProvider({ children }: { children: ReactNode }) {
   const def = useCallback((k: string) => { const e = byKey.get(k); if (!e) throw new Error('Unknown entity ' + k); return e }, [byKey])
   const can = useCallback((module: string, a: Action = 'view') => {
     if (!me) return false
+    if (module === 'ai' && (me.permissions !== '*' || me.party_id)) return false
     if (me.permissions === '*') return true
     const p = me.permissions[module]; return !!p && (p.includes('*') || p.includes(a))
   }, [me])
