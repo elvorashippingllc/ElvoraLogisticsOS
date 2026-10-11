@@ -181,11 +181,23 @@ async function main() {
   r = await api('POST', '/api/auth/login', { email: 'clerk@elvorashipping.com', password: 'Clerk@Pass2026' }); ok('clerk signs in', r.status === 200)
   r = await api('GET', '/api/e/jobs'); ok('clerk can view jobs', r.status === 200)
   r = await api('GET', '/api/e/invoices'); ok('clerk cannot view invoices (403)', r.status === 403, r.data)
+  r = await api('GET', '/api/dashboard'); ok('job-only clerk receives no financial dashboard figures', r.status === 200 && !('profit_month' in r.data.kpis) && !('unbilled' in r.data.kpis) && !r.data.charts.sales_branch && !r.data.charts.revenue_trend && !r.data.charts.top_customers, r.data)
   r = await api('POST', '/api/e/jobs', { client_id: cust }); ok('clerk cannot create jobs (403)', r.status === 403)
   r = await api('GET', '/api/e/users'); ok('clerk cannot read users (403)', r.status === 403)
   r = await api('GET', '/api/meta'); ok('navigation filtered by permission', r.data.nav.length === 1 && r.data.nav[0].items.every((i: any) => i.module === 'jobs'), r.data.nav.map((g: any) => g.label))
   r = await fetch(BASE + '/api/e/jobs', { method: 'POST', headers: { 'content-type': 'application/json', cookie }, body: '{}' }); ok('CSRF header required for cookie mutations', r.status === 403)
+  cookie = adminCookie
+  r = await api('GET', '/api/e/roles'); const portalRole = r.data.rows.find((role: any) => role.name === 'Customer Portal').id
+  r = await api('POST', '/api/e/users', { name: 'Statement Customer', email: 'statement@portal.example', password: 'Portal@Pass2026', role_id: portalRole, party_id: cust, active: true }); ok('statement portal user created', r.status === 201, r.data)
+  r = await api('POST', '/api/auth/login', { email: 'statement@portal.example', password: 'Portal@Pass2026' }); ok('statement portal user signs in', r.status === 200)
+  r = await api('GET', `/api/finance/statement/${cust}`); ok('portal can read its own statement', r.status === 200)
+  r = await api('GET', `/api/print/invoices/${inv.id}/parties`); ok('portal can resolve only its invoice recipient without CRM access', r.status === 200 && r.data[cust]?.name === 'Procet Freight' && Object.keys(r.data).length === 1, r.data)
+  r = await api('GET', '/api/print/invoices/999999999/parties'); ok('print recipient lookup requires a readable document', r.status === 404)
+  r = await api('GET', `/api/finance/statement/${vendor}`); ok('portal cannot read another company statement', r.status === 403, r.data)
   cookie = mgrCookie
+  r = await api('GET', `/api/finance/statement/${cust}?from=2026-12-01&to=2026-01-01`); ok('reversed statement date range rejected', r.status === 400)
+  r = await api('GET', `/api/finance/statement/${cust}?from=not-a-date`); ok('invalid statement date rejected', r.status === 400)
+
   r = await api('GET', '/api/e/users'); ok('manager has full access (users list)', r.status === 200 && r.data.total >= 3, r.status)
   r = await api('GET', '/api/admin/audit'); ok('audit log recorded', r.data.total > 20, r.data.total)
   cookie = adminCookie

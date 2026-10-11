@@ -199,9 +199,9 @@ Primary pills are white at rest and emerald with white text when active. Rail sh
 
 Workspace cards show an icon, wrapping name, up to three previews, feature count and opening cue. All permitted features appear in the destination grid. Cards alternate mint, champagne and sky tints, with the first card deep green; dark mode uses corresponding green, warm and blue surfaces. Feature cards combine a mint icon tile, wrapping label and directional arrow on a white lifted surface. Search retains direct links and clear empty-state actions.
 
-### Dashboard overview and cash card
+### Dashboard operating desk
 
-Owner ledger and actual shipment mix sit alongside a deep green cash card and circular operational shortcuts. Charts retain real API values and existing module colours. Missing data uses existing empty states. The dashboard welcome uses fold green, metrics and workflow stages use richer semantic tints, and shared panel headers use a light tint of their module accent. Other operational panels, tasks and metrics remain accessible beneath the overview.
+The dashboard uses neutral surfaces and dividers, with emerald action/navigation accents and red urgent-exception icons. The default view prioritizes key figures, all actionable alerts, upcoming movements and latest jobs. Shipment workflow guidance, AI briefings and detailed business reports use keyboard-accessible disclosure sections, collapsed by default. Duplicate financial overview cards are removed. Chart series use restrained grey/green tones and labels. Finance view permission gates financial metrics and charts. Light and dark themes retain readable contrast.
 
 ### Status chips, tables and dialogs
 

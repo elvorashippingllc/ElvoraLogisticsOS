@@ -6,14 +6,14 @@ This page documents the implemented dashboard and navigation refinements. The ex
 
 The staff dashboard at `/dashboard` refreshes its business data every two minutes. Sections depend on the returned data and the signed-in user's permissions.
 
-1. **Welcome and actions:** Email (`/email`), Schedule (`/calendar`) and New job (`/e/jobs?new=1`), where permitted.
-2. **Business at a glance:** the first four available figures, normally Open jobs, In transit, Revenue this month and Receivables. Currency labels use the configured base currency. Linked figures open their relevant job lists or reports.
-3. **Alerts:** up to six actionable notices, linking to the relevant records or lists.
-4. **Move each shipment forward:** a manual workflow carousel, followed by shortcuts for departures, arrivals and permitted task follow-ups.
-5. **AI briefing:** appears when the user has AI access and briefing output is available; opens `/ai`.
-6. **Shipment activity and business results:** monthly revenue and job profit, open jobs by transport mode, cash and bank, labeled quick actions and permitted receivables access.
-7. **Detailed activity:** sales by branch, recent customer calls, latest jobs and house shipments, revenue/cost/profit by job month, departures and arrivals over the next seven days, top customers over the last 90 days, receivables ageing and tasks. Individual panels appear only when their data is available.
-8. **More business figures:** remaining available figures, including payables, cash and bank, unbilled work, quotations, leads, tickets, tasks and low-stock items.
+1. **Welcome and actions:** Email, Schedule and New job, where permitted.
+2. **Business at a glance:** four available figures, normally Open jobs, In transit, Revenue this month and Receivables. Open jobs includes OPENED, IN PROGRESS and ON HOLD; In transit filters operational DEPARTED/IN TRANSIT and excludes closed/cancelled jobs.
+3. **Needs attention:** all returned alerts in a neutral, collapsible list; danger icons identify urgent exceptions. Report links require report access.
+4. **Shipment desk:** the next five departures/arrivals, sorted by date, with links to each job and the schedule.
+5. **Latest jobs:** directly accessible on the main desk.
+6. **Shipment workflow:** an expandable guide from enquiry through collection; collapsed by default.
+7. **AI briefing:** expandable when available to a company-wide AI user.
+8. **Business details and reports:** collapsed by default; contains mode mix, quick workspace links, detailed charts, calls, house shipments, schedules, tasks and additional figures. Financial metrics/charts require finance view access, even for staff who can view jobs.
 
 Dashboard status labels stay on one line. Narrow tables scroll within their panels rather than splitting status words or widening the page.
 
@@ -58,7 +58,7 @@ Font families remain **Instrument Sans** for body text and controls and **Plus J
 
 Some existing compact text retains its individual size: compact buttons 12.5px. Dashboard introductions are 15px, table cells 14px, panel headings 16px and status badges 12px. The refinement does not claim that every label is 16px.
 
-The palette continues to use the existing emerald (`#007b52`), graphite (`#161d1a`) and module chart colors defined in `index.css` and `Dashboard.tsx`. `reference.css` retains its existing neutral surface overrides. The header uses `/brand/logo-primary.png?v=elvora-website-4`; the overview uses `/brand/icon-primary.png`. The footer retains **A product of DigitalBurj Business OS**, `/brand/digitalburj-business-os.png` and its [DigitalBurj product link](https://digitalburj.com/business-os).
+The palette continues to use the existing emerald (`#007b52`), graphite (`#161d1a`) and module chart colors defined in `index.css` and `Dashboard.tsx`. `reference.css` retains its existing neutral surface overrides. The header retains `/brand/logo-primary.png?v=elvora-website-4`. The footer retains **A product of DigitalBurj Business OS**, `/brand/digitalburj-business-os.png` and its [DigitalBurj product link](https://digitalburj.com/business-os).
 
 ## Related implementation and guidance
 
@@ -71,12 +71,8 @@ The palette continues to use the existing emerald (`#007b52`), graphite (`#161d1
 
 The Email screen uses the same typography and controls. Write email contains explicit From, To, Cc, Subject and Message labels; Sent & queued shows outgoing status, and Sender settings is available to administrators with edit access.
 
-## Dashboard color roles
+## Quiet operating surfaces
 
-Shipment cards use deep ocean blue and cool blue-green surfaces. The monthly ledger uses Elvora green; sales and collection work uses warm ochre. Documents and delivery have quieter neutral and green surfaces. These roles are attached to the work itself, so permission-based filtering does not change their meaning. Detailed tables and chart bodies remain calm reading surfaces. Both light and dark themes retain labeled states and readable contrast; no new assets or dashboard actions are introduced.
-
-## Ocean control desk refresh
-
-The staff welcome now uses an ocean-blue control desk with warm action highlights. A shipment desk shows the next five scheduled departures and arrivals, sorted by date, using the existing seven-day lists. Each ticket opens its job. Missing movement dates produce a useful empty state; no figures are invented. The existing manual workflow carousel, charts and permission-based metrics remain available. The dashboard stays the default after sign-in, including the demo sign-in; password setup and two-factor authentication still apply.
+White/neutral surfaces, subtle dividers and readable text replace the earlier multicolor cards. Emerald remains an action/navigation accent; urgent exceptions retain their red icons. Charts use a restrained grey/green palette. Duplicate ledger, cash and receivables cards were removed; these values remain available in the KPI sections. Light/dark themes and mobile scrolling remain supported.
 
 The extra E image in the Workspace introduction has been removed. Sidebar workspace dialogs enter from the sidebar direction over 280 ms; link arrows acknowledge hover. Reduced-motion settings disable those effects. Keyboard focus and Escape handling remain in the shared dialog.

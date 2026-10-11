@@ -19,7 +19,7 @@ export default async function (app: FastifyInstance) {
     const s = publicSettings()
     return {
       entities, nav, modules: MODULE_DEFS.map(([key, label]) => ({ key, label })), perms,
-      settings: { company_name: s.company_name, company_address: s.company_address, company_phone: s.company_phone, company_email: s.company_email, company_website: s.company_website, company_trn: s.company_trn, base_currency: s.base_currency, quote_validity_days: s.quote_validity_days, min_margin_pct: s.min_margin_pct, weight_divisor_air: s.weight_divisor_air, bank_details: s.bank_details, invoice_footer: s.invoice_footer, quote_terms: s.quote_terms, invoice_terms: s.invoice_terms, free_days_default: s.free_days_default },
+      settings: { company_name: s.company_name, company_name_ar: s.company_name_ar, company_info_email: s.company_info_email, company_trade_license: s.company_trade_license, licence_authority: s.licence_authority, vat_registered: s.vat_registered, document_seal: s.document_seal, document_seal_default: s.document_seal_default, company_address: s.company_address, company_phone: s.company_phone, company_email: s.company_email, company_website: s.company_website, company_trn: s.company_trn, base_currency: s.base_currency, quote_validity_days: s.quote_validity_days, min_margin_pct: s.min_margin_pct, weight_divisor_air: s.weight_divisor_air, bank_details: s.bank_details, invoice_footer: s.invoice_footer, quote_terms: s.quote_terms, invoice_terms: s.invoice_terms, free_days_default: s.free_days_default },
     }
   })
 }

@@ -7,7 +7,7 @@ import { db, q } from '../db'
 import { dirs, config, BACKUP_EXT } from '../config'
 import { getSetting, publicSettings, setSettings } from '../settings'
 import { audit, getDef, getRecord, assertCan, can } from '../engine'
-import { bad, notFound, nowIso, safeJson, todayStr } from '../util'
+import { forbidden, bad, notFound, nowIso, safeJson, todayStr } from '../util'
 import { idOf, need } from './helpers'
 import { COOKIE } from '../app'
 import { CATALOG } from '../integrations/catalog'
@@ -139,31 +139,48 @@ export default async function (app: FastifyInstance) {
   app.post('/api/customs/:id/submit', async (req) => { need(req, 'customs', 'edit'); const id = idOf((req.params as any).id); getRecord(getDef('customs_declarations'), id, req.ctx, { children: false }); return submitCustoms(id) })
 
   // =================================================================== server-side PDF
+  // Resolve only parties linked to a readable document, without requiring CRM access.
+  // Portal users and operations/finance staff must be able to print their own permitted records.
+  const printParty = (partyId: number) => {
+    const p = q.get<{ name: string; country_id: number | null } & Record<string, any>>(`SELECT name, address1, address2, city, state, po_box, trn, phone, country_id FROM parties WHERE id = ? AND deleted_at IS NULL`, partyId)
+    return p ? { ...p, _labels: { country_id: p.country_id ? q.val(`SELECT name FROM countries WHERE id = ?`, p.country_id) : '' } } : null
+  }
+  app.get('/api/print/:entity/:id/parties', async req => {
+    const { entity, id } = req.params as any
+    if (!['invoices', 'quotations', 'jobs'].includes(entity)) throw bad('This document has no party lookup')
+    const record = getRecord(getDef(entity), idOf(id), req.ctx, { children: false })
+    const ids = entity === 'invoices' ? [record.party_id] : entity === 'quotations' ? [record.customer_id] : [record.shipper_id ?? record.client_id, record.consignee_id, record.notify_id]
+    return Object.fromEntries([...new Set(ids.filter(Boolean))].map(partyId => [partyId, printParty(Number(partyId))]))
+  })
   app.get('/api/pdf/status', async () => ({ available: pdfAvailable() }))
   const printPath = (entity: string, id: number, query: any) => {
     const def = ENTITIES[entity]; if (!def?.print && !['jobs', 'parties'].includes(entity)) throw bad('This record type has no printable layout')
-    const qs = Object.entries(query ?? {}).filter(([k]) => ['doc', 'from', 'to', 'currency'].includes(k)).map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`).join('&')
+    const qs = Object.entries(query ?? {}).filter(([k]) => ['doc', 'from', 'to', 'currency', 'seal'].includes(k)).map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`).join('&')
     return `/print/${entity}/${id}${qs ? '?' + qs : ''}`
   }
-  const pdfFor = async (req: any, entity: string, id: number) => {
+  const pdfFor = async (req: any, entity: string, id: number, seal?: boolean) => {
     const def = ENTITIES[entity]; if (!def) throw notFound('Unknown record type')
-    assertCan(req.ctx, def.module, 'view'); getRecord(def, id, req.ctx, { children: false })
+    if (entity === 'parties') {
+      need(req, 'finance', 'view')
+      if (req.user.party_id && req.user.party_id !== id) throw forbidden('You can only export your own company statement')
+      if (!printParty(id)) throw notFound('Party not found')
+    } else { assertCan(req.ctx, def.module, 'view'); getRecord(def, id, req.ctx, { children: false }) }
     const sid = req.cookies?.[COOKIE]; if (!sid) throw bad('PDF export is available from the signed-in web app')
-    return renderPrintPdf(printPath(entity, id, req.query), { name: COOKIE, value: sid })
+    return renderPrintPdf(printPath(entity, id, { ...req.query, ...(seal === undefined ? {} : { seal: seal ? '1' : '0' }) }), { name: COOKIE, value: sid })
   }
   app.get('/api/pdf/:entity/:id', async (req, reply) => {
     const p = req.params as any; const buf = await pdfFor(req, p.entity, idOf(p.id))
-    const label = getRecord(ENTITIES[p.entity], idOf(p.id), req.ctx, { children: false })._title ?? `${p.entity}-${p.id}`
+    const label = p.entity === 'parties' ? printParty(idOf(p.id))?.name : getRecord(ENTITIES[p.entity], idOf(p.id), req.ctx, { children: false })._title ?? `${p.entity}-${p.id}`
     reply.header('content-type', 'application/pdf').header('content-disposition', `${(req.query as any).download === '1' ? 'attachment' : 'inline'}; filename="${String(label).replace(/[^\w.-]+/g, '_')}.pdf"`)
     return reply.send(buf)
   })
   app.post('/api/pdf/:entity/:id/email', async (req) => {
     const p = req.params as any, id = idOf(p.id)
-    assertCan(req.ctx, ENTITIES[p.entity]?.module ?? 'admin', 'edit')
-    const b = z.object({ from: z.string().email().optional(), to: z.string().email(), cc: z.string().email().or(z.literal('')).optional(), subject: z.string().min(1).max(200).refine(x => !/[\r\n]/.test(x)), body: z.string().min(1).max(50000) }).parse(req.body)
+    assertCan(req.ctx, p.entity === 'parties' ? 'finance' : ENTITIES[p.entity]?.module ?? 'admin', 'edit')
+    const b = z.object({ from: z.string().email().optional(), to: z.string().email(), cc: z.string().email().or(z.literal('')).optional(), subject: z.string().min(1).max(200).refine(x => !/[\r\n]/.test(x)), body: z.string().min(1).max(50000), seal: z.boolean().optional() }).parse(req.body)
     if (b.from) { const { senderAccount } = await import('../mail-accounts'); senderAccount(b.from) }
-    const buf = await pdfFor(req, p.entity, id)
-    const rec = getRecord(ENTITIES[p.entity], id, req.ctx, { children: false })
+    const buf = await pdfFor(req, p.entity, id, b.seal)
+    const rec = p.entity === 'parties' ? { _title: printParty(id)?.name ?? `Statement-${id}` } : getRecord(ENTITIES[p.entity], id, req.ctx, { children: false })
     const mid = queueEmail({ from: b.from, to: b.to, cc: b.cc, subject: b.subject, body: b.body, link_entity: p.entity, link_id: id, userId: req.user!.id, attachments: [{ filename: `${String(rec._title).replace(/[^\w.-]+/g, '_')}.pdf`, contentBase64: buf.toString('base64'), contentType: 'application/pdf' }] })
     audit(req.ctx, ENTITIES[p.entity], id, 'emailed', { to: [null, b.to] }, rec._title)
     return { queued: mid }
