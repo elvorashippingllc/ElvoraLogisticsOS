@@ -1,4 +1,5 @@
 import { documentNotice, documentRecipient, useDocumentSeal } from '@shared/document-presentation'
+import { CorporateFooter } from '../components/CorporateFooter'
 import { DocumentPrinter } from '../components/ui/document-printer'
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
@@ -37,6 +38,7 @@ function Foot({ children }: { children?: ReactNode }) {
     <div className="document-issuance"><div><strong>{documentNotice(presentation.entity, presentation.record)}</strong>{['delivery_orders', 'transport_orders', 'grns', 'dispatches', 'freight_documents'].includes(presentation.entity) && <p>Required receipt, delivery, custody and carrier acknowledgements remain applicable.</p>}</div>
       {presentation.seal && settings.document_seal && <img className="document-seal" src={settings.document_seal} alt="Elvora Shipping L.L.C. company seal" />}
     </div>
+    <CorporateFooter />
   </footer>
 }
 function Recipient({ record }: { record: any }) {

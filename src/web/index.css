@@ -490,3 +490,12 @@ table.grid td.num, table.grid th.num { white-space: nowrap; }
 .studio-card { display: flex; flex-direction: column; gap: 6px; padding: 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--card); } .studio-card h3 { margin: 0; font-size: 15px; line-height: 1.25; } .studio-card p { margin: 0; font-size: 12.5px; color: var(--muted); display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .studio-chip { border: 1px solid var(--line); background: var(--card); color: var(--ink); border-radius: 999px; padding: 5px 12px; font: inherit; font-size: 13px; cursor: pointer; } .studio-chip[aria-pressed='true'] { background: var(--ink); color: var(--card); border-color: var(--ink); }
 .studio-ai-result { max-height: 280px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; padding: 10px; background: #fff; color: #111; }
+
+/* Corporate document contact strip: English, restrained and consistent. */
+.corporate-footer { margin-top: 22px; border-top: 2px solid #007b52; padding-top: 9px; display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; color: #425466; font-family: Arial, sans-serif; font-size: 9px; line-height: 1.6; break-inside: avoid; text-align: left; direction: ltr; }
+.corporate-footer-identity, .corporate-footer-contact { display: flex; flex-direction: column; }
+.corporate-footer-identity strong { color: #15293b; letter-spacing: .07em; font-size: 10px; }
+.corporate-footer-contact { text-align: right; overflow-wrap: anywhere; }
+.corporate-footer-contact strong { color: #007b52; font-weight: 700; }
+.corporate-footer-note { grid-column: 1 / -1; color: #687885; padding-top: 3px; }
+.pdf-export .corporate-footer { display: none; }

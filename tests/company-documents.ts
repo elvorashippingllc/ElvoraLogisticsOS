@@ -1,3 +1,4 @@
+import { corporatePdfFooter } from '../src/shared/corporate-footer'
 import assert from 'node:assert/strict'
 import { syncSchema } from '../src/server/schema'
 import { seedReference } from '../src/server/seed'
@@ -42,3 +43,10 @@ for (const title of ['Tax Invoice', 'Credit Note', 'Debit Note']) {
 assert.ok(!presentDocumentHtml(contact, 'Proforma Invoice').includes('100123456700003'))
 assert.equal(presentDocumentHtml('<p>Office F101-3, Ibrahim Mohammed Sharif Balsalah building, Naif, Dubai, United Arab Emirates</p>'), '<p>Bur Dubai, Dubai, UAE</p>')
 console.log('English presentation passed: no Arabic or general identifiers, preserved required tax fields and contact cells, legacy address replacement.')
+
+const footer = corporatePdfFooter({ company_name: 'ELVORA <Shipping>', company_address: 'Bur Dubai, Dubai, UAE', company_phone: '+971 50 422 1950', company_info_email: 'info@elvorashipping.com', company_website: 'https://www.elvorashipping.com' })
+assert.ok(footer.includes('ELVORA &lt;Shipping&gt;') && footer.includes('Bur Dubai, Dubai, UAE'))
+assert.ok(footer.includes('www.elvorashipping.com') && footer.includes('pageNumber') && footer.includes('totalPages'))
+assert.ok(!corporatePdfFooter({}, { pageNumbers: false }).includes('pageNumber'))
+assert.ok(corporatePdfFooter({}, { footerText: '<script>bad()</script>' }).includes('&lt;script&gt;'))
+console.log('Corporate footer passed: safe company contact details, repeated PDF numbering and optional note.')
