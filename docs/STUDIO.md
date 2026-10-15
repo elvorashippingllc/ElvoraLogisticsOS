@@ -32,3 +32,7 @@ The one-time company-document upgrade fills missing fields and replaces only the
 Delete is visible on record lists, record detail pages and the dedicated job screen when the user has delete permission. Deletion uses the existing audited soft-delete endpoint. Linked records block deletion with a list of dependencies; closed jobs and protected financial records retain their existing cancel/void workflows. No cascade deletion of accounting records is introduced.
 
 Validation: `npm run typecheck`, `npm run build`, `TEST_SUITES='company-documents compliance studio smoke' bash tests/run-all.sh`. PDF rendering requires Chromium on the host.
+
+## English document presentation update
+
+Document address: **Bur Dubai, Dubai, UAE**. A one-time production upgrade applies this requested address to existing deployments; subsequent administrator edits are preserved. Shared letterheads and document titles are English only. General templates omit registration identifiers; tax invoice, credit note and debit note templates retain VAT TRN fields. Internal Company Settings and compliance evidence are retained. Existing saved Studio documents use the same presentation filter when previewed, opened or printed; existing accounting source records are not rewritten.

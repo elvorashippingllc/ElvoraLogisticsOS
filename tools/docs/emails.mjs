@@ -1,4 +1,4 @@
-export const CO = { name: 'Elvora Shipping LLC', addr: 'Bur Dubai, Dubai, United Arab Emirates', tel: '+971 50 422 1950', mail: 'sales@elvorashipping.com', web: 'www.elvorashipping.com', hours: 'Sun–Thu 09:00–18:00 GST; 24/7 for active shipments' }
+export const CO = { name: 'Elvora Shipping LLC', addr: 'Bur Dubai, Dubai, UAE', tel: '+971 50 422 1950', mail: 'sales@elvorashipping.com', web: 'www.elvorashipping.com', hours: 'Sun–Thu 09:00–18:00 GST; 24/7 for active shipments' }
 // body: array of paragraphs; {t:'table', rows:[[label,value]]} ; {t:'list', items}
 const sig = 'Kind regards,\n[Your name]\n[Position]\n' + CO.name + '\n' + CO.tel + ' · ' + CO.mail
 const shipTable = [['Job reference', '[ELV-JOB-…]'], ['B/L / AWB', '[Number]'], ['Route', '[Origin] → [Destination]'], ['Vessel / flight', '[Name and voyage]']]

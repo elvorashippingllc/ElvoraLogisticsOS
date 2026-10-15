@@ -7,7 +7,7 @@ import path from 'node:path'
 
 export const SETTING_DEFAULTS: Record<string, any> = {
   company_name: 'ELVORA SHIPPING L.L.C',
-  company_address: 'Office F101-3, Ibrahim Mohammed Sharif Balsalah building, Naif, Dubai, United Arab Emirates',
+  company_address: 'Bur Dubai, Dubai, UAE',
   company_phone: '+971 50 422 1950',
   company_email: 'sales@elvorashipping.com',
   company_info_email: 'info@elvorashipping.com',

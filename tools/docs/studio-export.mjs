@@ -1,5 +1,6 @@
 // Builds the Document Studio template library (src/server/studio/library.json) from the same content definitions that produce the Word templates,
 // plus the e-mail templates and the designed marketing pieces. Run with `npm run docs:studio`.
+import { presentDocumentHtml } from '../../src/shared/studio-html.ts'
 import fs from 'node:fs'
 import path from 'node:path'
 import { ROOT } from './lib.mjs'
@@ -9,7 +10,7 @@ const OUT = path.join(ROOT, 'src/server/studio/library.json')
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 const CO_TOKENS = [
   [/Elvora Shipping LLC/g, '{{company.name}}'],
-  [/Bur Dubai, Dubai, United Arab Emirates/g, '{{company.address}}'],
+  [/Bur Dubai, Dubai, (?:United Arab Emirates|UAE)/g, '{{company.address}}'],
   [/\+971 50 422 1950/g, '{{company.phone}}'],
   [/sales@elvorashipping\.com/g, '{{company.email}}'],
   [/www\.elvorashipping\.com/g, '{{company.website}}'],
@@ -97,6 +98,7 @@ const marketing = (await import(path.join(import.meta.dirname, 'studio-marketing
 for (const m of marketing) library.push({ letterhead: false, orientation: 'Portrait', kind: 'Marketing', category: 'Marketing & Brochures', ...m, html: tokenise(m.html).replace(/\[([^\[\]\n<>]{1,90})\]/g, '<span class="ph">[$1]</span>') })
 
 library.push(...JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/docs/company-templates.json'), 'utf8')))
+for (const t of library) t.html = presentDocumentHtml(t.html, t.title)
 const seen = new Set()
 for (const t of library) { if (seen.has(t.code)) throw new Error('duplicate template code ' + t.code); seen.add(t.code) }
 fs.mkdirSync(path.dirname(OUT), { recursive: true })

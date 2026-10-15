@@ -2,7 +2,7 @@
   "name": "elvora-logistics-os",
   "version": "1.0.0",
   "private": true,
-  "description": "Elvora Logistics OS – freight forwarding & logistics ERP",
+  "description": "Elvora Logistics OS \u2013 freight forwarding & logistics ERP",
   "type": "module",
   "engines": {
     "node": ">=22.0.0"
@@ -18,8 +18,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "tsx --env-file-if-exists=.env tests/smoke.ts",
     "test:integrations": "tsx --env-file-if-exists=.env tests/phase2.ts",
-    "docs:build": "node tools/docs/build.mjs && node tools/docs/build-all.mjs && node tools/docs/readme.mjs && node tools/docs/studio-export.mjs",
-    "docs:studio": "node tools/docs/studio-export.mjs",
+    "docs:build": "node tools/docs/build.mjs && node tools/docs/build-all.mjs && node tools/docs/readme.mjs && node --import tsx tools/docs/studio-export.mjs",
+    "docs:studio": "node --import tsx tools/docs/studio-export.mjs",
     "data:reset": "tsx --env-file-if-exists=.env tools/data/reset-business-data.ts",
     "test:compliance": "tsx --env-file-if-exists=.env tests/compliance.ts",
     "test:documents": "node tests/documents-ui.mjs",
