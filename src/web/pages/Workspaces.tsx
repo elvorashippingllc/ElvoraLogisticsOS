@@ -10,7 +10,7 @@ import { Empty, PageHeader } from '../ui/kit'
 // Group icon keys are stable across languages and permission-filtered item lists.
 export const workspaceId = (g: NavGroup) => g.icon.toLowerCase()
 export const workspacePath = (g: NavGroup) => '/workspace/' + workspaceId(g)
-const flowOrder = ['Handshake', 'Ship', 'Truck', 'Warehouse', 'Landmark', 'ListChecks', 'Users', 'Bot', 'BadgeCheck', 'BarChart3', 'Database', 'Settings']
+const flowOrder = ['Handshake', 'Ship', 'Truck', 'Warehouse', 'Landmark', 'FilePenLine', 'ListChecks', 'Users', 'Bot', 'BadgeCheck', 'BarChart3', 'Database', 'Settings']
 
 export function Workspaces() {
   const { meta, me } = useMeta()

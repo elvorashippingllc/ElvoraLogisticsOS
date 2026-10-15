@@ -29,6 +29,15 @@ export default async function (app: FastifyInstance) {
     return tx(() => expenseAction(id(req), action, b, req.ctx))
   })
 
+  // continue an existing invoice numbering series (for example after migrating from another system)
+  app.post('/api/finance/invoice-numbering', async (req) => {
+    need(req, 'admin', 'edit')
+    const b = z.object({ next: z.number().int().min(1).max(99_999_999) }).parse(req.body ?? {})
+    const { setNextInvoiceNumber } = await import('../domain/finance')
+    tx(() => setNextInvoiceNumber(b.next))
+    return { ok: true, next: b.next }
+  })
+
   // open documents for allocation pickers
   app.get('/api/finance/open-invoices', async (req) => {
     need(req, 'finance', 'view')

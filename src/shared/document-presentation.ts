@@ -5,6 +5,8 @@ export function documentKind(entity: string, record?: any): string {
 }
 
 export function documentNotice(entity: string, record?: any): string {
+  // Studio documents (letters, contracts, certificates…) may need a signature, so they carry no blanket notice
+  if (entity === 'studio_documents') return ''
   const kind = documentKind(entity, record)
   return `This is a system-generated ${kind} and does not require ${entity === 'invoices' ? 'a' : 'an issuer’s'} signature.`
 }

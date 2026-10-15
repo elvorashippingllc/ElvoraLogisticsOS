@@ -98,7 +98,7 @@ export const ACCOUNTS: [string, string, string, string, string?][] = [
   ['5400', 'Warehousing & handling cost', 'Expense', 'Direct cost'], ['5800', 'Disbursements paid', 'Expense', 'Direct cost'], ['5900', 'Other direct cost', 'Expense', 'Direct cost'],
   ['6000', 'Salaries & wages', 'Expense', 'Payroll'], ['6010', 'Staff benefits, visas & medical', 'Expense', 'Payroll'], ['6100', 'Rent', 'Expense', 'Operating expense'], ['6200', 'Utilities & communication', 'Expense', 'Operating expense'], ['6300', 'Vehicle running costs', 'Expense', 'Operating expense'],
   ['6400', 'Depreciation', 'Expense', 'Operating expense'], ['6500', 'Professional & legal fees', 'Expense', 'Operating expense'], ['6600', 'Marketing & business development', 'Expense', 'Operating expense'], ['6700', 'Bank charges', 'Expense', 'Operating expense'],
-  ['6800', 'Insurance', 'Expense', 'Operating expense'], ['6900', 'Miscellaneous expense', 'Expense', 'Operating expense'], ['7000', 'Interest expense', 'Expense', 'Operating expense'], ['7900', 'Exchange gain / (loss)', 'Expense', 'FX gain / loss', 'fx_gain_loss'],
+  ['6800', 'Insurance', 'Expense', 'Operating expense'], ['6900', 'Miscellaneous expense', 'Expense', 'Operating expense'], ['7000', 'Interest expense', 'Expense', 'Operating expense'], ['7900', 'Exchange gain / (loss)', 'Expense', 'FX gain / loss', 'fx_gain_loss'], ['7910', 'Rounding differences', 'Expense', 'Operating expense', 'rounding'],
 ]
 
 // code, name, applies_to, group, uom, vat, income acct, cost acct

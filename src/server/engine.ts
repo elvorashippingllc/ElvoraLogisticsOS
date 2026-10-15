@@ -86,10 +86,10 @@ function fromDb(f: FieldDef, v: any): any {
   }
 }
 
-export function rowToApi(def: EntityDef, row: Row): Rec {
+export function rowToApi(def: EntityDef, row: Row, light = false): Rec {
   const out: Rec = { id: row.id }
   for (const f of def.fields) {
-    if (f.secret || f.virtual) continue
+    if (f.secret || f.virtual || (light && f.heavy)) continue
     out[f.name] = fromDb(f, row[f.name])
   }
   out.version = row.version; out.created_at = row.created_at; out.updated_at = row.updated_at; out.created_by = row.created_by; out.updated_by = row.updated_by
@@ -103,7 +103,7 @@ function coerceIn(f: FieldDef, v: any): any {
   if (v === undefined) return undefined
   if (v === null || v === '') return null
   switch (f.type) {
-    case 'text': case 'textarea': case 'phone': return String(v).trim().slice(0, f.type === 'textarea' ? 20000 : 1000)
+    case 'text': case 'textarea': case 'phone': return String(v).trim().slice(0, f.maxLength ?? (f.type === 'textarea' ? 20000 : 1000))
     case 'email': { const s = String(v).trim().toLowerCase(); if (!EMAIL.test(s)) throw bad(`${f.label}: invalid e-mail address`); return s }
     case 'url': { const s = String(v).trim(); if (!/^https?:\/\//i.test(s)) throw bad(`${f.label}: must start with http:// or https://`); return s }
     case 'int': { const n = Number(v); if (!Number.isFinite(n) || !Number.isInteger(n)) throw bad(`${f.label}: must be a whole number`); return n }
@@ -311,7 +311,7 @@ export function listRecords(def: EntityDef, p: ListParams, ctx: Ctx) {
   const dir = (p.dir ?? (p.sort ? 'asc' : def.defaultSort?.dir ?? 'desc')).toLowerCase() === 'asc' ? 'ASC' : 'DESC'
   const total = q.val<number>(`SELECT COUNT(*) FROM ${qi(def.key)} ${where}`, ...args) ?? 0
   const rows = q.all(`SELECT * FROM ${qi(def.key)} ${where} ORDER BY ${qi(sortField)} ${dir}, id DESC LIMIT ? OFFSET ?`, ...args, pageSize, (page - 1) * pageSize)
-  const recs = rows.map(r => rowToApi(def, r))
+  const recs = rows.map(r => rowToApi(def, r, true))
   attachLabels(def, recs)
   if(def.key==='shift_handovers'&&!ctx.system)recs.forEach(r=>redactHandover(r,ctx))
   return { rows: recs, total, page, pageSize }

@@ -13,6 +13,7 @@ async function main() {
   syncSchema()
   seedReference()
   ;(await import('./ai/agents')).ensureAgents()
+  await (await import('./startup-data')).runStartupDataTasks()
   if (cfg.demo.enabled) { try { const t0 = Date.now(); await (await import('./demo/workspace')).rebuildDemoWorkspace(); console.log(`Demo workspace ready (${Date.now() - t0} ms)`) } catch (e) { console.error('Demo workspace could not be built – continuing without it', e) } }
   const app = await buildApp()
   await app.listen({ port: config.port, host: config.host })

@@ -20,6 +20,8 @@ export function fmtIsoStamp(v?: string | null): string { // UTC ISO from the ser
   return d.toLocaleString('en-GB', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' })
 }
 export const fmtMoney = (n: number | null | undefined, dp = 2) => (n === null || n === undefined || n === ('' as any) ? '' : Number(n).toLocaleString('en-US', { minimumFractionDigits: dp, maximumFractionDigits: dp }))
+/** Rate of exchange: at least 3 and at most 6 decimals, so 3.685 is never shown as 3.69. */
+export const fmtRoe = (n: number | null | undefined) => (n === null || n === undefined || n === ('' as any) ? '' : Number(n).toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 6 }))
 export const fmtNum = (n: number | null | undefined, dp = 2) => (n === null || n === undefined ? '' : Number(n).toLocaleString('en-US', { maximumFractionDigits: dp }))
 export const fmtCompact = (n: number) => Math.abs(n) >= 1e6 ? (n / 1e6).toFixed(1) + 'M' : Math.abs(n) >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : String(Math.round(n))
 export const todayIso = () => new Date().toLocaleDateString('sv-SE')

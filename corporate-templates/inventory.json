@@ -490,5 +490,335 @@
   "title": "Template Use and Company Setup Guide",
   "cat": "06 Control and Guidance",
   "file": "documents/06-control-and-guidance/ELV-082-template-use-and-company-setup-guide"
+ },
+ {
+  "id": "ELV-083",
+  "title": "Standard Trading Conditions",
+  "cat": "07 Legal and Contracts",
+  "file": "documents/07-legal-and-contracts/ELV-083-standard-trading-conditions"
+ },
+ {
+  "id": "ELV-084",
+  "title": "Power of Attorney (Shipping and Customs)",
+  "cat": "07 Legal and Contracts",
+  "file": "documents/07-legal-and-contracts/ELV-084-power-of-attorney-shipping-and-customs"
+ },
+ {
+  "id": "ELV-085",
+  "title": "Letter of Indemnity (Cargo Release)",
+  "cat": "07 Legal and Contracts",
+  "file": "documents/07-legal-and-contracts/ELV-085-letter-of-indemnity-cargo-release"
+ },
+ {
+  "id": "ELV-086",
+  "title": "Agency Appointment Letter",
+  "cat": "07 Legal and Contracts",
+  "file": "documents/07-legal-and-contracts/ELV-086-agency-appointment-letter"
+ },
+ {
+  "id": "ELV-087",
+  "title": "Service Level Agreement (Customer)",
+  "cat": "07 Legal and Contracts",
+  "file": "documents/07-legal-and-contracts/ELV-087-service-level-agreement-customer"
+ },
+ {
+  "id": "ELV-088",
+  "title": "Sub-contractor / Vendor Agreement",
+  "cat": "07 Legal and Contracts",
+  "file": "documents/07-legal-and-contracts/ELV-088-sub-contractor-vendor-agreement"
+ },
+ {
+  "id": "ELV-089",
+  "title": "Letter of Introduction",
+  "cat": "08 Letters and Notices",
+  "file": "documents/08-letters-and-notices/ELV-089-letter-of-introduction"
+ },
+ {
+  "id": "ELV-090",
+  "title": "Payment Reminder Letter – First",
+  "cat": "08 Letters and Notices",
+  "file": "documents/08-letters-and-notices/ELV-090-payment-reminder-letter-first"
+ },
+ {
+  "id": "ELV-091",
+  "title": "Payment Reminder Letter – Second",
+  "cat": "08 Letters and Notices",
+  "file": "documents/08-letters-and-notices/ELV-091-payment-reminder-letter-second"
+ },
+ {
+  "id": "ELV-092",
+  "title": "Final Demand Letter",
+  "cat": "08 Letters and Notices",
+  "file": "documents/08-letters-and-notices/ELV-092-final-demand-letter"
+ },
+ {
+  "id": "ELV-093",
+  "title": "Apology Letter (Service Failure)",
+  "cat": "08 Letters and Notices",
+  "file": "documents/08-letters-and-notices/ELV-093-apology-letter-service-failure"
+ },
+ {
+  "id": "ELV-094",
+  "title": "Notice of Rate or Surcharge Change",
+  "cat": "08 Letters and Notices",
+  "file": "documents/08-letters-and-notices/ELV-094-notice-of-rate-or-surcharge-change"
+ },
+ {
+  "id": "ELV-095",
+  "title": "Notice of Change of Address or Bank Details",
+  "cat": "08 Letters and Notices",
+  "file": "documents/08-letters-and-notices/ELV-095-notice-of-change-of-address-or-bank-details"
+ },
+ {
+  "id": "ELV-096",
+  "title": "Holiday and Office Closure Notice",
+  "cat": "08 Letters and Notices",
+  "file": "documents/08-letters-and-notices/ELV-096-holiday-and-office-closure-notice"
+ },
+ {
+  "id": "ELV-097",
+  "title": "Thank-you Letter to Customer",
+  "cat": "08 Letters and Notices",
+  "file": "documents/08-letters-and-notices/ELV-097-thank-you-letter-to-customer"
+ },
+ {
+  "id": "ELV-098",
+  "title": "Business Reference Letter",
+  "cat": "08 Letters and Notices",
+  "file": "documents/08-letters-and-notices/ELV-098-business-reference-letter"
+ },
+ {
+  "id": "ELV-099",
+  "title": "Bank Letter (Account Opening or Facility Request)",
+  "cat": "08 Letters and Notices",
+  "file": "documents/08-letters-and-notices/ELV-099-bank-letter-account-opening-or-facility-request"
+ },
+ {
+  "id": "ELV-100",
+  "title": "Invitation Letter (Visit or Meeting)",
+  "cat": "08 Letters and Notices",
+  "file": "documents/08-letters-and-notices/ELV-100-invitation-letter-visit-or-meeting"
+ },
+ {
+  "id": "ELV-101",
+  "title": "Bill of Lading Amendment Request",
+  "cat": "09 Customs and Compliance",
+  "file": "documents/09-customs-and-compliance/ELV-101-bill-of-lading-amendment-request"
+ },
+ {
+  "id": "ELV-102",
+  "title": "Telex / Express Release Request",
+  "cat": "09 Customs and Compliance",
+  "file": "documents/09-customs-and-compliance/ELV-102-telex-express-release-request"
+ },
+ {
+  "id": "ELV-103",
+  "title": "Demurrage / Detention Dispute Letter",
+  "cat": "09 Customs and Compliance",
+  "file": "documents/09-customs-and-compliance/ELV-103-demurrage-detention-dispute-letter"
+ },
+ {
+  "id": "ELV-104",
+  "title": "Free Time Extension Request",
+  "cat": "09 Customs and Compliance",
+  "file": "documents/09-customs-and-compliance/ELV-104-free-time-extension-request"
+ },
+ {
+  "id": "ELV-105",
+  "title": "Cargo Release Authorisation Letter",
+  "cat": "09 Customs and Compliance",
+  "file": "documents/09-customs-and-compliance/ELV-105-cargo-release-authorisation-letter"
+ },
+ {
+  "id": "ELV-106",
+  "title": "Import Clearance Instructions",
+  "cat": "09 Customs and Compliance",
+  "file": "documents/09-customs-and-compliance/ELV-106-import-clearance-instructions"
+ },
+ {
+  "id": "ELV-107",
+  "title": "Export Clearance Instructions",
+  "cat": "09 Customs and Compliance",
+  "file": "documents/09-customs-and-compliance/ELV-107-export-clearance-instructions"
+ },
+ {
+  "id": "ELV-108",
+  "title": "Customs Duty Exemption / Refund Request",
+  "cat": "09 Customs and Compliance",
+  "file": "documents/09-customs-and-compliance/ELV-108-customs-duty-exemption-refund-request"
+ },
+ {
+  "id": "ELV-109",
+  "title": "Certificate of Origin Application Checklist",
+  "cat": "09 Customs and Compliance",
+  "file": "documents/09-customs-and-compliance/ELV-109-certificate-of-origin-application-checklist"
+ },
+ {
+  "id": "ELV-110",
+  "title": "Know Your Customer (KYC) Declaration",
+  "cat": "09 Customs and Compliance",
+  "file": "documents/09-customs-and-compliance/ELV-110-know-your-customer-kyc-declaration"
+ },
+ {
+  "id": "ELV-111",
+  "title": "Sanctions and Export Control Declaration",
+  "cat": "09 Customs and Compliance",
+  "file": "documents/09-customs-and-compliance/ELV-111-sanctions-and-export-control-declaration"
+ },
+ {
+  "id": "ELV-112",
+  "title": "Cargo Survey / Inspection Request",
+  "cat": "09 Customs and Compliance",
+  "file": "documents/09-customs-and-compliance/ELV-112-cargo-survey-inspection-request"
+ },
+ {
+  "id": "ELV-113",
+  "title": "Short-Shipment / Shut-out Notice",
+  "cat": "09 Customs and Compliance",
+  "file": "documents/09-customs-and-compliance/ELV-113-short-shipment-shut-out-notice"
+ },
+ {
+  "id": "ELV-114",
+  "title": "Seal Discrepancy Report",
+  "cat": "09 Customs and Compliance",
+  "file": "documents/09-customs-and-compliance/ELV-114-seal-discrepancy-report"
+ },
+ {
+  "id": "ELV-115",
+  "title": "Anti-Bribery and Ethics Policy",
+  "cat": "06 Control and Guidance",
+  "file": "documents/06-control-and-guidance/ELV-115-anti-bribery-and-ethics-policy"
+ },
+ {
+  "id": "ELV-116",
+  "title": "Data Protection and Privacy Policy",
+  "cat": "06 Control and Guidance",
+  "file": "documents/06-control-and-guidance/ELV-116-data-protection-and-privacy-policy"
+ },
+ {
+  "id": "ELV-117",
+  "title": "Health, Safety and Environment Policy",
+  "cat": "06 Control and Guidance",
+  "file": "documents/06-control-and-guidance/ELV-117-health-safety-and-environment-policy"
+ },
+ {
+  "id": "ELV-118",
+  "title": "Quality Policy",
+  "cat": "06 Control and Guidance",
+  "file": "documents/06-control-and-guidance/ELV-118-quality-policy"
+ },
+ {
+  "id": "ELV-119",
+  "title": "Business Continuity Plan (Summary)",
+  "cat": "06 Control and Guidance",
+  "file": "documents/06-control-and-guidance/ELV-119-business-continuity-plan-summary"
+ },
+ {
+  "id": "ELV-120",
+  "title": "Incident Report (Health and Safety)",
+  "cat": "06 Control and Guidance",
+  "file": "documents/06-control-and-guidance/ELV-120-incident-report-health-and-safety"
+ },
+ {
+  "id": "ELV-121",
+  "title": "Customer Feedback Form",
+  "cat": "06 Control and Guidance",
+  "file": "documents/06-control-and-guidance/ELV-121-customer-feedback-form"
+ },
+ {
+  "id": "ELV-122",
+  "title": "Customer Visit / Sales Call Report",
+  "cat": "02 Sales and Customers",
+  "file": "documents/02-sales-and-customers/ELV-122-customer-visit-sales-call-report"
+ },
+ {
+  "id": "ELV-123",
+  "title": "Customer Onboarding Checklist",
+  "cat": "02 Sales and Customers",
+  "file": "documents/02-sales-and-customers/ELV-123-customer-onboarding-checklist"
+ },
+ {
+  "id": "ELV-124",
+  "title": "Tender / RFQ Response Cover Letter",
+  "cat": "02 Sales and Customers",
+  "file": "documents/02-sales-and-customers/ELV-124-tender-rfq-response-cover-letter"
+ },
+ {
+  "id": "ELV-125",
+  "title": "Credit Limit Increase Request",
+  "cat": "03 Finance and Procurement",
+  "file": "documents/03-finance-and-procurement/ELV-125-credit-limit-increase-request"
+ },
+ {
+  "id": "ELV-126",
+  "title": "Petty Cash Voucher",
+  "cat": "03 Finance and Procurement",
+  "file": "documents/03-finance-and-procurement/ELV-126-petty-cash-voucher"
+ },
+ {
+  "id": "ELV-127",
+  "title": "Quotation Cover Letter",
+  "cat": "03 Finance and Procurement",
+  "file": "documents/03-finance-and-procurement/ELV-127-quotation-cover-letter"
+ },
+ {
+  "id": "ELV-128",
+  "title": "No Objection Certificate (NOC) Letter",
+  "cat": "05 HR and Administration",
+  "file": "documents/05-hr-and-administration/ELV-128-no-objection-certificate-noc-letter"
+ },
+ {
+  "id": "ELV-129",
+  "title": "Disciplinary Warning Letter",
+  "cat": "05 HR and Administration",
+  "file": "documents/05-hr-and-administration/ELV-129-disciplinary-warning-letter"
+ },
+ {
+  "id": "ELV-130",
+  "title": "Resignation Acceptance Letter",
+  "cat": "05 HR and Administration",
+  "file": "documents/05-hr-and-administration/ELV-130-resignation-acceptance-letter"
+ },
+ {
+  "id": "ELV-131",
+  "title": "Salary Transfer / Bank Letter",
+  "cat": "05 HR and Administration",
+  "file": "documents/05-hr-and-administration/ELV-131-salary-transfer-bank-letter"
+ },
+ {
+  "id": "ELV-132",
+  "title": "End of Service Settlement Statement",
+  "cat": "05 HR and Administration",
+  "file": "documents/05-hr-and-administration/ELV-132-end-of-service-settlement-statement"
+ },
+ {
+  "id": "ELV-133",
+  "title": "Overtime Request and Approval",
+  "cat": "05 HR and Administration",
+  "file": "documents/05-hr-and-administration/ELV-133-overtime-request-and-approval"
+ },
+ {
+  "id": "ELV-134",
+  "title": "Training Attendance Record",
+  "cat": "05 HR and Administration",
+  "file": "documents/05-hr-and-administration/ELV-134-training-attendance-record"
+ },
+ {
+  "id": "ELV-135",
+  "title": "Emergency Contact List",
+  "cat": "01 Corporate",
+  "file": "documents/01-corporate/ELV-135-emergency-contact-list"
+ },
+ {
+  "id": "ELV-136",
+  "title": "Visitor Log",
+  "cat": "01 Corporate",
+  "file": "documents/01-corporate/ELV-136-visitor-log"
+ },
+ {
+  "id": "ELV-137",
+  "title": "Asset Disposal / Write-off Approval",
+  "cat": "01 Corporate",
+  "file": "documents/01-corporate/ELV-137-asset-disposal-write-off-approval"
  }
 ]

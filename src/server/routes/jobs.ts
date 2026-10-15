@@ -78,9 +78,9 @@ export default async function (app: FastifyInstance) {
   app.post('/api/jobs/:id/generate-invoices', async (req) => {
     const { id } = loadJob(req)
     need(req, 'finance', 'create')
-    const b = z.object({ doc_type: z.enum(['Tax Invoice', 'Proforma Invoice']).optional(), charge_ids: z.array(z.number()).optional(), post: z.boolean().optional() }).parse(req.body ?? {})
+    const b = z.object({ doc_type: z.enum(['Tax Invoice', 'Proforma Invoice']).optional(), charge_ids: z.array(z.number()).optional(), post: z.boolean().optional(), bill_in_base: z.boolean().optional() }).parse(req.body ?? {})
     return tx(() => {
-      const invs = generateInvoicesFromJob(id, { docType: b.doc_type, chargeIds: b.charge_ids }, req.ctx)
+      const invs = generateInvoicesFromJob(id, { docType: b.doc_type, chargeIds: b.charge_ids, billInBase: b.bill_in_base }, req.ctx)
       if (b.post) { need(req, 'finance', 'edit'); return invs.map(i => postInvoice(i.id, req.ctx)) }
       return invs
     })

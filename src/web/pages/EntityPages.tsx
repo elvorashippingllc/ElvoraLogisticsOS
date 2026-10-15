@@ -115,12 +115,12 @@ function PayExpense({ rec, onClose, onDone }: { rec: any; onClose: () => void; o
 void Plus
 
 
-function EmailPdfDialog({ entity, rec, onClose }: { entity: string; rec: any; onClose: () => void }) {
+export function EmailPdfDialog({ entity, rec, onClose }: { entity: string; rec: any; onClose: () => void }) {
   const { meta } = useMeta(), [sealChoice, setSealChoice] = useState<string | null>(null)
   const seal = useDocumentSeal(sealChoice, !!meta?.settings.document_seal_default)
   const toast = useToast(); const partyId = rec.party_id ?? rec.customer_id ?? rec.vendor_id ?? rec.client_id
   const guess = useQuery({ queryKey: ['mailto', entity, rec.id], enabled: !!partyId, queryFn: async () => { const c = await get<any>('/api/e/contacts', { filters: JSON.stringify([{ field: 'party_id', op: 'eq', value: partyId }]), pageSize: 5 }); const p = await get<any>(`/api/e/parties/${partyId}`); return c.rows.find((x: any) => x.email)?.email ?? p.email ?? '' } })
-  const [from, setFrom] = useState(''); const [to, setTo] = useState(''); const [subject, setSubject] = useState(`${rec._title}`); const [body, setBody] = useState(`Dear customer,\n\nPlease find attached ${rec._title}.\n\n${documentNotice(entity, rec)}\n\nKind regards,\nElvora Shipping team`); const [busy, setBusy] = useState(false)
+  const [from, setFrom] = useState(''); const [to, setTo] = useState(''); const [subject, setSubject] = useState(`${rec._title}`); const [body, setBody] = useState(`Dear customer,\n\nPlease find attached ${rec._title}.${documentNotice(entity, rec) ? `\n\n${documentNotice(entity, rec)}` : ''}\n\nKind regards,\nElvora Shipping team`); const [busy, setBusy] = useState(false)
   useEffect(() => { if (guess.data && !to) setTo(guess.data) }, [guess.data])  // eslint-disable-line
   const send = async () => { setBusy(true); try { await post(`/api/pdf/${entity}/${rec.id}/email`, { from, to, subject, body, seal }); toast.ok('E-mail with PDF queued'); onClose() } catch (e: any) { toast.error(e.message) } finally { setBusy(false) } }
   return (

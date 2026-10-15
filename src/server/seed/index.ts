@@ -4,6 +4,7 @@ import { createRecord, getDef, SYSTEM_CTX } from '../engine'
 import { nowIso, todayStr } from '../util'
 import * as D from './data'
 import { seedCompliance } from './compliance'
+import { syncStudioLibrary } from '../studio/library'
 
 const done = (g: string) => !!q.val(`SELECT 1 FROM settings WHERE key = ?`, `seed:${g}`)
 const mark = (g: string) => q.run(`INSERT INTO settings(key, value, updated_at) VALUES (?, '1', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`, `seed:${g}`, nowIso())
@@ -61,6 +62,11 @@ export function seedReference(opts: { users?: boolean; demo?: boolean } = {}) {
     for (const [code, name, type, subtype, role] of D.ACCOUNTS) mk('accounts', { code, name, type, subtype, role: role ?? '', active: true })
     mark('accounts')
   }
+  // Added after first release: databases created earlier receive the rounding account without disturbing their existing chart.
+  if (!done('accounts_rounding')) {
+    if (!idOf('accounts', 'code', '7910') && !q.val(`SELECT 1 FROM accounts WHERE role = 'rounding' AND deleted_at IS NULL`)) mk('accounts', { code: '7910', name: 'Rounding differences', type: 'Expense', subtype: 'Operating expense', role: 'rounding', active: true })
+    mark('accounts_rounding')
+  }
   if (!done('charges')) {
     for (const [code, name, applies_to, group, uom, vat, inc, cost] of D.CHARGE_CODES) {
       mk('charge_codes', { code, name, applies_to, group, uom_id: idOf('uoms', 'code', uom), vat_code_id: idOf('vat_codes', 'code', vat), income_account_id: idOf('accounts', 'code', inc), cost_account_id: idOf('accounts', 'code', cost), active: true })
@@ -89,4 +95,5 @@ export function seedReference(opts: { users?: boolean; demo?: boolean } = {}) {
     mark('banks')
   }
   if (!done('compliance')) { seedCompliance({ demo: opts.demo }); mark('compliance') }
+  syncStudioLibrary()
 }

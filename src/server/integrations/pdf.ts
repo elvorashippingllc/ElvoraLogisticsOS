@@ -26,7 +26,7 @@ async function getBrowser(): Promise<Browser> {
 }
 
 /** Render one of the app's own print pages to a PDF, authenticated with the requester's session cookie. */
-export async function renderPrintPdf(printPath: string, cookie: { name: string; value: string }, opts: { landscape?: boolean } = {}): Promise<Buffer> {
+export async function renderPrintPdf(printPath: string, cookie: { name: string; value: string }, opts: { landscape?: boolean; pageNumbers?: boolean; footerText?: string } = {}): Promise<Buffer> {
   if (!/^\/print\/[\w-]+\/[\w,-]+(\?[\w=&,%-]*)?$/.test(printPath)) throw bad('Invalid print path')
   const b = await getBrowser()
   const ctx = await b.newContext({ viewport: { width: 1000, height: 1400 } })
@@ -43,6 +43,11 @@ export async function renderPrintPdf(printPath: string, cookie: { name: string; 
     })
     await page.evaluate(() => (document as any).fonts?.ready)
     await page.waitForTimeout(250)
-    return Buffer.from(await page.pdf({ format: 'A4', printBackground: true, preferCSSPageSize: true, landscape: opts.landscape, margin: { top: '10mm', bottom: '10mm', left: '10mm', right: '10mm' } }))
+    const footer = opts.pageNumbers || opts.footerText
+    const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    const footerTemplate = footer
+      ? `<div style="width:100%;box-sizing:border-box;padding:0 12mm;font-size:8px;color:#666;font-family:Arial,sans-serif;display:flex;justify-content:space-between"><span>${esc(opts.footerText ?? '')}</span><span>${opts.pageNumbers ? 'Page <span class="pageNumber"></span> of <span class="totalPages"></span>' : ''}</span></div>`
+      : ''
+    return Buffer.from(await page.pdf({ format: 'A4', printBackground: true, preferCSSPageSize: true, landscape: opts.landscape, displayHeaderFooter: !!footer, headerTemplate: '<span></span>', footerTemplate, margin: { top: '10mm', bottom: footer ? '16mm' : '10mm', left: '10mm', right: '10mm' } }))
   } finally { await ctx.close().catch(() => {}) }
 }

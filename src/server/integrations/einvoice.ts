@@ -58,7 +58,8 @@ ${[...cats.values()].map(c => `    <cac:TaxSubtotal><cbc:TaxableAmount currencyI
   <cac:LegalMonetaryTotal>
     <cbc:LineExtensionAmount currencyID="${x(cur)}">${amt(inv.subtotal ?? 0)}</cbc:LineExtensionAmount>
     <cbc:TaxExclusiveAmount currencyID="${x(cur)}">${amt(inv.subtotal ?? 0)}</cbc:TaxExclusiveAmount>
-    <cbc:TaxInclusiveAmount currencyID="${x(cur)}">${amt(inv.total ?? 0)}</cbc:TaxInclusiveAmount>
+    <cbc:TaxInclusiveAmount currencyID="${x(cur)}">${amt((inv.subtotal ?? 0) + (inv.vat_total ?? 0))}</cbc:TaxInclusiveAmount>
+    ${inv.rounding ? `<cbc:PayableRoundingAmount currencyID="${x(cur)}">${amt(inv.rounding)}</cbc:PayableRoundingAmount>` : ''}
     <cbc:PayableAmount currencyID="${x(cur)}">${amt(inv.total ?? 0)}</cbc:PayableAmount>
   </cac:LegalMonetaryTotal>
 ${lines.map((l, i) => `  <cac:${credit ? 'CreditNoteLine' : 'InvoiceLine'}>
@@ -70,7 +71,7 @@ ${lines.map((l, i) => `  <cac:${credit ? 'CreditNoteLine' : 'InvoiceLine'}>
   </cac:${credit ? 'CreditNoteLine' : 'InvoiceLine'}>`).join('\n')}
 </${credit ? 'CreditNote' : 'Invoice'}>
 `
-  return { xml, filename: `${inv.invoice_no}.xml` }
+  return { xml, filename: `${String(inv.invoice_no).replace(/[^\w.-]+/g, '_')}.xml` }
 }
 
 export async function submitEinvoice(invoiceId: number): Promise<{ ok: boolean; reference?: string; message: string }> {

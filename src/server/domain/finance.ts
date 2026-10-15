@@ -2,7 +2,7 @@ import crypto from 'node:crypto'
 import { q, qi } from '../db'
 import type { Hooks } from '../hooks'
 import { bad, r2, toCents, todayStr, addDays, fromCents, nowLocal } from '../util'
-import { getDef, getRecord, patchRecord, formatNumber, can, SYSTEM_CTX, type Ctx, type Rec } from '../engine'
+import { getDef, getRecord, patchRecord, formatNumber, nextSeq, can, SYSTEM_CTX, type Ctx, type Rec } from '../engine'
 import { accountByRole, accountByCode, assertNotLocked, BASE, fxRate, postJournal, reverseJournal, type JLine } from './accounting'
 import { getSetting } from '../settings'
 import { notify, notifyRole } from '../notify'
@@ -12,7 +12,7 @@ import { ENTITIES } from '../../shared/entities'
 const vatPct = (id: number | null | undefined) => (id ? q.val<number>(`SELECT rate FROM vat_codes WHERE id = ?`, id) ?? 0 : 0)
 const chargeCode = (id: number | null | undefined) => (id ? q.get(`SELECT * FROM charge_codes WHERE id = ?`, id) : undefined)
 
-function computeLines(rows: Rec[], side: 'income' | 'cost') {
+function computeLines(rows: Rec[], side: 'income' | 'cost', docCurrency?: string) {
   for (const l of rows) {
     const cc = chargeCode(l.charge_code_id)
     if (cc) {
@@ -25,7 +25,15 @@ function computeLines(rows: Rec[], side: 'income' | 'cost') {
     const qty = Number(l.qty ?? 1); const rate = Number(l.rate ?? 0)
     if (qty < 0 || rate < 0) throw bad('Quantity and rate cannot be negative')
     l.qty = qty; l.rate = rate
-    l.amount = r2(qty * rate)
+    // A line may be priced in another currency (for example USD) and billed in the document currency at its own rate of exchange.
+    let roe = 1
+    if (side === 'income' && l.line_ccy && docCurrency && l.line_ccy !== docCurrency) {
+      if (docCurrency !== BASE()) throw bad(`Line "${l.description || 'charge'}" is priced in ${l.line_ccy}, but the invoice is in ${docCurrency}. Price lines in the invoice currency, or invoice in ${BASE()}.`)
+      roe = fxRate(l.line_ccy, l.line_roe != null && l.line_roe !== '' ? Number(l.line_roe) : null)
+      if (!(roe > 0)) throw bad(`Enter the rate of exchange for ${l.line_ccy} on "${l.description || 'the charge'}"`)
+      l.line_roe = Math.round(roe * 1e6) / 1e6
+    } else { l.line_ccy = null; l.line_roe = null }
+    l.amount = r2(qty * rate * roe)
     l.vat_pct = vatPct(l.vat_code_id)
     l.vat_amount = r2(l.amount * l.vat_pct / 100)
     l.line_total = r2(l.amount + l.vat_amount)
@@ -53,13 +61,73 @@ function lockCheck(args: { rec: Rec; old: Rec | null; children: Record<string, R
 
 // ============================================================ INVOICES
 export function recomputeInvoiceTotals(id: number) {
-  const inv = q.get(`SELECT ex_rate FROM invoices WHERE id = ?`, id)
+  const inv = q.get(`SELECT ex_rate, round_total FROM invoices WHERE id = ?`, id)
   if (!inv) return
   const ex = inv.ex_rate || 1
   const lines = q.all(`SELECT amount, vat_amount FROM invoice_lines WHERE invoice_id = ? AND deleted_at IS NULL`, id)
   const sub = lines.reduce((s, l) => s + (l.amount ?? 0), 0), vat = lines.reduce((s, l) => s + (l.vat_amount ?? 0), 0)
-  const base = lines.reduce((s, l) => s + toCents(r2(((l.amount ?? 0) / 100) * ex)) + toCents(r2(((l.vat_amount ?? 0) / 100) * ex)), 0)
-  q.run(`UPDATE invoices SET subtotal = ?, vat_total = ?, total = ?, base_total = ?, balance = ? - COALESCE(paid_amount, 0) WHERE id = ?`, sub, vat, sub + vat, base, sub + vat, id)
+  // Optional rounding of the amount payable to a whole unit (stored in cents, shown as a separate adjustment line).
+  const rounding = inv.round_total === ROUND_WHOLE ? Math.round((sub + vat) / 100) * 100 - (sub + vat) : 0
+  const base = lines.reduce((s, l) => s + toCents(r2(((l.amount ?? 0) / 100) * ex)) + toCents(r2(((l.vat_amount ?? 0) / 100) * ex)), 0) + toCents(r2((rounding / 100) * ex))
+  q.run(`UPDATE invoices SET subtotal = ?, vat_total = ?, rounding = ?, total = ?, base_total = ?, balance = ? - COALESCE(paid_amount, 0) WHERE id = ?`, sub, vat, rounding, sub + vat + rounding, base, sub + vat + rounding, id)
+}
+export const ROUND_WHOLE = 'Round total to whole amount'
+
+/** Account that carries rounding differences; falls back to the exchange gain / loss account on older charts. */
+function roundingAccount(): number {
+  try { return accountByRole('rounding') } catch { return accountByRole('fx_gain_loss') }
+}
+
+const INVOICE_TRADE_CODE: Record<string, string> = { Import: 'IMP', Export: 'EXP', 'Cross trade': 'XTR', Domestic: 'DOM' }
+export const DEFAULT_INVOICE_PATTERN = '{prefix}{YY}{seq:5}'
+
+/**
+ * Next invoice number. The legacy pattern keeps one counter per prefix and year. A custom company pattern (for example `{branch}/{dir}/ES{seq:3}`)
+ * uses ONE counter for the whole series, so IMP and EXP invoices continue the same sequence and a manual start number can be set.
+ */
+export function invoiceSeriesKey(pattern: string, date: string): string {
+  const d = date || todayStr()
+  const dated = pattern.replace(/\{(YYYY|YY|MM|DD)\}/g, (_m, t) => ({ YYYY: d.slice(0, 4), YY: d.slice(2, 4), MM: d.slice(5, 7), DD: d.slice(8, 10) } as Record<string, string>)[t]).replace(/\{(prefix|branch|dir)\}/g, '*')
+  return `invoices:series|${dated}`
+}
+function nextInvoiceNumber(inv: Rec, prefix: string): string {
+  const pattern = String(getSetting('invoice_no_pattern') || DEFAULT_INVOICE_PATTERN)
+  const date = inv.invoice_date
+  if (pattern === DEFAULT_INVOICE_PATTERN) return formatNumber('invoices', pattern, { prefix }, date)
+  const job = inv.job_id ? q.get(`SELECT trade FROM jobs WHERE id = ?`, inv.job_id) : null
+  const branch = (inv.branch_id ? q.val<string>(`SELECT code FROM branches WHERE id = ?`, inv.branch_id) : null) ?? q.val<string>(`SELECT code FROM branches WHERE is_head_office = 1 AND deleted_at IS NULL ORDER BY id LIMIT 1`) ?? 'DXB'
+  const tokens = { prefix, branch, dir: INVOICE_TRADE_CODE[inv.trade || job?.trade || ''] ?? 'GEN' }
+  const key = invoiceSeriesKey(pattern, date)
+  const seq = nextSeq(key)
+  let pad = 3
+  const out = pattern.replace(/\{seq:(\d+)\}/, (_m, n) => { pad = Number(n); return '\u0000' }).replace(/\{(\w+)\}/g, (_m, t) => ({ YYYY: date.slice(0, 4), YY: date.slice(2, 4), MM: date.slice(5, 7), DD: date.slice(8, 10), ...tokens } as Record<string, string>)[t] ?? '')
+  return out.replace('\u0000', String(seq).padStart(pad, '0'))
+}
+/** Make the next number issued in the company invoice series `next` (administrators continuing an existing numbering). */
+export function setNextInvoiceNumber(next: number, date = todayStr()) {
+  if (!Number.isInteger(next) || next < 1 || next > 99_999_999) throw bad('Enter a whole number of 1 or more')
+  const pattern = String(getSetting('invoice_no_pattern') || DEFAULT_INVOICE_PATTERN)
+  if (pattern === DEFAULT_INVOICE_PATTERN) throw bad('Set a company invoice number format first, for example {branch}/{dir}/ES{seq:3}')
+  q.run(`INSERT INTO sequences(key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value`, invoiceSeriesKey(pattern, date), next - 1)
+}
+
+/** Copy shipment facts from the linked job into blank invoice fields so the printed invoice carries them. Anything typed on the invoice wins. */
+function fillShipmentFromJob(rec: Rec) {
+  const j = q.get(`SELECT j.hbl_no, j.mbl_no, j.vessel_name, j.voyage_no, j.place_of_receipt, j.commodity, j.gross_weight, j.packages, j.trade,
+      (SELECT name FROM locations WHERE id = j.por_id) por, (SELECT name FROM locations WHERE id = j.pol_id) pol, (SELECT name FROM locations WHERE id = j.pod_id) pod,
+      (SELECT name FROM locations WHERE id = j.pof_id) pof
+    FROM jobs j WHERE j.id = ?`, rec.job_id)
+  if (!j) return
+  const boxes = q.all<{ container_no: string; code: string }>(`SELECT c.container_no, t.code FROM job_containers c LEFT JOIN container_types t ON t.id = c.type_id WHERE c.job_id = ? AND c.deleted_at IS NULL ORDER BY c.id`, rec.job_id)
+  const set = (k: string, v: any) => { if ((rec[k] === undefined || rec[k] === null || rec[k] === '') && v !== undefined && v !== null && v !== '') rec[k] = v }
+  set('ship_bl_no', j.hbl_no || j.mbl_no)
+  set('ship_vessel', [j.vessel_name, j.voyage_no].filter(Boolean).join(' / '))
+  set('ship_receipt', j.place_of_receipt || j.por)
+  set('ship_pol', j.pol); set('ship_pod', j.pod); set('ship_destination', j.pof)
+  set('ship_containers', boxes.filter(b => b.container_no).map(b => (b.code ? `${b.container_no} / ${b.code}` : b.container_no)).join(' | '))
+  set('ship_cargo', j.commodity)
+  set('ship_weight', j.gross_weight ? `${Number(j.gross_weight).toLocaleString('en-US', { maximumFractionDigits: 2 })} KGS` : '')
+  set('trade', j.trade)
 }
 
 export const invoiceHooks: Hooks = {
@@ -67,8 +135,15 @@ export const invoiceHooks: Hooks = {
   numberDate: rec => rec.invoice_date,
   beforeSave(a) {
     const { rec, old, children, isNew } = a
-    if (lockCheck(a, ['notes', 'terms', 'reference', 'bank_account_id'], 'invoices')) return
+    if (lockCheck(a, ['notes', 'terms', 'reference', 'bank_account_id', 'ship_bl_no', 'ship_vessel', 'ship_receipt', 'ship_pol', 'ship_pod', 'ship_destination', 'ship_containers', 'ship_weight', 'ship_cargo', 'ship_hs_code'], 'invoices')) return
     rec.ex_rate = fxRate(rec.currency, rec.ex_rate)
+    rec.custom_no = String(rec.custom_no ?? '').trim() || null
+    if (rec.custom_no) {
+      if (rec.custom_no.length > 40 || /[\u0000-\u001f<>]/.test(rec.custom_no)) throw bad('The invoice number may have up to 40 characters and no control characters')
+      const clash = q.val<number>(`SELECT id FROM invoices WHERE deleted_at IS NULL AND status <> 'Void' AND id <> ? AND (lower(custom_no) = lower(?) OR lower(invoice_no) = lower(?)) LIMIT 1`, rec.id ?? 0, rec.custom_no, rec.custom_no)
+      if (clash) throw bad(`Invoice number ${rec.custom_no} is already used by another document`)
+    }
+    if (isNew && rec.job_id) fillShipmentFromJob(rec)
     if (['Credit Note', 'Debit Note'].includes(rec.doc_type) && !rec.original_invoice_id && rec.doc_type === 'Credit Note') {
       // a credit note may stand alone (e.g. goodwill) – allowed
     }
@@ -81,7 +156,7 @@ export const invoiceHooks: Hooks = {
     if (isNew && party?.status === 'Blocked') throw bad(`${party.name} is blocked — documents cannot be raised`)
     resolveDue(rec, 'invoice_date', rec.party_id)
     if (isNew) { rec.status = 'Draft'; rec.paid_amount = 0; rec.invoice_no = 'DRAFT-' + crypto.randomBytes(4).toString('hex') }
-    if (children.lines) computeLines(children.lines, 'income')
+    if (children.lines) computeLines(children.lines, 'income', rec.currency)
   },
   afterSave({ rec, isNew }) {
     if (isNew) q.run(`UPDATE invoices SET invoice_no = 'DRAFT-' || id WHERE id = ?`, rec.id)
@@ -128,7 +203,9 @@ export function postInvoice(id: number, ctx: Ctx): Rec {
   }
 
   const prefix = ({ 'Tax Invoice': 'INV', 'Proforma Invoice': 'PI', 'Debit Note': 'DN', 'Credit Note': 'CN' } as Record<string, string>)[inv.doc_type] ?? 'INV'
-  const number = formatNumber('invoices', def.numbering!.pattern, { prefix }, inv.invoice_date)
+  const customNo = String(inv.custom_no ?? '').trim()
+  if (customNo && q.val(`SELECT 1 FROM invoices WHERE deleted_at IS NULL AND status <> 'Void' AND id <> ? AND (lower(custom_no) = lower(?) OR lower(invoice_no) = lower(?))`, id, customNo, customNo)) throw bad(`Invoice number ${customNo} is already used by another document`)
+  const number = customNo || nextInvoiceNumber(inv, prefix)
 
   if (!proforma) for (const l of lines) if (l.job_charge_id) {
     const st = q.get(`SELECT status, invoice_id, description FROM job_charges WHERE id = ?`, l.job_charge_id)
@@ -145,13 +222,18 @@ export function postInvoice(id: number, ctx: Ctx): Rec {
       byAcc.set(l.account_id, r2((byAcc.get(l.account_id) ?? 0) + b)); vatBase = r2(vatBase + v)
     }
     const revTotal = r2([...byAcc.values()].reduce((s, x) => s + x, 0))
-    totalBase = r2(revTotal + vatBase)
+    const roundBase = r2((inv.rounding ?? 0) * ex)
+    totalBase = r2(revTotal + vatBase + roundBase)
     const ar = accountByRole('ar_control')
     const desc = `${inv.doc_type} ${number}${inv.currency !== BASE() ? ` (${inv.currency} ${inv.total})` : ''}`
     if (!isCN) jl.push({ account_id: ar, party_id: inv.party_id, job_id: inv.job_id, description: desc, debit: totalBase })
     else jl.push({ account_id: ar, party_id: inv.party_id, job_id: inv.job_id, description: desc, credit: totalBase })
     for (const [acc, amt] of byAcc) jl.push({ account_id: acc, job_id: inv.job_id, description: desc, ...(isCN ? { debit: amt } : { credit: amt }) })
     if (vatBase) jl.push({ account_id: accountByRole('vat_output'), job_id: inv.job_id, description: `VAT – ${number}`, ...(isCN ? { debit: vatBase } : { credit: vatBase }) })
+    if (roundBase) {
+      const gain = (roundBase > 0) !== isCN
+      jl.push({ account_id: roundingAccount(), job_id: inv.job_id, description: `Rounding – ${number}`, ...(gain ? { credit: Math.abs(roundBase) } : { debit: Math.abs(roundBase) }) })
+    }
     journalId = postJournal(ctx, { date: inv.invoice_date, memo: desc, source_type: inv.doc_type, source_id: id, source_no: number, branch_id: inv.branch_id, lines: jl })
   } else totalBase = inv.base_total
 
