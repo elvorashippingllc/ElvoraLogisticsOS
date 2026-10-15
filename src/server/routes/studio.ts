@@ -3,13 +3,13 @@ import { z } from 'zod'
 import { q, tx, inDemo } from '../db'
 import { audit, createRecord, getDef, getRecord, can } from '../engine'
 import { bad, forbidden, todayStr } from '../util'
-import { getSetting } from '../settings'
+import { getSetting, publicSettings } from '../settings'
 import { idOf, need } from './helpers'
 import { aiConfigured, chat } from '../ai/llm'
 import { cleanStudioHtml, htmlToText } from '../studio/sanitize'
 import { looksLikeHtml, markPlaceholders, markdownToHtml, mergeCompanyTokens } from '../../shared/studio-html'
 
-const company = () => ({ company_name: getSetting('company_name'), company_name_ar: getSetting('company_name_ar'), company_address: getSetting('company_address'), company_phone: getSetting('company_phone'), company_email: getSetting('company_email'), company_info_email: getSetting('company_info_email'), company_website: getSetting('company_website'), company_trn: getSetting('company_trn'), company_trade_license: getSetting('company_trade_license') })
+const company = () => publicSettings()
 const staffOnly = (req: any) => { if (req.user?.party_id) throw forbidden('Customer accounts cannot use the Document Studio') }
 
 /** Facts from a customer and job that fit the common placeholders, keyed by the lower-case label inside the brackets. */
@@ -117,6 +117,7 @@ export default async function (app: FastifyInstance) {
     const c = company()
     const system = [
       `You write business documents for ${c.company_name}, a freight forwarding and logistics company in Dubai, UAE. Contact: ${[c.company_address, c.company_phone, c.company_email].filter(Boolean).join(' · ')}.`,
+      `Verified company particulars: ${JSON.stringify(Object.fromEntries(Object.entries(c).filter(([k]) => ['company_name_ar', 'company_address_ar', 'company_trade_license', 'dcci_no', 'commercial_register_no', 'company_legal_form', 'licence_issue_date', 'licence_expiry_date', 'ct_application_reference', 'ct_application_date', 'ct_application_status'].includes(k))))}. Application references are not tax registration numbers. Never use details from a third-party utility bill as company identity.`,
       'Return ONLY an HTML fragment. No <html>, <head> or <body>, no Markdown, no code fences, no commentary before or after.',
       'Use only these tags: p, br, h1, h2, h3, strong, em, u, ul, ol, li, table, thead, tbody, tr, th, td, blockquote, hr. Use a table with class="fields" (th = label, td = value) for forms and key facts. Start with an <h1> title unless you are working on a fragment.',
       'Never invent facts: names, dates, amounts, prices, reference numbers, TRN or licence numbers, bank details, certifications, years in business, customer names or legal citations. Where a fact is needed and was not given, write a short [placeholder in square brackets].',

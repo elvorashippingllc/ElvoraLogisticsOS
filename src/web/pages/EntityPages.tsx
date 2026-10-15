@@ -82,6 +82,7 @@ export function EntityRecordPage() {
           {PRINTABLE.has(entity) && <Link className="btn outline" to={`/print/${entity}/${rid}`}><Printer /> Print</Link>}
           {PRINTABLE.has(entity) && <PdfDownload entity={entity} id={rid} />}
           {PRINTABLE.has(entity) && can(def.module, 'edit') && !['payslips', 'insurance_certs', 'grns', 'dispatches', 'transport_orders'].includes(entity) && <button className="btn outline" onClick={() => setDialog({ name: 'emailPdf', props: {} })}><MailIcon /> E-mail</button>}
+          {canDelete && <button className="btn red" onClick={() => void del_()}><Trash2 /> Delete</button>}
           {canEdit && <button className="btn green" onClick={() => setEditing(true)}><Pencil /> Edit</button>}
           {(more.length > 0 || canDelete) && <Dropdown className="btn outline" label={<MoreHorizontal size={16} />} items={[...more.map(a => ({ label: a.label, onClick: () => void a.run(helpers), danger: a.tone === 'red' })), ...(canDelete ? [{ label: <><Trash2 size={14} /> Delete</>, onClick: () => void del_(), danger: true, divider: false }] : [])]} />}
         </>} />

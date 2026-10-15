@@ -5,6 +5,7 @@ const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;')
 export interface CompanyTokens {
   company_name?: string; company_name_ar?: string; company_address?: string; company_phone?: string; company_email?: string; company_info_email?: string
   company_website?: string; company_trn?: string; company_trade_license?: string
+  company_address_ar?: string; dcci_no?: string; commercial_register_no?: string; company_legal_form?: string; licence_issue_date?: string; licence_expiry_date?: string; establishment_card_no?: string; establishment_card_expiry?: string; ct_application_reference?: string; ct_application_date?: string; ct_application_status?: string
 }
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 /** 2026-10-15 → 15 Oct 2026 */
@@ -17,6 +18,7 @@ export function mergeCompanyTokens(html: string, s: CompanyTokens, todayIso: str
     'company.email': s.company_email ?? '', 'company.info_email': s.company_info_email ?? '', 'company.website': (s.company_website ?? '').replace(/^https?:\/\//, ''),
     'company.trn': s.company_trn ?? '', 'company.trade_license': s.company_trade_license ?? '', today: longDate(todayIso), year: todayIso.slice(0, 4),
   }
+  for (const key of ['company_address_ar', 'dcci_no', 'commercial_register_no', 'company_legal_form', 'licence_issue_date', 'licence_expiry_date', 'establishment_card_no', 'establishment_card_expiry', 'ct_application_reference', 'ct_application_date', 'ct_application_status'] as const) map[`company.${key.replace(/^company_/, '')}`] = s[key] ?? ''
   return html.replace(/\{\{\s*([a-z_.]+)\s*\}\}/g, (m, k) => (k in map ? (map[k] ? escapeHtml(map[k]).replace(/\n/g, '<br>') : '') : m))
 }
 

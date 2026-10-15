@@ -9,7 +9,7 @@ export DEMO_ENABLED=true STARTER_DATA=false
 CHROME_PATH="${CHROME_PATH:-$(command -v google-chrome || command -v chromium || command -v chromium-browser || true)}"; export CHROME_PATH
 fail=0
 free_port() { (command -v fuser >/dev/null && fuser -k 8080/tcp >/dev/null 2>&1) || true; sleep 1; if curl -sf localhost:8080/api/health >/dev/null; then echo "port 8080 is busy; stop the other server first" >&2; exit 2; fi; }
-for suite in ${TEST_SUITES:-demo-dates pgbridge auth-security email calendar handover smoke phase2 compliance sweep enterprise-controls workflow-api work-api enterprise-module-api ai-controls ai-connection vendor-services workflow-controls work-controls enterprise-modules cargo-docs deposits ocr invoice-engine studio starter-data access-control}; do
+for suite in ${TEST_SUITES:-company-documents demo-dates pgbridge auth-security email calendar handover smoke phase2 compliance sweep enterprise-controls workflow-api work-api enterprise-module-api ai-controls ai-connection vendor-services workflow-controls work-controls enterprise-modules cargo-docs deposits ocr invoice-engine studio starter-data access-control}; do
   free_port
   dir="$(mktemp -d)"; export DATA_DIR="$dir"
   if [ -n "${TEST_PG_ADMIN_URL:-}" ]; then
@@ -17,7 +17,7 @@ for suite in ${TEST_SUITES:-demo-dates pgbridge auth-security email calendar han
     export DATABASE_URL="${TEST_PG_ADMIN_URL%/*}/$db"
   fi
   case "$suite" in
-    demo-dates|pgbridge|auth-security|email|ai-controls|ai-connection|vendor-services|workflow-controls|work-controls|enterprise-modules|cargo-docs|deposits|ocr)
+    company-documents|demo-dates|pgbridge|auth-security|email|ai-controls|ai-connection|vendor-services|workflow-controls|work-controls|enterprise-modules|cargo-docs|deposits|ocr)
       echo "=== $suite (domain) ==="
       if ! node --import tsx "tests/$suite.ts"; then fail=1;
       elif [ "$suite" = workflow-controls ]; then

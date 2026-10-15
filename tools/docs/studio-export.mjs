@@ -96,6 +96,7 @@ for (const e of EMAILS) {
 const marketing = (await import(path.join(import.meta.dirname, 'studio-marketing.mjs'))).default
 for (const m of marketing) library.push({ letterhead: false, orientation: 'Portrait', kind: 'Marketing', category: 'Marketing & Brochures', ...m, html: tokenise(m.html).replace(/\[([^\[\]\n<>]{1,90})\]/g, '<span class="ph">[$1]</span>') })
 
+library.push(...JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/docs/company-templates.json'), 'utf8')))
 const seen = new Set()
 for (const t of library) { if (seen.has(t.code)) throw new Error('duplicate template code ' + t.code); seen.add(t.code) }
 fs.mkdirSync(path.dirname(OUT), { recursive: true })

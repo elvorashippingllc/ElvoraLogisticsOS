@@ -22,3 +22,13 @@ Users, roles, chart of accounts, settings and the template library are kept.
 
 ## Access control
 Customer-portal users are default-denied on company-wide endpoints (`need()` requires `portal: true` per route plus a path allowlist); reference pickers list names only to roles that can view the entity or edit records that refer to it. Covered by `tests/access-control.ts`.
+
+## Company particulars and deletion (15 October 2026)
+
+Company Settings supplies the bilingual letterhead, registered address and company registration identifiers used in print views and Document Studio. New templates CO-FACTS, CO-LETTER and CO-REG provide bilingual particulars, a blank letter and an internal evidence register. The English building name is a working transliteration of the Arabic licence address; retain the Arabic original for exact identification.
+
+The one-time company-document upgrade fills missing fields and replaces only the previously shipped generic address/name. Later administrator changes are retained. It does not change an existing VAT TRN or assume corporate tax approval. Application reference 101002831255 is stored separately from issued tax registration numbers. The supplied residential DEWA invoice is not accepted as an Ejari certificate. Source PDFs and personal account details are not bundled with the application. Existing saved documents keep their original content; review or recreate historical documents when details change.
+
+Delete is visible on record lists, record detail pages and the dedicated job screen when the user has delete permission. Deletion uses the existing audited soft-delete endpoint. Linked records block deletion with a list of dependencies; closed jobs and protected financial records retain their existing cancel/void workflows. No cascade deletion of accounting records is introduced.
+
+Validation: `npm run typecheck`, `npm run build`, `TEST_SUITES='company-documents compliance studio smoke' bash tests/run-all.sh`. PDF rendering requires Chromium on the host.
