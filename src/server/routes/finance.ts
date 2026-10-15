@@ -54,7 +54,7 @@ export default async function (app: FastifyInstance) {
 
   // ---------------------------------------------------------------- customer / vendor statement (base currency)
   app.get('/api/finance/statement/:partyId', async (req) => {
-    need(req, 'finance', 'view')
+    need(req, 'finance', 'view', { portal: true }) // portal users may only read their own company, checked below
     const pid = idOf((req.params as any).partyId)
     const s = req.query as any
     if (req.user!.party_id && req.user!.party_id !== pid) throw forbidden('You can only view your own company statement')

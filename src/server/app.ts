@@ -21,6 +21,14 @@ declare module 'fastify' {
 export const COOKIE = 'elvora_sid'
 export const DEMO_PREFIX = 'demo.'
 const PUBLIC = [/^\/api\/demo\/status$/, /^\/api\/health$/, /^\/api\/health\/db$/, /^\/api\/auth\/login$/, /^\/api\/public\//, /^\/api\/auth\/branding$/]
+/**
+ * Everything a customer-portal user may call. The record API (/api/e) is scoped to their company by the engine; the rest read their own data only.
+ * Any other endpoint is company-wide (bank balances, rate cards, other customers' open items) and stays closed to portal accounts, whatever module permissions the portal role carries.
+ */
+const PORTAL_OK = [
+  /^\/api\/auth\//, /^\/api\/meta$/, /^\/api\/dashboard$/, /^\/api\/notifications(\/read)?$/, /^\/api\/calendar(\/context)?$/, /^\/api\/tags$/, /^\/api\/search\/(jobs|global)$/,
+  /^\/api\/e\/[a-z_]+(\/\d+|\/lookup)?$/, /^\/api\/print\/[a-z_]+\/\d+\/parties$/, /^\/api\/pdf\/(status|[a-z_]+\/\d+)$/, /^\/api\/files\/\d+\/download$/, /^\/api\/finance\/statement\/\d+$/, /^\/api\/jobs\/\d+\/tracking-token$/,
+]
 const PASSWORD_SETUP = new Set(['/api/auth/me', '/api/meta', '/api/auth/change-password', '/api/auth/logout', '/api/auth/sessions', '/api/auth/login-history'])
 
 export async function buildApp(): Promise<FastifyInstance> {
@@ -80,6 +88,7 @@ export async function buildApp(): Promise<FastifyInstance> {
     if (!['GET', 'HEAD', 'OPTIONS'].includes(req.method) && !req.user.apiKey && req.headers['x-elvora-client'] !== 'web') throw new HttpError(403, 'Missing client header')
     const mustChange = q.val<number>('SELECT must_change_password FROM users WHERE id = ?', req.user.id)
     if (mustChange && !(PASSWORD_SETUP.has(url) && !req.user.apiKey)) throw new HttpError(403, 'Change your temporary password before using the application')
+    if (req.user.party_id && !PORTAL_OK.some(r => r.test(url))) throw new HttpError(403, 'This area is for company staff')
     // Account security changes require the browser session, not an integration key.
     if (req.user.apiKey && url.startsWith('/api/auth/') && url !== '/api/auth/me') throw new HttpError(403, 'Use your signed-in browser to manage account security')
   })

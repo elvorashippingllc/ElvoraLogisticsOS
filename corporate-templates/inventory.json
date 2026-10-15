@@ -820,5 +820,113 @@
   "title": "Asset Disposal / Write-off Approval",
   "cat": "01 Corporate",
   "file": "documents/01-corporate/ELV-137-asset-disposal-write-off-approval"
+ },
+ {
+  "id": "ELV-138",
+  "title": "Forwarder’s Cargo Receipt",
+  "cat": "04 Shipping and Warehouse",
+  "file": "documents/04-shipping-and-warehouse/ELV-138-forwarder-s-cargo-receipt"
+ },
+ {
+  "id": "ELV-139",
+  "title": "Equipment Interchange Receipt (Container)",
+  "cat": "04 Shipping and Warehouse",
+  "file": "documents/04-shipping-and-warehouse/ELV-139-equipment-interchange-receipt-container"
+ },
+ {
+  "id": "ELV-140",
+  "title": "Gate Pass Request",
+  "cat": "04 Shipping and Warehouse",
+  "file": "documents/04-shipping-and-warehouse/ELV-140-gate-pass-request"
+ },
+ {
+  "id": "ELV-141",
+  "title": "Delivery Instruction",
+  "cat": "04 Shipping and Warehouse",
+  "file": "documents/04-shipping-and-warehouse/ELV-141-delivery-instruction"
+ },
+ {
+  "id": "ELV-142",
+  "title": "Empty Container Release Request",
+  "cat": "04 Shipping and Warehouse",
+  "file": "documents/04-shipping-and-warehouse/ELV-142-empty-container-release-request"
+ },
+ {
+  "id": "ELV-143",
+  "title": "Transport (Trucking) Quotation",
+  "cat": "02 Sales and Customers",
+  "file": "documents/02-sales-and-customers/ELV-143-transport-trucking-quotation"
+ },
+ {
+  "id": "ELV-144",
+  "title": "Customer Booking Order Form",
+  "cat": "02 Sales and Customers",
+  "file": "documents/02-sales-and-customers/ELV-144-customer-booking-order-form"
+ },
+ {
+  "id": "ELV-145",
+  "title": "Job Cost Sheet",
+  "cat": "03 Finance and Procurement",
+  "file": "documents/03-finance-and-procurement/ELV-145-job-cost-sheet"
+ },
+ {
+  "id": "ELV-146",
+  "title": "Journal Voucher",
+  "cat": "03 Finance and Procurement",
+  "file": "documents/03-finance-and-procurement/ELV-146-journal-voucher"
+ },
+ {
+  "id": "ELV-147",
+  "title": "Cargo Insurance Claim Letter",
+  "cat": "09 Customs and Compliance",
+  "file": "documents/09-customs-and-compliance/ELV-147-cargo-insurance-claim-letter"
+ },
+ {
+  "id": "ELV-148",
+  "title": "Fumigation / ISPM-15 Certificate Request",
+  "cat": "09 Customs and Compliance",
+  "file": "documents/09-customs-and-compliance/ELV-148-fumigation-ispm-15-certificate-request"
+ },
+ {
+  "id": "ELV-149",
+  "title": "Customs Release Follow-up Letter",
+  "cat": "09 Customs and Compliance",
+  "file": "documents/09-customs-and-compliance/ELV-149-customs-release-follow-up-letter"
+ },
+ {
+  "id": "ELV-150",
+  "title": "Employee Performance Appraisal Form",
+  "cat": "05 HR and Administration",
+  "file": "documents/05-hr-and-administration/ELV-150-employee-performance-appraisal-form"
+ },
+ {
+  "id": "ELV-151",
+  "title": "Employee Handbook (Outline)",
+  "cat": "05 HR and Administration",
+  "file": "documents/05-hr-and-administration/ELV-151-employee-handbook-outline"
+ },
+ {
+  "id": "ELV-152",
+  "title": "Driver Daily Trip Log",
+  "cat": "05 HR and Administration",
+  "file": "documents/05-hr-and-administration/ELV-152-driver-daily-trip-log"
+ },
+ {
+  "id": "ELV-153",
+  "title": "Vehicle Pre-trip Inspection Checklist",
+  "cat": "04 Shipping and Warehouse",
+  "file": "documents/04-shipping-and-warehouse/ELV-153-vehicle-pre-trip-inspection-checklist"
+ },
+ {
+  "id": "ELV-154",
+  "title": "Annual Budget Sheet",
+  "cat": "06 Control and Guidance",
+  "file": "documents/06-control-and-guidance/ELV-154-annual-budget-sheet"
+ },
+ {
+  "id": "ELV-155",
+  "title": "Sales Target and Pipeline Tracker",
+  "cat": "02 Sales and Customers",
+  "file": "documents/02-sales-and-customers/ELV-155-sales-target-and-pipeline-tracker"
  }
 ]

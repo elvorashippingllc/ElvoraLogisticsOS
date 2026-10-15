@@ -161,7 +161,7 @@ export default async function (app: FastifyInstance) {
   const pdfFor = async (req: any, entity: string, id: number, seal?: boolean) => {
     const def = ENTITIES[entity]; if (!def) throw notFound('Unknown record type')
     if (entity === 'parties') {
-      need(req, 'finance', 'view')
+      need(req, 'finance', 'view', { portal: true })
       if (req.user.party_id && req.user.party_id !== id) throw forbidden('You can only export your own company statement')
       if (!printParty(id)) throw notFound('Party not found')
     } else { assertCan(req.ctx, def.module, 'view'); getRecord(def, id, req.ctx, { children: false }) }

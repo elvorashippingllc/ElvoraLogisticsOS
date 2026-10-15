@@ -34,6 +34,23 @@ function resolveRef(f: FieldDef, value: string): number | null {
   return null
 }
 
+/** Modules whose records point at an entity through a reference field (child tables count for their parent's module). */
+let referencing: Map<string, Set<string>> | null = null
+function referencingModules(key: string): Set<string> {
+  if (!referencing) {
+    referencing = new Map()
+    const owner = new Map<string, string>() // child entity → the module of its parent
+    for (const e of Object.values(ENTITIES)) for (const c of e.children ?? []) owner.set(c.entity, e.module)
+    for (const e of Object.values(ENTITIES)) for (const f of e.fields) if (f.type === 'ref' && f.ref) { const set = referencing.get(f.ref) ?? new Set<string>(); set.add(owner.get(e.key) ?? e.module); referencing.set(f.ref, set) }
+  }
+  return referencing.get(key) ?? new Set()
+}
+/** A reference picker may list an entity's titles only to people who can view it, or who can create or edit something that refers to it. */
+export function canLookup(user: any, def: EntityDef): boolean {
+  if (can(user, def.module, 'view')) return true
+  return [...referencingModules(def.key)].some(m => can(user, m, 'create') || can(user, m, 'edit'))
+}
+
 export default async function (app: FastifyInstance) {
   // ------------------------------------------------------------ lookup (reference pickers)
   app.get('/api/e/:entity/lookup', async (req) => {
@@ -41,6 +58,7 @@ export default async function (app: FastifyInstance) {
     const qs = req.query as any
     const user = req.user!
     if (user.party_id && def.module !== 'masters') throw forbidden()
+    if (!canLookup(user, def)) throw forbidden(`You do not have view access to ${def.module}`)
     let filters: any[] = []
     if (qs.filter) { try { const o = JSON.parse(String(qs.filter)); filters = Object.entries(o).map(([field, value]) => ({ field, op: 'eq', value })) } catch { throw bad('Invalid filter') } }
     const ids = qs.ids ? String(qs.ids).split(',').map(Number).filter(Boolean) : undefined

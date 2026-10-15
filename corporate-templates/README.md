@@ -1,7 +1,7 @@
 # Elvora Shipping LLC Corporate Template Set
 
 ## Start here
-This pack contains 137 document designs, each supplied as editable DOCX and reusable DOTX, plus 16 e-mails in HTML and plain text, an HTML e-mail signature, the logo asset, and ready-to-print marketing material (company pamphlet, corporate brochure, capability statement and four service flyers, as HTML source and PDF).
+This pack contains 155 document designs, each supplied as editable DOCX and reusable DOTX, plus 16 e-mails in HTML and plain text, an HTML e-mail signature, the logo asset, and ready-to-print marketing material (company pamphlet, corporate brochure, capability statement and four service flyers, as HTML source and PDF).
 
 Open a DOTX in Microsoft Word to create a new document without overwriting the template. In Google Docs or LibreOffice, use the DOCX copy. Replace all bracketed fields and review the final page layout after entering real data. The blank templates are not completed transactions.
 
@@ -15,7 +15,7 @@ Hours: Sun-Thu 09:00-18:00 GST; 24/7 for active shipments
 Before issue, verify and enter the full registered address, trade licence, VAT TRN if registered, bank beneficiary and IBAN, authorised signatories and approved contract terms. No registration, tax number, banking detail or certification has been invented. In the marketing material, claims are limited to how the company works; add years in operation, memberships and certifications only when you can prove them.
 
 ## Folder layout
-- `documents/<category>/` – ELV-001 to ELV-137 as `.docx` and `.dotx`
+- `documents/<category>/` – ELV-001 to ELV-155 as `.docx` and `.dotx`
 - `emails/` – EM-01 to EM-16 (`.html` and `.txt`), `email-signature.html`, `logo.png`, `INDEX.md`
 - `marketing/` – pamphlet, brochure, capability statement and flyers (`.html` editable source, `.pdf` print-ready)
 - `assets/` – logo files (primary, reverse, icon)
@@ -83,6 +83,9 @@ Tax document fields follow the referenced FTA invoice guidance, but finance must
 - ELV-122 — Customer Visit / Sales Call Report
 - ELV-123 — Customer Onboarding Checklist
 - ELV-124 — Tender / RFQ Response Cover Letter
+- ELV-143 — Transport (Trucking) Quotation
+- ELV-144 — Customer Booking Order Form
+- ELV-155 — Sales Target and Pipeline Tracker
 
 ### 03 Finance and Procurement
 
@@ -103,6 +106,8 @@ Tax document fields follow the referenced FTA invoice guidance, but finance must
 - ELV-125 — Credit Limit Increase Request
 - ELV-126 — Petty Cash Voucher
 - ELV-127 — Quotation Cover Letter
+- ELV-145 — Job Cost Sheet
+- ELV-146 — Journal Voucher
 
 ### 04 Shipping and Warehouse
 
@@ -132,6 +137,12 @@ Tax document fields follow the referenced FTA invoice guidance, but finance must
 - ELV-060 — Cargo Claim Notice
 - ELV-061 — Cargo Damage Incident Report
 - ELV-062 — Shipment Delay Advisory
+- ELV-138 — Forwarder’s Cargo Receipt
+- ELV-139 — Equipment Interchange Receipt (Container)
+- ELV-140 — Gate Pass Request
+- ELV-141 — Delivery Instruction
+- ELV-142 — Empty Container Release Request
+- ELV-153 — Vehicle Pre-trip Inspection Checklist
 
 ### 05 HR and Administration
 
@@ -154,6 +165,9 @@ Tax document fields follow the referenced FTA invoice guidance, but finance must
 - ELV-132 — End of Service Settlement Statement
 - ELV-133 — Overtime Request and Approval
 - ELV-134 — Training Attendance Record
+- ELV-150 — Employee Performance Appraisal Form
+- ELV-151 — Employee Handbook (Outline)
+- ELV-152 — Driver Daily Trip Log
 
 ### 06 Control and Guidance
 
@@ -172,6 +186,7 @@ Tax document fields follow the referenced FTA invoice guidance, but finance must
 - ELV-119 — Business Continuity Plan (Summary)
 - ELV-120 — Incident Report (Health and Safety)
 - ELV-121 — Customer Feedback Form
+- ELV-154 — Annual Budget Sheet
 
 ### 07 Legal and Contracts
 
@@ -213,6 +228,9 @@ Tax document fields follow the referenced FTA invoice guidance, but finance must
 - ELV-112 — Cargo Survey / Inspection Request
 - ELV-113 — Short-Shipment / Shut-out Notice
 - ELV-114 — Seal Discrepancy Report
+- ELV-147 — Cargo Insurance Claim Letter
+- ELV-148 — Fumigation / ISPM-15 Certificate Request
+- ELV-149 — Customs Release Follow-up Letter
 
 ### 07 Marketing and e-mail
 

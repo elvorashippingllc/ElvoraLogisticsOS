@@ -142,11 +142,11 @@ export default async function (app: FastifyInstance) {
 
   // ------------------------------------------------------------------ calendar
   app.get('/api/calendar/context', async (req) => {
-    need(req, 'dashboard', 'view')
+    need(req, 'dashboard', 'view', { portal: true })
     return { today: todayStr(), timezone: config.timezone }
   })
   app.get('/api/calendar', async (req) => {
-    need(req, 'dashboard', 'view')
+    need(req, 'dashboard', 'view', { portal: true })
     const range = z.object({ from: z.string().date().optional(), to: z.string().date().optional() }).parse(req.query)
     const from = range.from ?? monthStart(), to = range.to ?? addDays(from, 41)
     if (to < from || daysBetween(from, to) > 93) throw bad('Choose a calendar range of up to 94 days.')

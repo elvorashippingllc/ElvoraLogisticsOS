@@ -76,7 +76,7 @@ const kindOf = (title, cat) => {
 const widest = blocks => Math.max(0, ...blocks.filter(b => b.k === 't').map(b => b.cols.length))
 
 const library = []
-for (const n of ['01', '02', '03', '04', '05', '06', '07']) {
+for (const n of ['01', '02', '03', '04', '05', '06', '07', '08']) {
   const f = path.join(import.meta.dirname, `defs-${n}.mjs`)
   if (!fs.existsSync(f)) continue
   for (const d of (await import(f)).default) {
