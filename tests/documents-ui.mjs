@@ -59,6 +59,7 @@ try {
   const recipient = await page.locator('.document-recipient strong').textContent()
   check('recipient precedes document title', await page.evaluate(() => !!(document.querySelector('.document-recipient').compareDocumentPosition(document.querySelector('.print-sheet h1')) & Node.DOCUMENT_POSITION_FOLLOWING)))
   check('recipient matches invoice customer', recipient === record._labels.party_id)
+  if (record.doc_type === 'Tax Invoice' && meta.vat_registered !== false) check('VAT tax invoice retains supplier TRN', (await page.locator('.print-sheet').textContent()).includes('Supplier TRN'))
   check('invoice has required no-signature notice', await page.locator('.document-footer').textContent().then(t => t.includes('This is a system-generated invoice and does not require a signature.')))
   check('default seal is displayed', await page.locator('.document-seal').count() === 1)
   await page.getByLabel('Include company seal', { exact: true }).click()
@@ -78,7 +79,10 @@ try {
   await page.goto(`${base}/print/invoices/${invoice.id}?seal=0`); await page.locator('.print-sheet[data-print-ready=true]').waitFor()
   check('non-VAT registration reaches print metadata', (await api('/api/meta')).data.settings.vat_registered === false)
   if (record.doc_type === 'Tax Invoice') check('non-VAT invoice is labelled INVOICE', (await page.locator('.print-sheet h1').textContent()).startsWith('INVOICE'))
-  check('Arabic name and licence reach letterhead', (await page.locator('.print-sheet').textContent()).includes('الفورا') && (await page.locator('.print-sheet').textContent()).includes('TEST-LICENCE'))
+  const sheet = await page.locator('.print-sheet').textContent()
+  check('letterhead uses English without registration identifiers', !sheet.includes('الفورا') && !sheet.includes('TEST-LICENCE'))
+  check('document uses the requested Bur Dubai address', sheet.includes('Bur Dubai, Dubai, UAE'))
+  check('non-VAT invoice omits supplier TRN', !sheet.includes('Supplier TRN'))
   for (const useSeal of [0, 1]) {
     const pdf = await context.request.get(`${base}/api/pdf/invoices/${invoice.id}?seal=${useSeal}`)
     check(`server PDF succeeds with seal=${useSeal}`, pdf.status() === 200 && pdf.headers()['content-type'].includes('application/pdf'))
@@ -86,6 +90,8 @@ try {
     fs.writeFileSync(file, await pdf.body())
     const text = execFileSync('pdftotext', ['-layout', file, '-'], { encoding: 'utf8' })
     check(`PDF includes customer and notice with seal=${useSeal}`, text.includes(recipient) && text.includes('system-generated invoice') && text.includes('does not require a signature'))
+    check(`PDF omits Arabic and licence identifiers with seal=${useSeal}`, !text.includes('TEST-LICENCE') && !/[\u0600-\u06ff]/.test(text))
+    check(`PDF uses requested document address with seal=${useSeal}`, text.includes('Bur Dubai, Dubai, UAE'))
     const images = execFileSync('pdfimages', ['-list', file], { encoding: 'utf8' })
     check(`PDF seal image ${useSeal ? 'included' : 'excluded'}`, /\s80\s+80\s/.test(images) === !!useSeal)
   }
