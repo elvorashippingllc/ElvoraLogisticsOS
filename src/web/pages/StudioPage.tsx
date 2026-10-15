@@ -12,7 +12,7 @@ import { EmailPdfDialog } from './EntityPages'
 import { Letterhead } from '../print/PrintPage'
 import { RichEditor, type RichEditorHandle } from '../studio/RichEditor'
 import { safeHtml } from '../studio/safe-html'
-import { fillPlaceholder as fillInHtml, listPlaceholders, markPlaceholders, mergeCompanyTokens } from '@shared/studio-html'
+import { fillPlaceholder as fillInHtml, listPlaceholders, markPlaceholders, mergeCompanyTokens, presentDocumentHtml } from '@shared/studio-html'
 import { STUDIO_CATEGORIES, STUDIO_STATUS } from '@shared/entities/studio'
 import { cls, fmtDate, todayIso } from '../lib/format'
 
@@ -79,7 +79,7 @@ function TemplatePreview({ tpl, settings, onClose, onUse }: { tpl: Tpl | null; s
   return (
     <Modal open={!!tpl} onClose={onClose} width={900} title={tpl ? `${tpl.code} · ${tpl.title}` : ''} footer={tpl && <><Link className="btn ghost" to="/e/doc_templates" onClick={onClose}>Manage templates</Link><div className="flex-1" /><button className="btn outline" onClick={onClose}>Close</button>{can('documents', 'create') && <button className="btn green" onClick={() => onUse(tpl)}>Use template</button>}</>}>
       {hint && <div className="mb-3 rounded-xl border border-line bg-hover px-3 py-2 text-sm">{hint.text} <Link to={hint.to} onClick={onClose}>{hint.label}</Link></div>}
-      {!full.data ? <Loading /> : <div className="studio-stage" style={{ maxHeight: '60vh' }}><div className={cls('studio-paper', tpl?.orientation === 'Landscape' && 'landscape')} style={{ zoom: 0.8 }}>{tpl?.letterhead && <Letterhead />}<div className="studio-content" dangerouslySetInnerHTML={{ __html: safeHtml(mergeCompanyTokens(full.data.content ?? '', settings, todayIso())) }} /></div></div>}
+      {!full.data ? <Loading /> : <div className="studio-stage" style={{ maxHeight: '60vh' }}><div className={cls('studio-paper', tpl?.orientation === 'Landscape' && 'landscape')} style={{ zoom: 0.8 }}>{tpl?.letterhead && <Letterhead />}<div className="studio-content" dangerouslySetInnerHTML={{ __html: safeHtml(mergeCompanyTokens(presentDocumentHtml(full.data.content ?? '', full.data.title ?? ''), settings, todayIso())) }} /></div></div>}
     </Modal>
   )
 }
@@ -100,7 +100,7 @@ export function StudioEditor() {
   const [email, setEmail] = useState(false), [fillBusy, setFillBusy] = useState(false), [vals, setVals] = useState<Record<string, string>>({})
   const version = useRef(0), htmlRef = useRef(''), aiUsed = useRef(false), startedAi = useRef(false)
 
-  useEffect(() => { if (doc.data && !f) { setF(doc.data); setHtml(doc.data.content ?? ''); htmlRef.current = doc.data.content ?? ''; version.current = doc.data.version } }, [doc.data, f])
+  useEffect(() => { if (doc.data && !f) { const content = presentDocumentHtml(doc.data.content ?? '', doc.data.title ?? ''); setF({ ...doc.data, content }); setHtml(content); htmlRef.current = content; version.current = doc.data.version } }, [doc.data, f])
   const locked = f?.status === 'Issued' || f?.status === 'Cancelled'
   const canEdit = can('documents', 'edit') && !locked
   const set = (patch: Record<string, any>) => { setF((x: any) => ({ ...x, ...patch })); setDirty(true) }
@@ -243,7 +243,7 @@ export function StudioEditor() {
 /** The document as printed: used by the print page and the PDF export. */
 export function StudioDoc({ r, seal, sealImage }: { r: any; seal: boolean; sealImage?: string }) {
   const { meta } = useMeta()
-  const body = useMemo(() => safeHtml(mergeCompanyTokens(r.content ?? '', meta?.settings ?? {}, todayIso())), [r.content, meta?.settings])
+  const body = useMemo(() => safeHtml(mergeCompanyTokens(presentDocumentHtml(r.content ?? '', r.title ?? ''), meta?.settings ?? {}, todayIso())), [r.content, meta?.settings])
   return <>
     {r.orientation === 'Landscape' && <style>{'@page { size: A4 landscape; }'}</style>}
     <div className="studio-content" dangerouslySetInnerHTML={{ __html: body }} />

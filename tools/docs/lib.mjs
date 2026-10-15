@@ -3,7 +3,7 @@ import path from 'node:path'
 import JSZip from 'jszip'
 import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, ImageRun, Header, Footer, PageNumber, AlignmentType, BorderStyle, ShadingType, TabStopType, Tab, VerticalAlign, TableLayoutType, LevelFormat } from 'docx'
 
-export const CO = { name: 'Elvora Shipping LLC', addr: 'Bur Dubai, Dubai, United Arab Emirates', tel: '+971 50 422 1950', mail: 'sales@elvorashipping.com', web: 'www.elvorashipping.com', hours: 'Sun–Thu 09:00–18:00 GST; 24/7 for active shipments' }
+export const CO = { name: 'Elvora Shipping LLC', addr: 'Bur Dubai, Dubai, UAE', tel: '+971 50 422 1950', mail: 'sales@elvorashipping.com', web: 'www.elvorashipping.com', hours: 'Sun–Thu 09:00–18:00 GST; 24/7 for active shipments' }
 export const ROOT = path.resolve(import.meta.dirname, '../..')
 const LOGO = fs.readFileSync(path.join(ROOT, 'public/brand/logo-primary.png'))
 const W = 9504 // content width in twips (8.5in − 2 × 0.95in)

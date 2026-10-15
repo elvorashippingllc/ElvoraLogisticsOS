@@ -82,3 +82,26 @@ export function markdownToHtml(md: string): string {
 
 /** True when text looks like HTML (the editor/AI produced tags) rather than plain text or Markdown. */
 export const looksLikeHtml = (s: string) => /<\/?(p|div|h[1-6]|ul|ol|li|table|tr|td|br|span|strong|em)\b/i.test(s)
+
+/** English document presentation; statutory tax identifiers stay on tax documents only. */
+export function presentDocumentHtml(html: string, title = ''): string {
+  const tax = /\btax invoice\b|\b(?:tax )?credit note\b|\bdebit note\b/i.test(title)
+  const identifier = /\bTRN\b|trade licen[cs]e|licen[cs]e (?:no|number)|commercial register|chamber membership|establishment card|corporate tax application|company\.(?:trn|trade_license|dcci_no|commercial_register_no|establishment_card_no|ct_application_reference)/i
+  html = html.replace(/Office F101-3, Ibrahim Mohammed Sharif Balsalah building, Naif, Dubai, United Arab Emirates|Naif, Dubai, United Arab Emirates \(Parcel ID 118-157\)|Bur Dubai, Dubai, United Arab Emirates/g, 'Bur Dubai, Dubai, UAE')
+  let out = html.replace(/<tr\b[^>]*>[\s\S]*?<\/tr>/gi, row => {
+    // Remove just the matching label/value pair, preserving other fields in the same row.
+    const cells = row.match(/<(?:th|td)\b[^>]*>[\s\S]*?<\/(?:th|td)>/gi)
+    if (!cells) return row
+    const kept: string[] = []
+    for (let i = 0; i < cells.length; i++) {
+      if (identifier.test(cells[i]) && !(tax && /\bTRN\b|company\.trn/i.test(cells[i]))) { if (/^<td\b/i.test(cells[i]) && kept.length && /^<th\b/i.test(kept[kept.length - 1])) kept.pop(); if (/^<th\b/i.test(cells[i]) && cells[i+1] && /^<td\b/i.test(cells[i+1])) i++; continue }
+      kept.push(cells[i])
+    }
+    return kept.length ? '<tr>' + kept.join('') + '</tr>' : ''
+  })
+  out = out.replace(/<p\b[^>]*>[\s\S]*?<\/p>/gi, p => identifier.test(p) && (!tax || /trade licen[cs]e|commercial register|chamber membership|establishment card|corporate tax application/i.test(p)) ? '' : p)
+  out = out.replace(/<li\b[^>]*>[\s\S]*?<\/li>/gi, item => !tax && identifier.test(item) ? '' : item)
+  out = out.replace(/\{\{\s*company\.(?:name_ar|address_ar)\s*\}\}/g, '')
+  out = out.replace(/[\u0600-\u06ff\u0750-\u077f\u08a0-\u08ff\ufb50-\ufdff\ufe70-\ufeff]+/g, '')
+  return out
+}
