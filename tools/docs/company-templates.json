@@ -1,0 +1,35 @@
+[
+  {
+    "code": "CO-FACTS",
+    "title": "Company particulars - English and Arabic",
+    "html": "<h1>Company particulars / بيانات الشركة</h1><table class=\"fields\"><tbody><tr><th>Legal name / الاسم التجاري</th><td>{{company.name}}</td></tr><tr><th>Arabic name / الاسم بالعربية</th><td>{{company.name_ar}}</td></tr><tr><th>Legal form</th><td>{{company.legal_form}}</td></tr><tr><th>Registered office</th><td>{{company.address}}</td></tr><tr><th>العنوان المسجل</th><td>{{company.address_ar}}</td></tr><tr><th>Trade licence</th><td>{{company.trade_license}}</td></tr><tr><th>Licence issued</th><td>{{company.licence_issue_date}}</td></tr><tr><th>Licence expires</th><td>{{company.licence_expiry_date}}</td></tr><tr><th>Commercial register</th><td>{{company.commercial_register_no}}</td></tr><tr><th>Dubai Chamber membership</th><td>{{company.dcci_no}}</td></tr><tr><th>Telephone</th><td>{{company.phone}}</td></tr><tr><th>Email</th><td>{{company.email}}</td></tr><tr><th>Website</th><td>{{company.website}}</td></tr></tbody></table><h2>Licensed activities / الأنشطة المرخصة</h2><ul><li>Customs Broker / المخلص الجمركي</li><li>Sea Shipping Lines Agents / وكيل خطوط ملاحية بحرية</li><li>Cargo Loading &amp; Unloading Services / خدمات تحميل وتفريغ البضائع</li><li>Sea Cargo Services / خدمات الشحن البحري للبضائع</li></ul><p>Prepared on {{today}}. Company particulars are drawn from Company Settings; review against current originals before external use.</p>",
+    "category": "Corporate",
+    "kind": "Form",
+    "orientation": "Portrait",
+    "letterhead": true,
+    "description": "Company details from shared settings. Review current source documents before use.",
+    "tags": "company legal bilingual registration licence letterhead"
+  },
+  {
+    "code": "CO-LETTER",
+    "title": "Company letterhead - English and Arabic",
+    "html": "<h1>[Subject / الموضوع]</h1><p>{{today}}</p><p>[Recipient name and address]</p><p>Dear [Recipient],</p><p>[Write the letter here. / اكتب نص الرسالة هنا.]</p><p>For {{company.name}}<br>{{company.name_ar}}</p><p>[Authorised signatory name and title]</p>",
+    "category": "Corporate",
+    "kind": "Form",
+    "orientation": "Portrait",
+    "letterhead": true,
+    "description": "Company details from shared settings. Review current source documents before use.",
+    "tags": "company legal bilingual registration licence letterhead"
+  },
+  {
+    "code": "CO-REG",
+    "title": "Company registration evidence - internal review",
+    "html": "<h1>Registration evidence register</h1><h1>Company particulars / بيانات الشركة</h1><table class=\"fields\"><tbody><tr><th>Legal name / الاسم التجاري</th><td>{{company.name}}</td></tr><tr><th>Arabic name / الاسم بالعربية</th><td>{{company.name_ar}}</td></tr><tr><th>Legal form</th><td>{{company.legal_form}}</td></tr><tr><th>Registered office</th><td>{{company.address}}</td></tr><tr><th>العنوان المسجل</th><td>{{company.address_ar}}</td></tr><tr><th>Trade licence</th><td>{{company.trade_license}}</td></tr><tr><th>Licence issued</th><td>{{company.licence_issue_date}}</td></tr><tr><th>Licence expires</th><td>{{company.licence_expiry_date}}</td></tr><tr><th>Commercial register</th><td>{{company.commercial_register_no}}</td></tr><tr><th>Dubai Chamber membership</th><td>{{company.dcci_no}}</td></tr><tr><th>Telephone</th><td>{{company.phone}}</td></tr><tr><th>Email</th><td>{{company.email}}</td></tr><tr><th>Website</th><td>{{company.website}}</td></tr></tbody></table><h2>Licensed activities / الأنشطة المرخصة</h2><ul><li>Customs Broker / المخلص الجمركي</li><li>Sea Shipping Lines Agents / وكيل خطوط ملاحية بحرية</li><li>Cargo Loading &amp; Unloading Services / خدمات تحميل وتفريغ البضائع</li><li>Sea Cargo Services / خدمات الشحن البحري للبضائع</li></ul><p>Prepared on {{today}}. Company particulars are drawn from Company Settings; review against current originals before external use.</p><h2>Establishment card</h2><p>Card: {{company.establishment_card_no}}<br>Expiry: {{company.establishment_card_expiry}}</p><h2>Corporate tax application</h2><p>Reference: {{company.ct_application_reference}}<br>Submitted: {{company.ct_application_date}}<br>Status at document review: {{company.ct_application_status}}</p><p>This is an application acknowledgement, not a registration certificate. Do not use the application reference as a tax registration number. Enter an issued TRN only after checking the registration certificate.</p><h2>Tenancy evidence</h2><p>The supplied file labelled EJARI Bill is a third-party residential DEWA bill. Actual Ejari evidence remains to be obtained. No DEWA account, address or supplier VAT number is used as Elvora identity.</p>",
+    "category": "Corporate",
+    "kind": "Form",
+    "orientation": "Portrait",
+    "letterhead": true,
+    "description": "Company details from shared settings. Review current source documents before use.",
+    "tags": "company legal bilingual registration licence letterhead"
+  }
+]

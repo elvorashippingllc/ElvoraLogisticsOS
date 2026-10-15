@@ -6,7 +6,7 @@ import { Plus, Search, Download, Upload, Filter, RefreshCw, Trash2, ArrowUp, Arr
 import type { FieldDef } from '@shared/types'
 import { optValue } from '@shared/types'
 import { useMeta, type MetaEntity } from '../lib/meta'
-import { get, post, put, downloadUrl } from '../lib/api'
+import { del, get, post, put, downloadUrl } from '../lib/api'
 import { CellValue } from './Fields'
 import { EntityFormModal } from './EntityForm'
 import { Badge, Empty, ErrorBox, Modal, PageHeader, Pagination, useDialogs, Loading } from '../ui/kit'
@@ -60,6 +60,11 @@ export function EntityList({ entity, preset, embedded, title, hideNew, createPre
   const query = useQuery({ queryKey: ['list', entity, params], queryFn: () => get<{ rows: any[]; total: number }>(`/api/e/${entity}`, params), placeholderData: p => p })
   const cols = listColumns(def)
   const Icon = iconByName(def.icon)
+  const canDelete = can(def.module, 'delete') && !def.noDelete && !def.readonlyApi
+  const deleteOne = async (r: any) => {
+    if (!await dlg.confirm({ title: `Delete ${def.label.toLowerCase()}?`, message: `${r._title ?? r[def.title[0]] ?? r.id}. Linked records must be removed or reassigned first.`, danger: true, ok: 'Delete' })) return
+    try { await del(`/api/e/${entity}/${r.id}`); setSelected(s => { const n = new Set(s); n.delete(r.id); return n }); await qc.invalidateQueries(); toast.ok('Deleted') } catch (e: any) { toast.error(e.message) }
+  }
   const canCreate = can(def.module, 'create') && !def.readonlyApi && !hideNew
   const statusOpts = def.statusField ? (def.fields.find(f => f.name === def.statusField)?.options ?? []).map(optValue) : []
   const rows = query.data?.rows ?? []
@@ -105,7 +110,7 @@ export function EntityList({ entity, preset, embedded, title, hideNew, createPre
           <div className="flex items-center gap-2 px-3 py-2 bg-mint text-fold text-sm font-semibold flex-wrap"><span>{selected.size} selected</span>
             {bulkActions?.map((b, i) => <button key={i} className="btn sm dark" onClick={() => void b.run([...selected])}>{b.label}</button>)}
             {statusOpts.length > 0 && can(def.module, 'edit') && <select className="select" style={{ width: 170, minHeight: 30 }} value="" onChange={e => { if (e.target.value) void runBulk('status', e.target.value) }}><option value="">Set {def.statusField?.replace(/_/g, ' ')}…</option>{statusOpts.map(o => <option key={o}>{o}</option>)}</select>}
-            {can(def.module, 'delete') && !def.noDelete && <button className="btn sm red" onClick={() => void runBulk('delete')}><Trash2 /> Delete</button>}
+            {canDelete && <button className="btn sm red" onClick={() => void runBulk('delete')}><Trash2 /> Delete</button>}
             <button className="btn sm ghost" onClick={() => setSelected(new Set())}><X /> Clear</button></div>)}
         {query.error ? <ErrorBox error={query.error} onRetry={() => void query.refetch()} /> : !query.data ? <Loading /> : view === 'kanban' && def.kanban ? (
           <Kanban def={def} rows={rows} onOpen={open} onMoved={refresh} />
@@ -117,15 +122,17 @@ export function EntityList({ entity, preset, embedded, title, hideNew, createPre
               <thead><tr>
                 <th style={{ width: 34 }}><input type="checkbox" aria-label="Select all" checked={allSel} onChange={e => setSelected(e.target.checked ? new Set(rows.map(r => r.id)) : new Set())} /></th>
                 {cols.map(f => <th key={f.name} className={cls('sortable', ['money', 'number', 'int', 'percent'].includes(f.type) && 'num')} onClick={() => setParam({ sort: f.name, dir: sort === f.name && dir === 'asc' ? 'desc' : 'asc', page: null })} aria-sort={sort === f.name ? (dir === 'asc' ? 'ascending' : 'descending') : 'none'}>{f.label}<SortIcon f={f} /></th>)}
+                {canDelete && <th>Actions</th>}
               </tr></thead>
               <tbody>
                 {rows.map(r => (
                   <tr key={r.id} className="clickable" onClick={() => open(r)}>
                     <td onClick={e => e.stopPropagation()}><input type="checkbox" aria-label="Select row" checked={selected.has(r.id)} onChange={e => setSelected(s => { const n = new Set(s); e.target.checked ? n.add(r.id) : n.delete(r.id); return n })} /></td>
                     {cols.map((f, i) => <td key={f.name} className={['money', 'number', 'int', 'percent'].includes(f.type) ? 'num' : ''}>{i === 0 ? <Link to={recordPath(entity, r.id)} className="link" onClick={e => e.stopPropagation()}><CellValue f={f} rec={r} statusField={def.statusField} /></Link> : <CellValue f={f} rec={r} statusField={def.statusField} />}</td>)}
+                    {canDelete && <td onClick={e => e.stopPropagation()}><button className="btn red sm" aria-label={`Delete ${def.label} ${r._title ?? r.id}`} onClick={() => void deleteOne(r)}><Trash2 size={14} /> Delete</button></td>}
                   </tr>))}
               </tbody>
-              {cols.some(f => f.type === 'money') && rows.length > 1 && <tfoot><tr><td /> {cols.map((f, i) => <td key={f.name} className={f.type === 'money' ? 'num' : ''}>{f.type === 'money' ? fmtMoney(rows.reduce((s, r) => s + (Number(r[f.name]) || 0), 0)) : i === 0 ? 'Page total' : ''}</td>)}</tr></tfoot>}
+              {cols.some(f => f.type === 'money') && rows.length > 1 && <tfoot><tr><td /> {cols.map((f, i) => <td key={f.name} className={f.type === 'money' ? 'num' : ''}>{f.type === 'money' ? fmtMoney(rows.reduce((s, r) => s + (Number(r[f.name]) || 0), 0)) : i === 0 ? 'Page total' : ''}</td>)}{canDelete && <td />}</tr></tfoot>}
             </table>
           </div>
         )}

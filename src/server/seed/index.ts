@@ -3,6 +3,7 @@ import { config } from '../config'
 import { createRecord, getDef, SYSTEM_CTX } from '../engine'
 import { nowIso, todayStr } from '../util'
 import * as D from './data'
+import { seedCompanyDocuments } from './company-documents'
 import { seedCompliance } from './compliance'
 import { syncStudioLibrary } from '../studio/library'
 
@@ -95,5 +96,9 @@ export function seedReference(opts: { users?: boolean; demo?: boolean } = {}) {
     mark('banks')
   }
   if (!done('compliance')) { seedCompliance({ demo: opts.demo }); mark('compliance') }
+  if (!opts.demo && !done('company_documents_20261015')) {
+    seedCompanyDocuments()
+    mark('company_documents_20261015')
+  }
   syncStudioLibrary()
 }

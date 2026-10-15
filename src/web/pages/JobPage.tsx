@@ -75,6 +75,7 @@ export function JobPage() {
         <Btn className="grey" to={`/jobs/${jid}/closure`}><Check />Closure review</Btn>
         <Btn className="red" to={`/print/jobs/${jid}`}><FileBarChart2 /> Report</Btn>
         {canEdit && <Btn className="green" onClick={() => setEditing(true)}><Pencil /> Edit</Btn>}
+        {can('jobs', 'delete') && !def('jobs').noDelete && <Btn className="red" onClick={async () => { if (!await dlg.confirm({ title: 'Delete job?', message: `${j.job_no}: linked records must be removed or reassigned first. This removes the job from active lists.`, danger: true, ok: 'Delete job' })) return; try { await del(`/api/e/jobs/${jid}`); await qc.invalidateQueries(); toast.ok('Job deleted'); nav('/e/jobs') } catch (e: any) { toast.error(e.message) } }}><Trash2 /> Delete job</Btn>}
         {can('jobs', 'create') && <Dropdown label="Create" icon={<Plus size={16} />} className="btn violet" items={createMenu} align="left" />}
         <div className="flex-1" />
         <div className="text-right"><div className="font-display font-extrabold text-[22px] text-ink leading-none">{j.job_no}</div><div className="text-xs text-muted mt-1">{L.client_id}</div></div>
