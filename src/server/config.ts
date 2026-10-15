@@ -20,12 +20,16 @@ export const config = {
   pgSchema: (env.PG_SCHEMA ?? 'elvora').replace(/[^a-z0-9_]/gi, '').toLowerCase() || 'elvora',
   baseUrl: env.PUBLIC_URL ?? '',
   timezone: env.APP_TIMEZONE ?? 'Asia/Dubai',
+  /** Load the Elvora starter data (customer, jobs, invoices) into an empty production database at first start. */
+  starterData: bool(env.STARTER_DATA, true),
+  /** Set to a new token (for example a date) to clear all business data once, after taking a backup, on the next start. */
+  resetToken: (env.RESET_BUSINESS_DATA_ON_START ?? '').trim(),
   baseCurrency: env.BASE_CURRENCY ?? 'AED',
   cookieSecure: env.COOKIE_SECURE === undefined ? undefined : bool(env.COOKIE_SECURE, true),
   sessionHours: Number(env.SESSION_HOURS ?? 12),
   trustProxy: bool(env.TRUST_PROXY, false),
   maxUploadMb: Number(env.MAX_UPLOAD_MB ?? 25),
-  demo: { enabled: bool(env.DEMO_ENABLED, true), email: (env.DEMO_EMAIL ?? 'demo@elvorashipping.com').toLowerCase(), password: env.DEMO_PASSWORD ?? 'Demo@Elvora2026' },
+  demo: { enabled: bool(env.DEMO_ENABLED, false), email: (env.DEMO_EMAIL ?? 'demo@elvorashipping.com').toLowerCase(), password: env.DEMO_PASSWORD ?? 'Demo@Elvora2026' },
   accounts: {
     adminEmail: (env.ADMIN_EMAIL ?? 'admin@elvorashipping.com').toLowerCase(),
     adminName: env.ADMIN_NAME ?? 'System Administrator',

@@ -42,6 +42,10 @@ export interface FieldDef {
   computed?: boolean
   /** show in compact "key facts" strip on record pages */
   key?: boolean
+  /** longest accepted text (default 1000, 20000 for text areas) */
+  maxLength?: number
+  /** large content (documents): left out of list responses, returned when a single record is opened */
+  heavy?: boolean
 }
 
 export interface ChildDef {

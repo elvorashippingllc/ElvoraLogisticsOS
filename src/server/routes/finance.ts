@@ -29,6 +29,15 @@ export default async function (app: FastifyInstance) {
     return tx(() => expenseAction(id(req), action, b, req.ctx))
   })
 
+  // continue an existing invoice numbering series (for example after migrating from another system)
+  app.post('/api/finance/invoice-numbering', async (req) => {
+    need(req, 'admin', 'edit')
+    const b = z.object({ next: z.number().int().min(1).max(99_999_999) }).parse(req.body ?? {})
+    const { setNextInvoiceNumber } = await import('../domain/finance')
+    tx(() => setNextInvoiceNumber(b.next))
+    return { ok: true, next: b.next }
+  })
+
   // open documents for allocation pickers
   app.get('/api/finance/open-invoices', async (req) => {
     need(req, 'finance', 'view')
@@ -45,7 +54,7 @@ export default async function (app: FastifyInstance) {
 
   // ---------------------------------------------------------------- customer / vendor statement (base currency)
   app.get('/api/finance/statement/:partyId', async (req) => {
-    need(req, 'finance', 'view')
+    need(req, 'finance', 'view', { portal: true }) // portal users may only read their own company, checked below
     const pid = idOf((req.params as any).partyId)
     const s = req.query as any
     if (req.user!.party_id && req.user!.party_id !== pid) throw forbidden('You can only view your own company statement')

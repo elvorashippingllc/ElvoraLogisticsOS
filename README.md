@@ -17,7 +17,7 @@ npm run build && npm start
 docker compose up -d --build
 ```
 
-Copy `.env.example` to `.env` to configure. A separate, fictional **demo workspace** is built at start-up (see [docs/HANDOVER.md](docs/HANDOVER.md)); production data is never mixed with it.
+Copy `.env.example` to `.env` to configure. The fictional **demo workspace** is off by default (`DEMO_ENABLED=true` turns it on, see [docs/HANDOVER.md](docs/HANDOVER.md)); production data is never mixed with it. A new production workspace starts with Elvora's own starter data (clients, vendors, invoices ES101–ES102A); see [docs/STUDIO.md](docs/STUDIO.md) for the Document Studio and the starter-data / reset options.
 
 ## Sign-in
 
@@ -28,7 +28,7 @@ Copy `.env.example` to `.env` to configure. A separate, fictional **demo workspa
 | Demo presenter (all access) | demo@elvorashipping.com | Demo@Elvora2026 | Isolated demo – fictional data, resets nightly |
 
 The two production accounts must set their own password at first sign-in (the app blocks everything else until they do), or set
-`ADMIN_PASSWORD` / `MANAGER_PASSWORD` before the first start. The demo account can be disabled with `DEMO_ENABLED=false`.
+`ADMIN_PASSWORD` / `MANAGER_PASSWORD` before the first start. The demo account only exists when `DEMO_ENABLED=true`.
 
 ## Design
 

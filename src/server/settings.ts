@@ -8,7 +8,7 @@ import path from 'node:path'
 export const SETTING_DEFAULTS: Record<string, any> = {
   company_name: 'Elvora Shipping L.L.C.',
   company_address: 'Dubai, United Arab Emirates',
-  company_phone: '',
+  company_phone: '+971 50 422 1950',
   company_email: 'sales@elvorashipping.com',
   company_info_email: 'info@elvorashipping.com',
   company_website: 'https://www.elvorashipping.com',
@@ -23,6 +23,7 @@ export const SETTING_DEFAULTS: Record<string, any> = {
   quote_terms: 'Rates are indicative and subject to space and equipment availability at the time of booking. Carrier surcharges, THC, BAF and other charges are as applicable on the date of shipment. Cargo is handled under the Company\'s standard trading conditions. Demurrage, detention, storage and any statutory charges are for the account of the cargo owner. This quotation does not include cargo insurance unless stated.',
   invoice_terms: 'Payment is due by the due date shown. Please quote the invoice number on remittance. Queries must be raised within 7 days of the invoice date. Late payment may attract a handling charge and suspension of credit.',
   invoice_footer: '',
+  invoice_no_pattern: '{prefix}{YY}{seq:5}',
   document_seal: '',
   document_seal_default: false,
   bank_details: '',

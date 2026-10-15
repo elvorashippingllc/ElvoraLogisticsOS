@@ -1,4 +1,5 @@
 import {ocr} from './ocr'
+import { studio } from './studio'
 import {deposits} from './deposits'
 import {cargoDocs} from './cargo-docs'
 import type { EntityDef, NavGroup } from '../types'
@@ -19,7 +20,7 @@ export { MODULE_DEFS } from './platform'
 export * from './ops'
 export { INCOTERMS, PACKAGE_TYPES } from './masters'
 
-export const ENTITY_LIST: EntityDef[] = [...platform, ...masters, ...crm, ...ops, ...transportWarehouse, ...finance, ...people, ...automation, ...compliance, ...work, ...enterprise, ...cargoDocs, ...deposits, ...ocr, ...vendorServices]
+export const ENTITY_LIST: EntityDef[] = [...platform, ...masters, ...crm, ...ops, ...transportWarehouse, ...finance, ...people, ...automation, ...compliance, ...work, ...enterprise, ...cargoDocs, ...deposits, ...ocr, ...vendorServices, ...studio]
 export const ENTITIES: Record<string, EntityDef> = Object.fromEntries(ENTITY_LIST.map(e => [e.key, e]))
 
 export function validateMeta(): string[] {
@@ -86,6 +87,7 @@ export const NAV: NavGroup[] = [
   ] },
   { label: 'Accounts', icon: 'Landmark', items: [
     { label: 'Email', to: '/email', icon: 'Mail', module: 'finance' },
+    { label: 'New invoice (no job needed)', to: '/finance/new-invoice', icon: 'FileSignature', module: 'finance' },
     { label: 'Invoices & Notes', to: '/e/invoices', icon: 'ReceiptText', module: 'finance' },
     { label: 'Customer Receipts', to: '/e/receipts', icon: 'HandCoins', module: 'finance' },
     { label: 'Vendor Bills', to: '/e/bills', icon: 'FileInput', module: 'finance' },
@@ -101,6 +103,13 @@ export const NAV: NavGroup[] = [
     { label: 'Bank Statement Import', to: '/finance/bank-import', icon: 'FileUp', module: 'finance' },
     { label: 'Year-end Close', to: '/finance/year-end', icon: 'CalendarCheck2', module: 'finance' },
     { label: 'Legal Entities', to: '/e/legal_entities', icon: 'Building2', module: 'finance' },
+  ] },
+  { label: 'Document Studio', icon: 'FilePenLine', items: [
+    { label: 'Document Studio (templates)', to: '/studio', icon: 'FilePenLine', module: 'documents' },
+    { label: 'New invoice (no job needed)', to: '/finance/new-invoice', icon: 'ReceiptText', module: 'finance' },
+    { label: 'Saved documents', to: '/e/studio_documents', icon: 'FileText', module: 'documents' },
+    { label: 'Template library', to: '/e/doc_templates', icon: 'FileCheck2', module: 'documents' },
+    { label: 'Documents Library (files)', to: '/documents', icon: 'FolderOpen', module: 'documents' },
   ] },
   { label: 'People & Support', icon: 'Users', items: [
     { label: 'Competency Matrix', to: '/competency', icon: 'GraduationCap', module: 'hr' },

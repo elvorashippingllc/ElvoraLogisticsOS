@@ -142,7 +142,7 @@ export default async function (app: FastifyInstance) {
   // Resolve only parties linked to a readable document, without requiring CRM access.
   // Portal users and operations/finance staff must be able to print their own permitted records.
   const printParty = (partyId: number) => {
-    const p = q.get<{ name: string; country_id: number | null } & Record<string, any>>(`SELECT name, address1, address2, city, state, po_box, trn, phone, country_id FROM parties WHERE id = ? AND deleted_at IS NULL`, partyId)
+    const p = q.get<{ name: string; country_id: number | null } & Record<string, any>>(`SELECT name, address1, address2, city, state, po_box, trn, phone, email, country_id FROM parties WHERE id = ? AND deleted_at IS NULL`, partyId)
     return p ? { ...p, _labels: { country_id: p.country_id ? q.val(`SELECT name FROM countries WHERE id = ?`, p.country_id) : '' } } : null
   }
   app.get('/api/print/:entity/:id/parties', async req => {
@@ -161,12 +161,13 @@ export default async function (app: FastifyInstance) {
   const pdfFor = async (req: any, entity: string, id: number, seal?: boolean) => {
     const def = ENTITIES[entity]; if (!def) throw notFound('Unknown record type')
     if (entity === 'parties') {
-      need(req, 'finance', 'view')
+      need(req, 'finance', 'view', { portal: true })
       if (req.user.party_id && req.user.party_id !== id) throw forbidden('You can only export your own company statement')
       if (!printParty(id)) throw notFound('Party not found')
     } else { assertCan(req.ctx, def.module, 'view'); getRecord(def, id, req.ctx, { children: false }) }
     const sid = req.cookies?.[COOKIE]; if (!sid) throw bad('PDF export is available from the signed-in web app')
-    return renderPrintPdf(printPath(entity, id, { ...req.query, ...(seal === undefined ? {} : { seal: seal ? '1' : '0' }) }), { name: COOKIE, value: sid })
+    const studio = entity === 'studio_documents' ? q.get<{ page_numbers: number; footer_text: string | null }>(`SELECT page_numbers, footer_text FROM studio_documents WHERE id = ?`, id) : undefined
+    return renderPrintPdf(printPath(entity, id, { ...req.query, ...(seal === undefined ? {} : { seal: seal ? '1' : '0' }) }), { name: COOKIE, value: sid }, studio ? { pageNumbers: !!studio.page_numbers, footerText: studio.footer_text ?? undefined } : {})
   }
   app.get('/api/pdf/:entity/:id', async (req, reply) => {
     const p = req.params as any; const buf = await pdfFor(req, p.entity, idOf(p.id))

@@ -8,10 +8,12 @@ import { ArrowLeft, Printer } from 'lucide-react'
 import { get } from '../lib/api'
 import { useMeta } from '../lib/meta'
 import { ErrorBox } from '../ui/kit'
-import { fmtDate, fmtDateTime, fmtMoney, fmtNum, todayIso } from '../lib/format'
+import { fmtDate, fmtDateTime, fmtMoney, fmtNum, fmtRoe, todayIso } from '../lib/format'
+import { amountInWords } from '@shared/words'
+import { StudioDoc } from '../pages/StudioPage'
 
 const S = () => useMeta().meta!.settings
-function Letterhead() {
+export function Letterhead() {
   const s = S()
   return (
     <div className="flex items-start justify-between gap-6 pb-3 mb-4" style={{ borderBottom: '3px solid #007b52' }}>
@@ -42,7 +44,7 @@ function Recipient({ record }: { record: any }) {
   return <div className="document-recipient"><span>To</span><strong>{documentRecipient(record)}</strong>{record?._labels?.contact_id && <div>Attention: {record._labels.contact_id}</div>}</div>
 }
 const addr = (p: any) => [p?.address1, p?.address2, [p?.city, p?.state].filter(Boolean).join(', '), p?._labels?.country_id, p?.po_box && `PO Box ${p.po_box}`].filter(Boolean).join('\n')
-const party = (p: any) => p ? `${p.name}\n${addr(p)}${p.trn ? `\nTRN ${p.trn}` : ''}${p.phone ? `\nTel ${p.phone}` : ''}` : ''
+const party = (p: any) => p ? `${p.name}\n${addr(p)}${p.trn ? `\nTRN ${p.trn}` : ''}${p.phone ? `\nTel ${p.phone}` : ''}${p.email ? `\nEmail ${p.email}` : ''}` : ''
 
 function useRec(entity: string, id: string) { return useQuery({ queryKey: ['print', entity, id], queryFn: () => get<any>(`/api/e/${entity}/${id}`) }) }
 
@@ -51,13 +53,24 @@ function InvoiceDoc({ r }: { r: any }) {
   const bank = useQuery({ queryKey: ['print-bank', r.bank_account_id], enabled: !!r.bank_account_id, queryFn: () => get<any>(`/api/e/bank_accounts/${r.bank_account_id}`) })
   if (p.error || bank.error) return <ErrorBox error={p.error || bank.error} />
   const lines = r.children.lines as any[]; const credit = r.doc_type === 'Credit Note'
+  const fx = lines.some(l => l.line_ccy)
+  const taxed = lines.some(l => Number(l.vat_pct) > 0) || r.vat_total > 0
+  const shipment: [string, ReactNode][] = [['Bill of lading / AWB', r.ship_bl_no], ['Vessel / flight', r.ship_vessel], ['Place of receipt', r.ship_receipt], ['Port of loading', r.ship_pol], ['Port of discharge', r.ship_pod], ['Final destination', r.ship_destination], ['Gross weight', r.ship_weight], ['HS code', r.ship_hs_code]]
+  const hasShipment = shipment.some(([, v]) => v) || r.ship_cargo || r.ship_containers
+  const title = r.doc_type === 'Tax Invoice' ? (s.vat_registered === false ? 'INVOICE' : 'TAX INVOICE') : r.doc_type.toUpperCase()
   return (<>
-    <Title watermark={r.status === 'Draft' ? 'DRAFT' : r.status === 'Void' ? 'VOID' : undefined} sub={<><div style={{ fontSize: 15, fontWeight: 800 }}>{r.invoice_no}</div><div style={{ color: '#5b6c63' }}>{r.status}</div></>}>{r.doc_type === 'Tax Invoice' ? (s.vat_registered === false ? 'INVOICE' : 'TAX INVOICE') : r.doc_type.toUpperCase()}</Title>
-    <Grid cols={2}><Box label="Bill to">{p.data ? party(p.data) : r._labels.party_id}</Box><Kv items={[['Document no.', r.invoice_no], ['Date', fmtDate(r.invoice_date)], ['Date of supply', r.supply_date ? fmtDate(r.supply_date) : ''], ['Due date', fmtDate(r.due_date)], ['Currency', r.currency], ['Our job ref.', r._labels.job_id], ['Customer ref.', r.reference], ['Against invoice', r._labels.original_invoice_id], ['Reason', r.credit_reason], ['Exchange rate', r.currency !== 'AED' ? `1 ${r.currency} = ${r.ex_rate} AED` : ''], ['Supplier TRN', s.company_trn]]} /></Grid>
-    <table><thead><tr><th style={{ width: 24 }}>#</th><th>Description</th><th style={{ textAlign: 'right' }}>Qty</th><th>Unit</th><th style={{ textAlign: 'right' }}>Rate</th><th style={{ textAlign: 'right' }}>Net</th><th style={{ textAlign: 'right' }}>VAT %</th><th style={{ textAlign: 'right' }}>VAT</th><th style={{ textAlign: 'right' }}>Total</th></tr></thead><tbody>
-      {lines.map((l, i) => <tr key={l.id}><td>{i + 1}</td><td>{l.description}</td><R>{fmtNum(l.qty)}</R><td>{l.unit}</td><R>{fmtMoney(l.rate)}</R><R>{fmtMoney(l.amount)}</R><R>{fmtNum(l.vat_pct)}</R><R>{fmtMoney(l.vat_amount)}</R><R>{fmtMoney(l.line_total)}</R></tr>)}</tbody></table>
-    <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 10 }}><table style={{ width: '46%' }}><tbody><tr><td>Subtotal ({r.currency})</td><R>{fmtMoney(r.subtotal)}</R></tr><tr><td>VAT</td><R>{fmtMoney(r.vat_total)}</R></tr>{r.currency !== 'AED' && <tr><td>VAT in AED @ {r.ex_rate}</td><R>{fmtMoney(r.vat_total * r.ex_rate)}</R></tr>}<tr style={{ fontWeight: 800, fontSize: 13, background: '#dcf1e6' }}><td>{credit ? 'Total credit' : 'Total due'} ({r.currency})</td><R>{fmtMoney(r.total)}</R></tr>{r.currency !== 'AED' && <tr><td style={{ color: '#5b6c63' }}>Total in AED @ {r.ex_rate}</td><R>{fmtMoney(r.base_total)}</R></tr>}{r.paid_amount > 0 && <tr><td>Paid</td><R>{fmtMoney(r.paid_amount)}</R></tr>}{r.balance > 0 && r.paid_amount > 0 && <tr style={{ fontWeight: 700 }}><td>Balance</td><R>{fmtMoney(r.balance)}</R></tr>}</tbody></table></div>
-    <Grid cols={2}>{(bank.data || s.bank_details) && <Box label="Payment details">{bank.data ? `${bank.data.name}\n${bank.data.bank_name ?? ''}\nIBAN ${bank.data.iban ?? ''}  SWIFT ${bank.data.swift ?? ''}\nCurrency ${bank.data.currency}` : s.bank_details}</Box>}<Box label="Notes / terms">{[r.notes, r.terms].filter(Boolean).join('\n\n')}</Box></Grid>
+    <Title watermark={r.status === 'Draft' ? 'DRAFT' : r.status === 'Void' ? 'VOID' : undefined} sub={<><div style={{ fontSize: 15, fontWeight: 800 }}>{r.invoice_no}</div><div style={{ color: '#5b6c63' }}>{fmtDate(r.invoice_date)}{r.status !== 'Posted' ? ` · ${r.status}` : ''}</div></>}>{title}</Title>
+    <Grid cols={2}><Box label="Bill to">{p.data ? party(p.data) : r._labels.party_id}</Box><Kv items={[['Document no.', r.invoice_no], ['Date', fmtDate(r.invoice_date)], ['Date of supply', r.supply_date ? fmtDate(r.supply_date) : ''], ['Due date', fmtDate(r.due_date)], ['Currency', r.currency], ['Our job ref.', r._labels.job_id], ['Customer ref.', r.reference], ['Against invoice', r._labels.original_invoice_id], ['Reason', r.credit_reason], ['Exchange rate', r.currency !== 'AED' ? `1 ${r.currency} = ${fmtRoe(r.ex_rate)} AED` : ''], ['Supplier TRN', s.company_trn]]} /></Grid>
+    {hasShipment && <div className="box" style={{ marginBottom: 10 }}><div className="lbl">Shipment / B/L details</div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', columnGap: 18 }}>{shipment.filter(([, v]) => v).map(([k, v]) => <div key={k} style={{ display: 'flex', gap: 8, padding: '2px 0' }}><span style={{ width: 118, color: '#5b6c63', flex: 'none' }}>{k}</span><b>{v}</b></div>)}</div>
+      {r.ship_cargo && <div style={{ padding: '4px 0 0' }}><span style={{ color: '#5b6c63' }}>Cargo </span><b>{r.ship_cargo}</b></div>}
+      {r.ship_containers && <div style={{ padding: '2px 0 0' }}><span style={{ color: '#5b6c63' }}>Containers </span><b>{r.ship_containers}</b></div>}</div>}
+    <table><thead><tr><th style={{ width: 24 }}>#</th><th>Charge description</th>{fx ? <><th>Ccy</th><th style={{ textAlign: 'right' }}>Unit rate</th><th style={{ textAlign: 'right' }}>Qty</th><th style={{ textAlign: 'right' }}>ROE</th><th style={{ textAlign: 'right' }}>Amount</th></> : <><th style={{ textAlign: 'right' }}>Qty</th><th>Unit</th><th style={{ textAlign: 'right' }}>Rate</th><th style={{ textAlign: 'right' }}>Net</th></>}<th style={{ textAlign: 'right' }}>VAT %</th>{taxed && <th style={{ textAlign: 'right' }}>VAT</th>}<th style={{ textAlign: 'right' }}>Total {r.currency}</th></tr></thead><tbody>
+      {lines.map((l, i) => <tr key={l.id}><td>{i + 1}</td><td>{l.description}</td>{fx ? <><td>{l.line_ccy || r.currency}</td><R>{fmtMoney(l.rate)}</R><R>{fmtNum(l.qty)}</R><R>{l.line_ccy ? fmtRoe(l.line_roe) : ''}</R><R>{fmtMoney(l.line_ccy ? Math.round(l.qty * l.rate * 100) / 100 : l.amount)}</R></> : <><R>{fmtNum(l.qty)}</R><td>{l.unit}</td><R>{fmtMoney(l.rate)}</R><R>{fmtMoney(l.amount)}</R></>}<R>{fmtNum(l.vat_pct)}%</R>{taxed && <R>{fmtMoney(l.vat_amount)}</R>}<R>{fmtMoney(l.line_total)}</R></tr>)}</tbody></table>
+    <div style={{ display: 'flex', justifyContent: 'space-between', gap: 18, marginTop: 10, alignItems: 'flex-start' }}>
+      <div style={{ flex: 1, fontSize: 11 }}><div className="lbl" style={{ fontSize: 9.5, textTransform: 'uppercase', letterSpacing: '.06em', color: '#5b6c63', fontWeight: 700 }}>Amount in words</div><div style={{ fontWeight: 600, marginTop: 2 }}>{amountInWords(r.total, r.currency)}</div></div>
+      <table style={{ width: '46%' }}><tbody><tr><td>{credit ? 'Total credit' : 'Total charges'} ({r.currency})</td><R>{fmtMoney(r.subtotal)}</R></tr><tr><td>VAT amount ({r.currency})</td><R>{fmtMoney(r.vat_total)}</R></tr>{r.currency !== 'AED' && r.vat_total > 0 && <tr><td>VAT in AED @ {fmtRoe(r.ex_rate)}</td><R>{fmtMoney(r.vat_total * r.ex_rate)}</R></tr>}{!!r.rounding && <tr><td>Rounding adjustment ({r.currency})</td><R>{fmtMoney(r.rounding)}</R></tr>}<tr style={{ fontWeight: 800, fontSize: 13, background: '#dcf1e6' }}><td>{credit ? 'TOTAL CREDIT' : 'TOTAL DUE'} {r.currency}</td><R>{fmtMoney(r.total)}</R></tr>{r.currency !== 'AED' && <tr><td style={{ color: '#5b6c63' }}>Total in AED @ {fmtRoe(r.ex_rate)}</td><R>{fmtMoney(r.base_total)}</R></tr>}{r.paid_amount > 0 && <tr><td>Paid</td><R>{fmtMoney(r.paid_amount)}</R></tr>}{r.balance > 0 && r.paid_amount > 0 && <tr style={{ fontWeight: 700 }}><td>Balance</td><R>{fmtMoney(r.balance)}</R></tr>}</tbody></table></div>
+    <Grid cols={2}>{(bank.data || s.bank_details) && <Box label="Payment details">{bank.data ? `${bank.data.name}\n${bank.data.bank_name ?? ''}\nIBAN ${bank.data.iban ?? ''}  SWIFT ${bank.data.swift ?? ''}\nCurrency ${bank.data.currency}` : s.bank_details}</Box>}<Box label="Terms & notes">{[r.notes, r.terms].filter(Boolean).join('\n\n')}</Box></Grid>
     <Foot />
   </>)
 }
@@ -210,7 +223,8 @@ export function PrintPage() {
     if (!q.data) return <DocumentPrinter />
     const rs = q.data
     return rs.map((r, i) => {
-      const e = <Presentation.Provider key={r.id} value={{ entity, record: r, seal }}><div className="print-document" style={{ pageBreakAfter: i < rs.length - 1 ? 'always' : 'auto' }}><Letterhead /><Recipient record={r} />{(() => { switch (entity) {
+      const e = <Presentation.Provider key={r.id} value={{ entity, record: r, seal }}><div className="print-document" style={{ pageBreakAfter: i < rs.length - 1 ? 'always' : 'auto' }}>{entity === 'studio_documents' ? (r.letterhead ? <Letterhead /> : null) : <><Letterhead /><Recipient record={r} /></>}{(() => { switch (entity) {
+        case 'studio_documents': return <StudioDoc r={r} seal={seal} sealImage={meta.settings.document_seal} />
         case 'freight_documents': return <FreightDoc r={r} />
         case 'invoices': return <InvoiceDoc r={r} />
         case 'quotations': return <QuoteDoc r={r} />
@@ -234,7 +248,7 @@ export function PrintPage() {
   return (
     <div>
       <div className="no-print flex gap-2 mb-4 items-center flex-wrap"><button className="btn grey" onClick={() => nav(-1)}><ArrowLeft /> Back</button><button className="btn green" disabled={!ready} onClick={() => window.print()}><Printer /> Print / Save as PDF</button><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={seal} disabled={!meta.settings.document_seal} onChange={e => setSp(p => { p.set('seal', e.target.checked ? '1' : '0'); return p }, { replace: true })} />Include company seal</label>{!meta.settings.document_seal && <span className="text-xs text-muted">Upload the seal in Company settings → Document text.</span>}<span className="text-xs text-muted">In the print dialog choose “Save as PDF” to create a file.</span></div>
-      <div className="print-preview"><div ref={sheet} className="print-sheet" data-print-ready={ready ? "true" : "false"}>{body}</div></div>
+      <div className="print-preview"><div ref={sheet} className={`print-sheet${entity === 'studio_documents' && q.data?.[0]?.orientation === 'Landscape' ? ' studio-landscape' : ''}`} data-print-ready={ready ? "true" : "false"}>{body}</div></div>
     </div>
   )
 }

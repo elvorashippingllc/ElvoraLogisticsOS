@@ -30,6 +30,8 @@ import { AiPage } from './pages/AiPage'
 import { WhatsAppPage } from './pages/WhatsAppPage'
 import { BankImportPage, YearEndPage, WpsPage } from './pages/FinanceExtras'
 import { PrintPage } from './print/PrintPage'
+import { StudioHome, StudioEditor } from './pages/StudioPage'
+import { NewInvoicePage } from './pages/NewInvoicePage'
 import { Loading, ErrorBox } from './ui/kit'
 
 function Guard({ module, children }: { module: string; children: ReactNode }) {
@@ -73,6 +75,9 @@ export default function App() {
           <Route path="/finance/statements" element={<Guard module="finance"><Statements /></Guard>} />
           <Route path="/kpi" element={<Guard module="reports"><KpiPage /></Guard>} />
           <Route path="/warehouse/stock" element={<Guard module="warehouse"><StockPage /></Guard>} />
+          <Route path="/studio" element={<Guard module="documents"><StudioHome /></Guard>} />
+          <Route path="/studio/:id" element={<Guard module="documents"><StudioEditor /></Guard>} />
+          <Route path="/finance/new-invoice" element={<Guard module="finance"><NewInvoicePage /></Guard>} />
           <Route path="/documents" element={<Guard module="documents"><DocumentsPage /></Guard>} />
           <Route path="/tools" element={<ToolsPage />} />
           <Route path="/profile" element={<ProfilePage />} />

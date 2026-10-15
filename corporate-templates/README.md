@@ -1,7 +1,7 @@
 # Elvora Shipping LLC Corporate Template Set
 
 ## Start here
-This pack contains 82 document designs, each supplied as editable DOCX and reusable DOTX, plus 16 e-mails in HTML and plain text, an HTML e-mail signature, the logo asset, and ready-to-print marketing material (company pamphlet, corporate brochure, capability statement and four service flyers, as HTML source and PDF).
+This pack contains 155 document designs, each supplied as editable DOCX and reusable DOTX, plus 16 e-mails in HTML and plain text, an HTML e-mail signature, the logo asset, and ready-to-print marketing material (company pamphlet, corporate brochure, capability statement and four service flyers, as HTML source and PDF).
 
 Open a DOTX in Microsoft Word to create a new document without overwriting the template. In Google Docs or LibreOffice, use the DOCX copy. Replace all bracketed fields and review the final page layout after entering real data. The blank templates are not completed transactions.
 
@@ -15,13 +15,13 @@ Hours: Sun-Thu 09:00-18:00 GST; 24/7 for active shipments
 Before issue, verify and enter the full registered address, trade licence, VAT TRN if registered, bank beneficiary and IBAN, authorised signatories and approved contract terms. No registration, tax number, banking detail or certification has been invented. In the marketing material, claims are limited to how the company works; add years in operation, memberships and certifications only when you can prove them.
 
 ## Folder layout
-- `documents/<category>/` – ELV-001 to ELV-082 as `.docx` and `.dotx`
+- `documents/<category>/` – ELV-001 to ELV-155 as `.docx` and `.dotx`
 - `emails/` – EM-01 to EM-16 (`.html` and `.txt`), `email-signature.html`, `logo.png`, `INDEX.md`
 - `marketing/` – pamphlet, brochure, capability statement and flyers (`.html` editable source, `.pdf` print-ready)
 - `assets/` – logo files (primary, reverse, icon)
 - `inventory.json` – machine-readable list of all documents
 
-To regenerate everything after editing the content: `npm run docs:build`.
+To regenerate everything after editing the content: `npm run docs:build`. The same content, plus the e-mail and marketing pieces, is built into the Elvora Logistics OS **Document Studio** (`npm run docs:studio`), where staff fill, edit, generate text with AI and print the documents without Word.
 
 ## Format
 Letter portrait 8.5 x 11 inches; 0.95 inch side margins; Arial 10.5 pt body; 22 pt black titles; 11 pt bold black section headings; 1.12 body line spacing; 9 pt tables with repeatable header rows, light grey borders and expandable rows. Colour is concentrated in the approved logo; restrained charcoal tables keep operational forms readable. Headers have no decorative rule. Footer contact details and automatic page number repeat on every page. Marketing pieces use the brand green and red on a dark band and are designed for Letter; resize to A4 before printing in the UAE if your printer requires it.
@@ -64,6 +64,9 @@ Tax document fields follow the referenced FTA invoice guidance, but finance must
 - ELV-010 — Standard Operating Procedure
 - ELV-011 — Document Control Register
 - ELV-012 — Customer Complaint Response
+- ELV-135 — Emergency Contact List
+- ELV-136 — Visitor Log
+- ELV-137 — Asset Disposal / Write-off Approval
 
 ### 02 Sales and Customers
 
@@ -77,6 +80,12 @@ Tax document fields follow the referenced FTA invoice guidance, but finance must
 - ELV-020 — Customer Service Review
 - ELV-021 — Confidentiality Agreement
 - ELV-022 — Freight Service Agreement
+- ELV-122 — Customer Visit / Sales Call Report
+- ELV-123 — Customer Onboarding Checklist
+- ELV-124 — Tender / RFQ Response Cover Letter
+- ELV-143 — Transport (Trucking) Quotation
+- ELV-144 — Customer Booking Order Form
+- ELV-155 — Sales Target and Pipeline Tracker
 
 ### 03 Finance and Procurement
 
@@ -94,6 +103,11 @@ Tax document fields follow the referenced FTA invoice guidance, but finance must
 - ELV-034 — Supplier Account Opening Form
 - ELV-035 — Remittance Advice
 - ELV-036 — Account Reconciliation
+- ELV-125 — Credit Limit Increase Request
+- ELV-126 — Petty Cash Voucher
+- ELV-127 — Quotation Cover Letter
+- ELV-145 — Job Cost Sheet
+- ELV-146 — Journal Voucher
 
 ### 04 Shipping and Warehouse
 
@@ -123,6 +137,12 @@ Tax document fields follow the referenced FTA invoice guidance, but finance must
 - ELV-060 — Cargo Claim Notice
 - ELV-061 — Cargo Damage Incident Report
 - ELV-062 — Shipment Delay Advisory
+- ELV-138 — Forwarder’s Cargo Receipt
+- ELV-139 — Equipment Interchange Receipt (Container)
+- ELV-140 — Gate Pass Request
+- ELV-141 — Delivery Instruction
+- ELV-142 — Empty Container Release Request
+- ELV-153 — Vehicle Pre-trip Inspection Checklist
 
 ### 05 HR and Administration
 
@@ -138,6 +158,16 @@ Tax document fields follow the referenced FTA invoice guidance, but finance must
 - ELV-072 — Employee Exit Clearance
 - ELV-073 — Company Asset Handover
 - ELV-074 — Business Travel Request
+- ELV-128 — No Objection Certificate (NOC) Letter
+- ELV-129 — Disciplinary Warning Letter
+- ELV-130 — Resignation Acceptance Letter
+- ELV-131 — Salary Transfer / Bank Letter
+- ELV-132 — End of Service Settlement Statement
+- ELV-133 — Overtime Request and Approval
+- ELV-134 — Training Attendance Record
+- ELV-150 — Employee Performance Appraisal Form
+- ELV-151 — Employee Handbook (Outline)
+- ELV-152 — Driver Daily Trip Log
 
 ### 06 Control and Guidance
 
@@ -149,6 +179,58 @@ Tax document fields follow the referenced FTA invoice guidance, but finance must
 - ELV-080 — Monthly Business Review
 - ELV-081 — Shipment Register
 - ELV-082 — Template Use and Company Setup Guide
+- ELV-115 — Anti-Bribery and Ethics Policy
+- ELV-116 — Data Protection and Privacy Policy
+- ELV-117 — Health, Safety and Environment Policy
+- ELV-118 — Quality Policy
+- ELV-119 — Business Continuity Plan (Summary)
+- ELV-120 — Incident Report (Health and Safety)
+- ELV-121 — Customer Feedback Form
+- ELV-154 — Annual Budget Sheet
+
+### 07 Legal and Contracts
+
+- ELV-083 — Standard Trading Conditions
+- ELV-084 — Power of Attorney (Shipping and Customs)
+- ELV-085 — Letter of Indemnity (Cargo Release)
+- ELV-086 — Agency Appointment Letter
+- ELV-087 — Service Level Agreement (Customer)
+- ELV-088 — Sub-contractor / Vendor Agreement
+
+### 08 Letters and Notices
+
+- ELV-089 — Letter of Introduction
+- ELV-090 — Payment Reminder Letter – First
+- ELV-091 — Payment Reminder Letter – Second
+- ELV-092 — Final Demand Letter
+- ELV-093 — Apology Letter (Service Failure)
+- ELV-094 — Notice of Rate or Surcharge Change
+- ELV-095 — Notice of Change of Address or Bank Details
+- ELV-096 — Holiday and Office Closure Notice
+- ELV-097 — Thank-you Letter to Customer
+- ELV-098 — Business Reference Letter
+- ELV-099 — Bank Letter (Account Opening or Facility Request)
+- ELV-100 — Invitation Letter (Visit or Meeting)
+
+### 09 Customs and Compliance
+
+- ELV-101 — Bill of Lading Amendment Request
+- ELV-102 — Telex / Express Release Request
+- ELV-103 — Demurrage / Detention Dispute Letter
+- ELV-104 — Free Time Extension Request
+- ELV-105 — Cargo Release Authorisation Letter
+- ELV-106 — Import Clearance Instructions
+- ELV-107 — Export Clearance Instructions
+- ELV-108 — Customs Duty Exemption / Refund Request
+- ELV-109 — Certificate of Origin Application Checklist
+- ELV-110 — Know Your Customer (KYC) Declaration
+- ELV-111 — Sanctions and Export Control Declaration
+- ELV-112 — Cargo Survey / Inspection Request
+- ELV-113 — Short-Shipment / Shut-out Notice
+- ELV-114 — Seal Discrepancy Report
+- ELV-147 — Cargo Insurance Claim Letter
+- ELV-148 — Fumigation / ISPM-15 Certificate Request
+- ELV-149 — Customs Release Follow-up Letter
 
 ### 07 Marketing and e-mail
 

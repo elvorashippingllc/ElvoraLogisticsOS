@@ -54,6 +54,12 @@ export default async function (app: FastifyInstance) {
     for (const [k, opts] of [['compliance_mode', ['enforce', 'advisory']], ['activity_scope_mode', ['off', 'warn', 'block']], ['vat_filing_frequency', ['Quarterly', 'Monthly']]] as const) if (k in patch && !(opts as readonly string[]).includes(patch[k])) throw bad(`${k} must be one of ${opts.join(', ')}`)
     if ('financial_year_end' in patch && !/^(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(patch.financial_year_end)) throw bad('Financial year end must be MM-DD, e.g. 12-31')
     if ('lock_date' in patch && patch.lock_date && !/^\d{4}-\d{2}-\d{2}$/.test(patch.lock_date)) throw bad('Lock date must be YYYY-MM-DD')
+    if ('invoice_no_pattern' in patch) {
+      const pat = String(patch.invoice_no_pattern ?? '').trim()
+      const tokens = pat.match(/\{[^}]*\}/g) ?? []
+      if (!pat || pat.length > 60 || !/^[A-Za-z0-9/\-_.{}:]+$/.test(pat) || !/\{seq:[1-8]\}/.test(pat) || tokens.some(t => !/^\{(prefix|branch|dir|YY|YYYY|MM|DD|seq:[1-8])\}$/.test(t)) || tokens.filter(t => t.startsWith('{seq')).length !== 1) throw bad('Invoice number format must contain one {seq:3}-style counter and may use {prefix} {branch} {dir} {YY} {YYYY} {MM} {DD}, for example {branch}/{dir}/ES{seq:3}')
+      patch.invoice_no_pattern = pat
+    }
     if ('document_seal' in patch) patch.document_seal = validateDocumentSeal(patch.document_seal)
     if ('document_seal_default' in patch && typeof patch.document_seal_default !== 'boolean') throw bad('Document seal default must be true or false')
     const before = publicSettings()
@@ -164,6 +170,31 @@ export default async function (app: FastifyInstance) {
     return reply.send(fs.createReadStream(p))
   })
 
+  // ---- business data: clear customers, jobs and money records, and load the Elvora starter set
+  app.get('/api/admin/business-data', async (req) => {
+    need(req, 'admin', 'view')
+    const { businessDataSummary, starterLoaded } = await import('../domain/business-data')
+    return { ...businessDataSummary(), starter_loaded: starterLoaded(), confirm_phrase: RESET_PHRASE }
+  })
+  app.post('/api/admin/business-data/reset', async (req) => {
+    need(req, 'admin', 'delete')
+    const b = z.object({ confirm: z.string(), load_starter: z.boolean().default(true) }).parse(req.body ?? {})
+    if (b.confirm !== RESET_PHRASE) throw bad(`Type ${RESET_PHRASE} exactly to confirm`)
+    const { resetBusinessData, loadElvoraStarterData, declineStarter, clearStarterDeclined } = await import('../domain/business-data')
+    const r = await resetBusinessData(req.ctx)
+    let starter: any = null
+    if (b.load_starter) { clearStarterDeclined(); starter = loadElvoraStarterData(req.ctx) } else declineStarter()
+    return { ...r, starter }
+  })
+  app.post('/api/admin/business-data/load-starter', async (req) => {
+    need(req, 'admin', 'create')
+    const { loadElvoraStarterData } = await import('../domain/business-data')
+    const r = loadElvoraStarterData(req.ctx)
+    if (!r.loaded) throw bad(r.reason === 'already loaded' || r.reason === 'customer already exists' ? 'The Elvora starter data is already in this workspace.' : `Starter data was not loaded (${r.reason}).`)
+    return r
+  })
+
   void loadSettings
 }
+const RESET_PHRASE = 'DELETE ALL BUSINESS DATA'
 

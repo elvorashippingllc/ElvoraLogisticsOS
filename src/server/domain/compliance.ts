@@ -147,7 +147,7 @@ export function checkInvoicePosting(inv: any, lines: any[]) {
   if (tax) {
     const registered = !!getSetting('vat_registered')
     if (!registered && (inv.vat_total ?? 0) > 0) out.push({ rule: 'VAT_NOT_REGISTERED', severity: 'Blocker', message: 'The company is recorded as not VAT-registered, so VAT cannot be charged. Remove VAT from the lines or update the VAT registration status in Company Settings.' })
-    if (registered && !TRN.test(companyTrnFor(inv.branch_id))) out.push({ rule: 'SUPPLIER_TRN', severity: 'Blocker', message: 'A tax invoice must show the supplier’s 15-digit TRN. Enter it under Company Settings (or on the legal entity).' })
+    if (registered && !TRN.test(companyTrnFor(inv.branch_id))) out.push({ rule: 'SUPPLIER_TRN', severity: 'Blocker', message: 'A tax invoice must show the supplier’s 15-digit TRN. Enter it under Company Settings (or on the legal entity). If the company is not registered for VAT, untick “VAT-registered” under Company Settings → UAE compliance instead.' })
     const p = q.get(`SELECT trn, address1, city, country_id FROM parties WHERE id = ?`, inv.party_id)
     if (registered && p && !p.trn && (inv.base_total ?? 0) >= 10_000) out.push({ rule: 'CUSTOMER_TRN', severity: 'Warning', message: 'Customer TRN is missing. Invoices of AED 10,000 or more are full tax invoices and must show the customer’s name, address and TRN if it is VAT-registered.' })
     if (registered && p && !p.address1 && !p.city && (inv.base_total ?? 0) >= 10_000) out.push({ rule: 'CUSTOMER_ADDRESS', severity: 'Warning', message: 'Customer address is missing on a full tax invoice.' })

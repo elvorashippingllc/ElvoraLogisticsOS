@@ -249,7 +249,12 @@ export const transportHooks: Hooks = {
 }
 
 // ------------------------------------------------------------------ job services
-export function generateInvoicesFromJob(jobId: number, opts: { docType?: string; chargeIds?: number[] }, ctx: Ctx): Rec[] {
+/**
+ * Draft invoice(s) from a job's unbilled revenue. Default: one invoice per bill-to party and charge currency.
+ * `billInBase`: one invoice per bill-to party in the company currency, each foreign-priced charge keeping its own currency and rate of exchange on the line
+ * (the way freight is usually quoted in USD but billed in AED).
+ */
+export function generateInvoicesFromJob(jobId: number, opts: { docType?: string; chargeIds?: number[]; billInBase?: boolean }, ctx: Ctx): Rec[] {
   const job = getRecord(getDef('jobs'), jobId, SYSTEM_CTX, { children: false })
   const docType = opts.docType ?? 'Tax Invoice'
   let charges = q.all(`SELECT * FROM job_charges WHERE job_id = ? AND kind = 'Revenue' AND status = 'Unbilled' AND deleted_at IS NULL ORDER BY id`, jobId)
@@ -257,16 +262,17 @@ export function generateInvoicesFromJob(jobId: number, opts: { docType?: string;
   if (docType === 'Proforma Invoice') { /* proforma never consumes charges */ }
   if (!charges.length) throw bad('There are no unbilled revenue charges on this job')
   const groups = new Map<string, any[]>()
-  for (const c of charges) { const k = `${c.party_id ?? job.client_id}|${c.currency}`; (groups.get(k) ?? groups.set(k, []).get(k)!).push(c) }
+  const base = getSetting<string>('base_currency') || 'AED'
+  for (const c of charges) { const k = `${c.party_id ?? job.client_id}|${opts.billInBase ? base : c.currency}`; (groups.get(k) ?? groups.set(k, []).get(k)!).push(c) }
   const out: Rec[] = []
   for (const [k, rows] of groups) {
     const [partyId, currency] = k.split('|')
     const party = q.get(`SELECT * FROM parties WHERE id = ?`, Number(partyId))
     const inv = createRecord(getDef('invoices'), {
-      doc_type: docType, party_id: Number(partyId), job_id: jobId, branch_id: job.branch_id, invoice_date: todayStr(), currency, ex_rate: rows[0].ex_rate, payment_term_id: party?.payment_term_id ?? null,
+      doc_type: docType, party_id: Number(partyId), job_id: jobId, branch_id: job.branch_id, invoice_date: todayStr(), currency, ex_rate: opts.billInBase ? 1 : rows[0].ex_rate, payment_term_id: party?.payment_term_id ?? null,
       reference: job.customer_ref ?? null, notes: `Job ${job.job_no}${job.mbl_no ? ` · MBL/AWB ${job.mbl_no}` : ''}${job.hbl_no ? ` · HBL ${job.hbl_no}` : ''}`,
       terms: getSetting('invoice_terms'),
-      children: { lines: rows.map(c => ({ charge_code_id: c.charge_code_id, description: c.description, unit: c.basis, qty: c.qty, rate: fromCents(c.rate), vat_code_id: c.vat_code_id, job_charge_id: c.id })) },
+      children: { lines: rows.map(c => ({ charge_code_id: c.charge_code_id, description: c.description, unit: c.basis, qty: c.qty, rate: fromCents(c.rate), vat_code_id: c.vat_code_id, job_charge_id: c.id, ...(opts.billInBase && c.currency !== base ? { line_ccy: c.currency, line_roe: c.ex_rate } : {}) })) },
     }, ctx)
     out.push(inv)
   }
@@ -279,8 +285,9 @@ export function convertProforma(invoiceId: number, ctx: Ctx): Rec {
   if (pi.status === 'Void') throw bad('The proforma is void')
   return createRecord(getDef('invoices'), {
     doc_type: 'Tax Invoice', party_id: pi.party_id, job_id: pi.job_id, shipment_id: pi.shipment_id, branch_id: pi.branch_id, invoice_date: todayStr(), currency: pi.currency, ex_rate: pi.ex_rate, payment_term_id: pi.payment_term_id,
-    reference: pi.reference, notes: pi.notes, terms: pi.terms, bank_account_id: pi.bank_account_id,
-    children: { lines: pi.children.lines.map((l: Rec) => ({ charge_code_id: l.charge_code_id, description: l.description, unit: l.unit, qty: l.qty, rate: l.rate, vat_code_id: l.vat_code_id, job_charge_id: l.job_charge_id ?? null })) },
+    reference: pi.reference, notes: pi.notes, terms: pi.terms, bank_account_id: pi.bank_account_id, trade: pi.trade, round_total: pi.round_total,
+    ship_bl_no: pi.ship_bl_no, ship_vessel: pi.ship_vessel, ship_receipt: pi.ship_receipt, ship_pol: pi.ship_pol, ship_pod: pi.ship_pod, ship_destination: pi.ship_destination, ship_containers: pi.ship_containers, ship_weight: pi.ship_weight, ship_cargo: pi.ship_cargo, ship_hs_code: pi.ship_hs_code,
+    children: { lines: pi.children.lines.map((l: Rec) => ({ charge_code_id: l.charge_code_id, description: l.description, unit: l.unit, qty: l.qty, rate: l.rate, vat_code_id: l.vat_code_id, line_ccy: l.line_ccy ?? null, line_roe: l.line_roe ?? null, job_charge_id: l.job_charge_id ?? null })) },
   }, ctx)
 }
 

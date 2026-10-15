@@ -47,8 +47,8 @@ function extractToolJson(text: string): { json: any; raw: string } | null {
   return null
 }
 
-async function callOne(e: Endpoint, messages: ChatMsg[], tools: ToolDef[] | undefined): Promise<ChatResult> {
-  const body: any = { model: e.model, messages, temperature: 0.2, max_tokens: 1500 }
+async function callOne(e: Endpoint, messages: ChatMsg[], tools: ToolDef[] | undefined, opts: { maxTokens?: number; temperature?: number } = {}): Promise<ChatResult> {
+  const body: any = { model: e.model, messages, temperature: opts.temperature ?? 0.2, max_tokens: opts.maxTokens ?? 1500 }
   if (tools?.length) { body.tools = tools.map(t => ({ type: 'function', function: t })); body.tool_choice = 'auto' }
   const r = await http(`${e.base}/chat/completions`, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(e.key ? { Authorization: `Bearer ${e.key}` } : {}) }, body: JSON.stringify(body), timeoutMs: 90000 })
   if (!r.ok) {
@@ -93,12 +93,12 @@ function demoChat(messages: ChatMsg[], tools?: ToolDef[]): ChatResult {
   return { content: lines.join('\n'), tool_calls: [], tokens: 0, model: 'demo-assistant' }
 }
 
-export async function chat(messages: ChatMsg[], tools?: ToolDef[], modelOverride?: string): Promise<ChatResult> {
+export async function chat(messages: ChatMsg[], tools?: ToolDef[], modelOverride?: string, opts: { maxTokens?: number; temperature?: number } = {}): Promise<ChatResult> {
   if (inDemo()) return demoChat(messages, tools)
   const eps = endpoints(modelOverride)
   if (!eps.length) throw new Error('AI is not configured. Choose a provider under Integrations → AI.')
   const errors: string[] = []
-  for (const e of eps) { try { return await callOne(e, messages, tools) } catch (err: any) { errors.push(String(err?.message ?? err)) } }
+  for (const e of eps) { try { return await callOne(e, messages, tools, opts) } catch (err: any) { errors.push(String(err?.message ?? err)) } }
   throw new Error(errors.join('\n'))
 }
 export async function testLlm(): Promise<{ ok: boolean; error?: string; model?: string; reply?: string }> {

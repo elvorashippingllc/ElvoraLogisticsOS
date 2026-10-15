@@ -4,7 +4,13 @@ import { bad, forbidden } from '../util'
 import type { Action } from '../../shared/types'
 import type { Filter, ListParams } from '../engine'
 
-export function need(req: FastifyRequest, module: string, action: Action = 'view') {
+/**
+ * Module permission check for custom endpoints. Customer-portal users hold a few module permissions (for example finance → view) so that the generic,
+ * company-scoped record API works for them; they must never reach company-wide endpoints (bank balances, rate cards, open items of other customers).
+ * An endpoint that is safe for portal users, because it scopes by the signed-in customer itself, opts in with `{ portal: true }`.
+ */
+export function need(req: FastifyRequest, module: string, action: Action = 'view', opts: { portal?: boolean } = {}) {
+  if (req.user?.party_id && !opts.portal) throw forbidden('This area is for company staff')
   if (!can(req.user, module, action)) throw forbidden(`You do not have ${action} access to ${module}`)
 }
 export function idOf(v: unknown): number {
